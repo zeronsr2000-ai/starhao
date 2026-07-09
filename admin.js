@@ -264,6 +264,7 @@ function exportInquiries() {
 
 function setupAuth() {
   const loginPanel = qs("[data-login-panel]");
+  const adminLayout = qs("[data-admin-layout]");
   const tabs = qs("[data-admin-tabs]");
   const logout = qs("[data-logout]");
   const loginForm = qs("[data-login-form]");
@@ -288,6 +289,7 @@ function setupAuth() {
   logout.addEventListener("click", () => window.firebase.auth().signOut());
 
   window.firebase.auth().onAuthStateChanged(async (user) => {
+    adminLayout.classList.toggle("is-login", !user);
     loginPanel.classList.toggle("hidden", Boolean(user));
     tabs.classList.toggle("hidden", !user);
     logout.classList.toggle("hidden", !user);

@@ -649,9 +649,9 @@ dd {
   padding: 120px 0 80px;
 }
 
-.admin-layout:has([data-login-panel]:not(.hidden)) {
+.admin-layout.is-login {
   display: block;
-  width: min(calc(100% - 36px), 560px);
+  width: min(calc(100% - 36px), 720px);
 }
 
 .admin-sidebar {
@@ -681,11 +681,13 @@ dd {
 .admin-main {
   display: grid;
   gap: 18px;
+  min-width: 0;
 }
 
 .panel {
   display: grid;
   gap: 18px;
+  min-width: 0;
 }
 
 .panel h2 {
@@ -693,8 +695,19 @@ dd {
 }
 
 .panel h1 {
-  font-size: clamp(30px, 4vw, 48px);
-  line-height: 1.08;
+  font-size: clamp(28px, 3vw, 42px);
+  line-height: 1.15;
+  letter-spacing: 0;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.admin-layout.is-login .panel {
+  padding: clamp(24px, 4vw, 42px);
+}
+
+.admin-layout.is-login .panel h1 {
+  max-width: 12em;
 }
 
 .login-help {
