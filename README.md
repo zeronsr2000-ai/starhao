@@ -33,3 +33,27 @@ git push -u origin main
 3. Source 選 Deploy from a branch
 4. Branch 選 `main`，資料夾選 `/root`
 5. 儲存後等待 GitHub 產生網站網址
+
+## 部署到 Firebase Hosting
+
+這個專案已經包含 `firebase.json`，可以直接部署靜態網站。
+
+先安裝 Firebase CLI：
+
+```powershell
+npm.cmd install -g firebase-tools
+```
+
+登入 Firebase：
+
+```powershell
+firebase login
+```
+
+如果你已經建立 Firebase project，可以直接部署：
+
+```powershell
+firebase deploy --only hosting --project YOUR_FIREBASE_PROJECT_ID
+```
+
+如果還沒有 Firebase project，先到 Firebase Console 建立專案，再把 Project ID 填進上面的指令。
