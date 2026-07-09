@@ -209,9 +209,9 @@ p {
 h1,
 .hero h1 {
   margin: 0;
-  font-size: clamp(52px, 8vw, 118px);
+  font-size: clamp(26px, 4vw, 59px);
   line-height: 0.96;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.02em;
 }
 
 h2,
@@ -219,9 +219,9 @@ h2,
 .quote h2,
 .intro h2 {
   margin: 0;
-  font-size: clamp(38px, 6vw, 78px);
+  font-size: clamp(19px, 3vw, 39px);
   line-height: 0.98;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.01em;
 }
 
 p {
@@ -234,7 +234,7 @@ p {
   max-width: 720px;
   margin: 26px 0 0;
   color: rgba(255, 255, 255, 0.72);
-  font-size: clamp(17px, 2vw, 22px);
+  font-size: clamp(16px, 1.35vw, 19px);
   line-height: 1.8;
 }
 
@@ -649,6 +649,11 @@ dd {
   padding: 120px 0 80px;
 }
 
+.admin-layout:has([data-login-panel]:not(.hidden)) {
+  display: block;
+  width: min(calc(100% - 36px), 560px);
+}
+
 .admin-sidebar {
   position: sticky;
   top: 112px;
@@ -684,7 +689,25 @@ dd {
 }
 
 .panel h2 {
-  font-size: clamp(28px, 4vw, 48px);
+  font-size: clamp(22px, 2.4vw, 34px);
+}
+
+.panel h1 {
+  font-size: clamp(30px, 4vw, 48px);
+  line-height: 1.08;
+}
+
+.login-help {
+  padding: 16px;
+  border: 1px solid rgba(223, 255, 79, 0.32);
+  border-radius: 18px;
+  color: rgba(255, 255, 255, 0.78);
+  background: rgba(223, 255, 79, 0.06);
+  line-height: 1.75;
+}
+
+.login-help strong {
+  color: var(--lime);
 }
 
 .grid-2 {
@@ -839,7 +862,7 @@ footer p {
 
   h1,
   .hero h1 {
-    font-size: clamp(50px, 15vw, 88px);
+    font-size: clamp(28px, 8vw, 44px);
   }
 
   .hero-copy {

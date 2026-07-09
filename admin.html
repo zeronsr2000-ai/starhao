@@ -33,7 +33,11 @@
         <section class="panel" data-login-panel>
           <p class="eyebrow">Admin Login</p>
           <h1>登入星澔文創後台</h1>
-          <p>請使用 Firebase Authentication 內建立的 Email/Password 管理員帳號。</p>
+          <p>後台沒有預設帳號密碼。請使用你在 Firebase Authentication 內建立的 Email/Password 管理員帳號。</p>
+          <div class="login-help">
+            <strong>帳號密碼在哪裡？</strong><br />
+            到 Firebase Console → Authentication → Sign-in method 啟用 Email/Password，接著到 Users 新增使用者。新增的 Email 和密碼就是這裡的後台登入帳密。
+          </div>
           <form class="form" data-login-form>
             <label>Email<input name="email" type="email" required /></label>
             <label>密碼<input name="password" type="password" required /></label>
