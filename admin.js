@@ -289,6 +289,7 @@ function setupAuth() {
   logout.addEventListener("click", () => window.firebase.auth().signOut());
 
   window.firebase.auth().onAuthStateChanged(async (user) => {
+    document.body.classList.toggle("is-authenticated", Boolean(user));
     adminLayout.classList.toggle("is-login", !user);
     loginPanel.classList.toggle("hidden", Boolean(user));
     tabs.classList.toggle("hidden", !user);

@@ -148,7 +148,7 @@ textarea {
   z-index: 2;
   width: min(calc(100% - 36px), 1280px);
   display: grid;
-  grid-template-columns: 250px minmax(0, 1fr);
+  grid-template-columns: 260px minmax(0, 1fr);
   gap: 32px;
   margin: 0 auto;
   padding: 126px 0 72px;
@@ -163,15 +163,38 @@ textarea {
   padding: 112px 0 56px;
 }
 
+.admin-body.is-authenticated .admin-layout {
+  width: min(calc(100% - 36px), 1320px);
+  display: grid !important;
+  grid-template-columns: 260px minmax(0, 1fr) !important;
+  align-items: start;
+  gap: 32px;
+}
+
+.admin-body.is-authenticated .admin-sidebar {
+  grid-column: 1;
+  width: 260px;
+  z-index: 3;
+}
+
+.admin-body.is-authenticated .admin-main {
+  grid-column: 2;
+  width: 100%;
+}
+
 .admin-sidebar {
   position: sticky;
   top: 112px;
   align-self: start;
   display: grid;
   gap: 8px;
+  max-height: calc(100vh - 132px);
+  overflow: auto;
 }
 
 .admin-tab {
+  display: block;
+  width: 100%;
   min-height: 44px;
   padding: 0 16px;
   border: 1px solid var(--line);
@@ -356,7 +379,8 @@ p {
     display: none;
   }
 
-  .admin-layout {
+  .admin-layout,
+  .admin-body.is-authenticated .admin-layout {
     grid-template-columns: 1fr;
   }
 
@@ -364,6 +388,18 @@ p {
     position: static;
     display: flex;
     flex-wrap: wrap;
+    width: 100%;
+    max-height: none;
+  }
+
+  .admin-body.is-authenticated .admin-sidebar,
+  .admin-body.is-authenticated .admin-main {
+    grid-column: 1;
+    width: 100%;
+  }
+
+  .admin-tab {
+    width: auto;
   }
 }
 
