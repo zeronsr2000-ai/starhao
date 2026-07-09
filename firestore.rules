@@ -1,0 +1,39 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    match /siteContent/{docId} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
+
+    match /works/{docId} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
+
+    match /services/{docId} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
+
+    match /process/{docId} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
+
+    match /media/{docId} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
+
+    match /inquiries/{docId} {
+      allow create: if true;
+      allow read, update, delete: if signedIn();
+    }
+  }
+}

@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>後台管理｜星澔文創</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="admin-body">
+    <div class="grain" aria-hidden="true"></div>
+    <header class="header">
+      <a href="index.html" class="logo"><span class="logo-mark">S</span><div>星澔文創<small>CMS ADMIN</small></div></a>
+      <nav class="nav" data-nav><a href="index.html">前台首頁</a><a href="quote.html">詢價表單</a></nav>
+      <button class="btn ghost hidden" type="button" data-logout>登出</button>
+      <button class="menu" type="button" aria-label="開啟選單" aria-expanded="false" data-menu>MENU</button>
+    </header>
+
+    <main class="admin-layout">
+      <aside class="admin-sidebar hidden" data-admin-tabs>
+        <button class="admin-tab active" data-tab="dashboard" type="button">總覽</button>
+        <button class="admin-tab" data-tab="site" type="button">網站設定</button>
+        <button class="admin-tab" data-tab="home" type="button">首頁管理</button>
+        <button class="admin-tab" data-tab="works" type="button">作品管理</button>
+        <button class="admin-tab" data-tab="services" type="button">服務管理</button>
+        <button class="admin-tab" data-tab="process" type="button">流程管理</button>
+        <button class="admin-tab" data-tab="about" type="button">關於我們</button>
+        <button class="admin-tab" data-tab="media" type="button">媒體素材庫</button>
+        <button class="admin-tab" data-tab="inquiries" type="button">詢價管理</button>
+      </aside>
+
+      <section class="admin-main">
+        <section class="panel" data-login-panel>
+          <p class="eyebrow">Admin Login</p>
+          <h1>登入星澔文創後台</h1>
+          <p>請使用 Firebase Authentication 內建立的 Email/Password 管理員帳號。</p>
+          <form class="form" data-login-form>
+            <label>Email<input name="email" type="email" required /></label>
+            <label>密碼<input name="password" type="password" required /></label>
+            <button class="btn primary" type="submit">登入</button>
+            <div class="status" data-login-status></div>
+          </form>
+        </section>
+
+        <section class="panel hidden" data-panel="dashboard">
+          <p class="eyebrow">Dashboard</p>
+          <h2>內容管理總覽</h2>
+          <p>第一次使用請先按「初始化預設內容」，把計畫書的第一版內容寫入 Firestore。</p>
+          <div class="actions">
+            <button class="btn primary" type="button" data-seed>初始化預設內容</button>
+            <button class="btn ghost" type="button" data-refresh>重新載入資料</button>
+            <button class="btn ghost" type="button" data-export>匯出詢價 CSV</button>
+          </div>
+          <div class="contact-strip">
+            <div><strong data-count-works>0</strong><p>作品案例</p></div>
+            <div><strong data-count-services>0</strong><p>服務項目</p></div>
+            <div><strong data-count-inquiries>0</strong><p>詢價資料</p></div>
+          </div>
+          <div class="status" data-admin-status></div>
+        </section>
+
+        <section class="panel hidden" data-panel="site">
+          <p class="eyebrow">Site Settings</p>
+          <h2>網站設定</h2>
+          <form class="form" data-form="site">
+            <div class="grid-2">
+              <label>公司名稱<input name="brandName" required /></label>
+              <label>英文名稱<input name="englishName" /></label>
+            </div>
+            <label>品牌標語<input name="tagline" /></label>
+            <div class="grid-2">
+              <label>Email<input name="email" type="email" /></label>
+              <label>電話<input name="phone" /></label>
+            </div>
+            <div class="grid-2">
+              <label>LINE<input name="line" /></label>
+              <label>YouTube<input name="youtube" /></label>
+            </div>
+            <div class="grid-2">
+              <label>Instagram<input name="instagram" /></label>
+              <label>GA ID<input name="gaId" /></label>
+            </div>
+            <label>Meta Pixel ID<input name="metaPixelId" /></label>
+            <label>SEO Title<input name="seoTitle" /></label>
+            <label>Meta Description<textarea name="seoDescription"></textarea></label>
+            <button class="btn primary" type="submit">儲存網站設定</button>
+          </form>
+        </section>
+
+        <section class="panel hidden" data-panel="home">
+          <p class="eyebrow">Home</p>
+          <h2>首頁管理</h2>
+          <form class="form" data-form="home">
+            <label>小標<input name="eyebrow" /></label>
+            <label>主標題<textarea name="title"></textarea></label>
+            <label>副標題<textarea name="subtitle"></textarea></label>
+            <div class="grid-2">
+              <label>主要 CTA 文字<input name="primaryCtaText" /></label>
+              <label>主要 CTA 連結<input name="primaryCtaLink" /></label>
+            </div>
+            <div class="grid-2">
+              <label>次要 CTA 文字<input name="secondaryCtaText" /></label>
+              <label>次要 CTA 連結<input name="secondaryCtaLink" /></label>
+            </div>
+            <div class="grid-2">
+              <label>Showreel 標籤<input name="showreelLabel" /></label>
+              <label>Showreel 影片連結<input name="showreelUrl" /></label>
+            </div>
+            <button class="btn primary" type="submit">儲存首頁</button>
+          </form>
+        </section>
+
+        <section class="panel hidden" data-panel="works">
+          <p class="eyebrow">Works</p>
+          <h2>作品管理</h2>
+          <form class="form" data-collection-form="works">
+            <input name="id" type="hidden" />
+            <div class="grid-2"><label>作品標題<input name="title" required /></label><label>分類<input name="category" required /></label></div>
+            <div class="grid-2"><label>客戶名稱<input name="client" /></label><label>專案年份<input name="year" /></label></div>
+            <div class="grid-2"><label>封面樣式<select name="coverClass"><option>g1</option><option>g2</option><option>g3</option><option>g4</option><option>g5</option></select></label><label>影片連結<input name="videoUrl" /></label></div>
+            <label>專案簡介<textarea name="summary"></textarea></label>
+            <label>客戶需求<textarea name="need"></textarea></label>
+            <label>製作內容<textarea name="production"></textarea></label>
+            <label>最終交付<textarea name="delivery"></textarea></label>
+            <div class="grid-2"><label>排序<input name="sort" type="number" /></label><label>上架狀態<select name="status"><option value="published">上架</option><option value="draft">草稿</option><option value="hidden">下架</option></select></label></div>
+            <label><input name="featured" type="checkbox" /> 設為首頁精選</label>
+            <div class="actions"><button class="btn primary" type="submit">儲存作品</button><button class="btn ghost" data-new="works" type="button">新增空白作品</button></div>
+          </form>
+          <div class="table-list" data-list="works"></div>
+        </section>
+
+        <section class="panel hidden" data-panel="services">
+          <p class="eyebrow">Services</p>
+          <h2>服務管理</h2>
+          <form class="form" data-collection-form="services">
+            <input name="id" type="hidden" />
+            <label>服務名稱<input name="title" required /></label>
+            <label>服務簡介<textarea name="summary"></textarea></label>
+            <label>適合對象<textarea name="target"></textarea></label>
+            <label>交付內容<textarea name="deliverables"></textarea></label>
+            <div class="grid-2"><label>排序<input name="sort" type="number" /></label><label>上架狀態<select name="status"><option value="published">上架</option><option value="draft">草稿</option><option value="hidden">下架</option></select></label></div>
+            <div class="actions"><button class="btn primary" type="submit">儲存服務</button><button class="btn ghost" data-new="services" type="button">新增空白服務</button></div>
+          </form>
+          <div class="table-list" data-list="services"></div>
+        </section>
+
+        <section class="panel hidden" data-panel="process">
+          <p class="eyebrow">Workflow</p>
+          <h2>流程管理</h2>
+          <form class="form" data-collection-form="process">
+            <input name="id" type="hidden" />
+            <div class="grid-2"><label>步驟標題<input name="title" required /></label><label>排序<input name="sort" type="number" /></label></div>
+            <label>步驟說明<textarea name="body"></textarea></label>
+            <div class="actions"><button class="btn primary" type="submit">儲存流程</button><button class="btn ghost" data-new="process" type="button">新增流程</button></div>
+          </form>
+          <div class="table-list" data-list="process"></div>
+        </section>
+
+        <section class="panel hidden" data-panel="about">
+          <p class="eyebrow">About</p>
+          <h2>關於我們管理</h2>
+          <form class="form" data-form="about">
+            <label>主標題<textarea name="title"></textarea></label>
+            <label>公司介紹<textarea name="body"></textarea></label>
+            <label>製作觀點<textarea name="philosophy"></textarea></label>
+            <label>服務地區<input name="serviceArea" /></label>
+            <label>團隊資料 JSON<textarea name="team"></textarea></label>
+            <label>合作品牌 / 服務領域 JSON<textarea name="clients"></textarea></label>
+            <button class="btn primary" type="submit">儲存關於我們</button>
+          </form>
+        </section>
+
+        <section class="panel hidden" data-panel="media">
+          <p class="eyebrow">Media</p>
+          <h2>媒體素材庫</h2>
+          <p>第一版先管理圖片、影片與 OG 圖的外部 URL；之後可再升級成 Firebase Storage 上傳。</p>
+          <form class="form" data-collection-form="media">
+            <input name="id" type="hidden" />
+            <div class="grid-2"><label>素材名稱<input name="title" required /></label><label>類型<select name="type"><option>image</option><option>video</option><option>og</option><option>logo</option></select></label></div>
+            <label>URL<input name="url" /></label>
+            <label>Alt 文字<input name="alt" /></label>
+            <div class="actions"><button class="btn primary" type="submit">儲存素材</button><button class="btn ghost" data-new="media" type="button">新增素材</button></div>
+          </form>
+          <div class="table-list" data-list="media"></div>
+        </section>
+
+        <section class="panel hidden" data-panel="inquiries">
+          <p class="eyebrow">Inquiries</p>
+          <h2>詢價管理</h2>
+          <div class="table-list" data-list="inquiries"></div>
+        </section>
+      </section>
+    </main>
+
+    <script src="/__/firebase/10.12.4/firebase-app-compat.js"></script>
+    <script src="/__/firebase/10.12.4/firebase-auth-compat.js"></script>
+    <script src="/__/firebase/10.12.4/firebase-firestore-compat.js"></script>
+    <script src="/__/firebase/init.js"></script>
+    <script src="data.js"></script>
+    <script src="firebase-client.js"></script>
+    <script src="admin.js"></script>
+  </body>
+</html>

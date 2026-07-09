@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="填寫星澔文創影音製作詢價表單，提供影片類型、預算、時程與需求說明。" />
+    <title>詢價表單｜星澔文創</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+    <div class="glow" aria-hidden="true"></div>
+    <header class="header">
+      <a href="index.html" class="logo"><span class="logo-mark">S</span><div><span data-brand>星澔文創</span><small data-english>STARHORIZON CREATIVE</small></div></a>
+      <nav class="nav" data-nav>
+        <a href="index.html">首頁</a><a href="works.html">作品案例</a><a href="services.html">服務項目</a><a href="process.html">製作流程</a><a href="about.html">關於我們</a><a class="active" href="quote.html">詢價</a>
+      </nav>
+      <a class="top-cta" href="quote.html">取得報價</a>
+      <button class="menu" type="button" aria-label="開啟選單" aria-expanded="false" data-menu>MENU</button>
+    </header>
+    <main>
+      <section class="section quote" style="padding-top: 140px;">
+        <div class="quote-card">
+          <div>
+            <p class="eyebrow">Start A Project</p>
+            <h1>告訴我們你的影片需求。</h1>
+            <p>表單會收集足夠資訊，讓我們能初步判斷製作範圍、預算與時程。送出後會進入後台詢價管理。</p>
+            <div class="contact-strip">
+              <div><strong>Email</strong><p data-email>hello@starhorizon.tw</p></div>
+              <div><strong>電話</strong><p data-phone>尚未設定</p></div>
+              <div><strong>LINE</strong><p data-line>尚未設定</p></div>
+            </div>
+          </div>
+          <form class="form" data-inquiry-form>
+            <label>姓名 / 稱呼<input name="name" type="text" required /></label>
+            <label>公司 / 品牌名稱<input name="company" type="text" required /></label>
+            <div class="grid-2">
+              <label>電話<input name="phone" type="tel" /></label>
+              <label>Email<input name="email" type="email" required /></label>
+            </div>
+            <label>LINE ID<input name="lineId" type="text" /></label>
+            <label>影片類型
+              <select name="videoType" required>
+                <option>品牌形象影片</option><option>人物訪談影片</option><option>Podcast / 節目製作</option><option>短影音切片</option><option>活動紀錄</option><option>產品 / 服務介紹影片</option><option>後期剪輯與包裝</option>
+              </select>
+            </label>
+            <div class="grid-2">
+              <label>預計影片支數<input name="videoCount" type="text" placeholder="例如：正片 1 支、短影音 6 支" /></label>
+              <label>是否需要拍攝<select name="shooting"><option>尚未確定</option><option>是</option><option>否，已有素材</option></select></label>
+            </div>
+            <div class="grid-2">
+              <label>拍攝地點<input name="location" type="text" placeholder="例如：台中、台北、公司辦公室" /></label>
+              <label>預計上片時間<input name="deadline" type="text" placeholder="例如：2026/08 前" /></label>
+            </div>
+            <label>預算區間
+              <select name="budget" required>
+                <option>尚未確定</option><option>3–6 萬</option><option>6–10 萬</option><option>10–20 萬</option><option>20–30 萬</option><option>30 萬以上</option>
+              </select>
+            </label>
+            <label>補充需求<textarea name="message" required placeholder="請描述影片用途、參考風格、預計平台、目前素材狀況等。"></textarea></label>
+            <button class="btn primary full" type="submit">送出詢價</button>
+            <div class="status" data-form-status></div>
+          </form>
+        </div>
+      </section>
+    </main>
+    <footer><div><strong data-brand-footer>星澔文創</strong><p>Brand Film / Interview / Podcast / Social Cuts</p></div><a href="admin.html">後台登入</a></footer>
+    <script src="/__/firebase/10.12.4/firebase-app-compat.js"></script>
+    <script src="/__/firebase/10.12.4/firebase-firestore-compat.js"></script>
+    <script src="/__/firebase/init.js"></script>
+    <script src="data.js"></script>
+    <script src="firebase-client.js"></script>
+    <script src="site.js"></script>
+  </body>
+</html>
