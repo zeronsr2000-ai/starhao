@@ -1,22 +1,44 @@
-const header = document.querySelector("[data-header]");
+const glow = document.querySelector(".glow");
+const menuButton = document.querySelector("[data-menu]");
 const nav = document.querySelector("[data-nav]");
-const navToggle = document.querySelector("[data-nav-toggle]");
 
-function updateHeader() {
-  header.classList.toggle("is-scrolled", window.scrollY > 20);
-}
+window.addEventListener("pointermove", (event) => {
+  glow.style.left = `${event.clientX}px`;
+  glow.style.top = `${event.clientY}px`;
+});
 
-navToggle.addEventListener("click", () => {
+menuButton.addEventListener("click", () => {
   const isOpen = nav.classList.toggle("is-open");
-  navToggle.setAttribute("aria-expanded", String(isOpen));
+  menuButton.setAttribute("aria-expanded", String(isOpen));
 });
 
 nav.addEventListener("click", (event) => {
   if (event.target.matches("a")) {
     nav.classList.remove("is-open");
-    navToggle.setAttribute("aria-expanded", "false");
+    menuButton.setAttribute("aria-expanded", "false");
   }
 });
 
-window.addEventListener("scroll", updateHeader, { passive: true });
-updateHeader();
+const animatedItems = document.querySelectorAll(".work-card, .service, .step");
+const observer = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.animate(
+          [
+            { opacity: 0, transform: "translateY(28px)" },
+            { opacity: 1, transform: "translateY(0)" },
+          ],
+          { duration: 650, easing: "cubic-bezier(.2,.7,.2,1)", fill: "forwards" },
+        );
+        observer.unobserve(entry.target);
+      }
+    });
+  },
+  { threshold: 0.12 },
+);
+
+animatedItems.forEach((item) => {
+  item.style.opacity = 0;
+  observer.observe(item);
+});
