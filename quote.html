@@ -25,11 +25,7 @@
             <p class="eyebrow">Start A Project</p>
             <h1>告訴我們你的影片需求。</h1>
             <p>表單會收集足夠資訊，讓我們能初步判斷製作範圍、預算與時程。送出後會進入後台詢價管理。</p>
-            <div class="contact-strip">
-              <div><strong>Email</strong><p data-email>hello@starhorizon.tw</p></div>
-              <div><strong>電話</strong><p data-phone>尚未設定</p></div>
-              <div><strong>LINE</strong><p data-line>尚未設定</p></div>
-            </div>
+            <div class="contact-strip" data-contact-info></div>
           </div>
           <form class="form" data-inquiry-form>
             <label>姓名 / 稱呼<input name="name" type="text" required /></label>
@@ -40,22 +36,18 @@
             </div>
             <label>LINE ID<input name="lineId" type="text" /></label>
             <label>影片類型
-              <select name="videoType" required>
-                <option>品牌形象影片</option><option>人物訪談影片</option><option>Podcast / 節目製作</option><option>短影音切片</option><option>活動紀錄</option><option>產品 / 服務介紹影片</option><option>後期剪輯與包裝</option>
-              </select>
+              <select name="videoType" data-video-type-options required></select>
             </label>
             <div class="grid-2">
               <label>預計影片支數<input name="videoCount" type="text" placeholder="例如：正片 1 支、短影音 6 支" /></label>
-              <label>是否需要拍攝<select name="shooting"><option>尚未確定</option><option>是</option><option>否，已有素材</option></select></label>
+              <label>是否需要拍攝<select name="shooting" data-shooting-options></select></label>
             </div>
             <div class="grid-2">
               <label>拍攝地點<input name="location" type="text" placeholder="例如：台中、台北、公司辦公室" /></label>
               <label>預計上片時間<input name="deadline" type="text" placeholder="例如：2026/08 前" /></label>
             </div>
             <label>預算區間
-              <select name="budget" required>
-                <option>尚未確定</option><option>3–6 萬</option><option>6–10 萬</option><option>10–20 萬</option><option>20–30 萬</option><option>30 萬以上</option>
-              </select>
+              <select name="budget" data-budget-options required></select>
             </label>
             <label>補充需求<textarea name="message" required placeholder="請描述影片用途、參考風格、預計平台、目前素材狀況等。"></textarea></label>
             <button class="btn primary full" type="submit">送出詢價</button>

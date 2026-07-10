@@ -30,8 +30,61 @@ function setMeta(site) {
   text("[data-brand-footer]", site.brandName);
   text("[data-english]", site.englishName);
   text("[data-email]", site.email);
-  text("[data-phone]", site.phone);
-  text("[data-line]", site.line);
+  renderContactInfo(site);
+}
+
+function hasContactValue(value) {
+  return value && !["尚未設定", "未設定", "-"].includes(String(value).trim());
+}
+
+function renderContactInfo(site) {
+  const root = $("[data-contact-info]");
+  if (!root) return;
+  const contacts = [
+    { label: "Email", value: site.email },
+    { label: "電話", value: site.phone },
+    { label: "LINE", value: site.line },
+  ].filter((item) => hasContactValue(item.value));
+  root.innerHTML = contacts.map((item) => `<div><strong>${moneySafe(item.label)}</strong><p>${moneySafe(item.value)}</p></div>`).join("");
+  root.classList.toggle("hidden", contacts.length === 0);
+}
+
+function renderOptions(selector, options) {
+  const select = $(selector);
+  if (!select) return;
+  select.innerHTML = (options || []).map((option) => `<option>${moneySafe(option)}</option>`).join("");
+}
+
+function getYoutubeId(url) {
+  const patterns = [/youtu\.be\/([^?&/]+)/, /youtube\.com\/watch\?v=([^?&]+)/, /youtube\.com\/shorts\/([^?&/]+)/, /youtube\.com\/embed\/([^?&/]+)/];
+  for (const pattern of patterns) {
+    const match = String(url || "").match(pattern);
+    if (match) return match[1];
+  }
+  return "";
+}
+
+function getInstagramPath(url) {
+  const match = String(url || "").match(/instagram\.com\/(p|reel|tv)\/([^?&/]+)/);
+  return match ? `${match[1]}/${match[2]}` : "";
+}
+
+function renderEmbed(url) {
+  const value = String(url || "").trim();
+  if (!value) return "";
+  const youtubeId = getYoutubeId(value);
+  if (youtubeId) {
+    return `<div class="embed"><iframe title="YouTube 作品影片" src="https://www.youtube.com/embed/${moneySafe(youtubeId)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>`;
+  }
+  if (value.includes("facebook.com")) {
+    const src = `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(value)}&show_text=false&width=900`;
+    return `<div class="embed"><iframe title="Facebook 作品影片" src="${src}" scrolling="no" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowfullscreen></iframe></div>`;
+  }
+  const instagramPath = getInstagramPath(value);
+  if (instagramPath) {
+    return `<div class="embed embed-phone"><iframe title="Instagram 作品" src="https://www.instagram.com/${moneySafe(instagramPath)}/embed" scrolling="no" allowtransparency="true"></iframe></div>`;
+  }
+  return `<a class="btn ghost" href="${moneySafe(value)}" target="_blank" rel="noreferrer">觀看作品連結</a>`;
 }
 
 function renderHome(home, works, services, process) {
@@ -82,12 +135,7 @@ function renderWorkList(works) {
             <p class="eyebrow">${moneySafe(work.category)} / ${moneySafe(work.year)}</p>
             <h2>${moneySafe(work.title)}</h2>
             <p>${moneySafe(work.summary)}</p>
-            <dl>
-              <div><dt>客戶需求</dt><dd>${moneySafe(work.need)}</dd></div>
-              <div><dt>製作內容</dt><dd>${moneySafe(work.production)}</dd></div>
-              <div><dt>最終交付</dt><dd>${moneySafe(work.delivery)}</dd></div>
-            </dl>
-            ${work.videoUrl ? `<a class="btn ghost" href="${moneySafe(work.videoUrl)}" target="_blank" rel="noreferrer">觀看影片</a>` : ""}
+            ${renderEmbed(work.videoUrl)}
           </div>
         </article>
       `,
@@ -200,12 +248,19 @@ function setupInquiryForm(site) {
   });
 }
 
+function renderInquiryFormOptions(inquiryForm) {
+  renderOptions("[data-video-type-options]", inquiryForm.videoTypeOptions || defaults.inquiryForm.videoTypeOptions);
+  renderOptions("[data-shooting-options]", inquiryForm.shootingOptions || defaults.inquiryForm.shootingOptions);
+  renderOptions("[data-budget-options]", inquiryForm.budgetOptions || defaults.inquiryForm.budgetOptions);
+}
+
 async function initPage() {
   setupNav();
   setupGlow();
   const site = await api.getDoc("siteContent", "site", defaults.site);
   const home = await api.getDoc("siteContent", "home", defaults.home);
   const about = await api.getDoc("siteContent", "about", defaults.about);
+  const inquiryForm = await api.getDoc("siteContent", "inquiryForm", defaults.inquiryForm);
   const works = await api.getCollection("works", defaults.works);
   const services = await api.getCollection("services", defaults.services);
   const process = await api.getCollection("process", defaults.process);
@@ -215,6 +270,7 @@ async function initPage() {
   renderServiceList(services);
   renderProcess("[data-process-list]", process);
   renderAbout(about);
+  renderInquiryFormOptions(inquiryForm);
   setupInquiryForm(site);
 }
 

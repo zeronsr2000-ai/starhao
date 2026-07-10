@@ -7,6 +7,7 @@ let state = {
   works: defaults.works,
   services: defaults.services,
   process: defaults.process,
+  inquiryForm: defaults.inquiryForm,
   media: [],
   inquiries: [],
 };
@@ -60,7 +61,7 @@ function makeId(prefix) {
 
 function collectionDefaults(collection) {
   if (collection === "works") {
-    return { id: "", title: "", category: "品牌形象", client: "", year: "2026", coverClass: "g1", videoUrl: "", summary: "", need: "", production: "", delivery: "", featured: false, sort: state.works.length + 1, status: "published" };
+    return { id: "", title: "", category: "品牌形象", client: "", year: "2026", coverClass: "g1", videoUrl: "", summary: "", featured: false, sort: state.works.length + 1, status: "published" };
   }
   if (collection === "services") {
     return { id: "", title: "", summary: "", target: "", deliverables: "", sort: state.services.length + 1, status: "published" };
@@ -75,6 +76,7 @@ async function loadAll() {
   state.site = await api.getDoc("siteContent", "site", defaults.site);
   state.home = await api.getDoc("siteContent", "home", defaults.home);
   state.about = await api.getDoc("siteContent", "about", defaults.about);
+  state.inquiryForm = await api.getDoc("siteContent", "inquiryForm", defaults.inquiryForm);
   state.works = await api.getCollection("works", defaults.works);
   state.services = await api.getCollection("services", defaults.services);
   state.process = await api.getCollection("process", defaults.process);
@@ -92,6 +94,11 @@ function renderCounts() {
 function renderForms() {
   fillForm(qs('[data-form="site"]'), state.site);
   fillForm(qs('[data-form="home"]'), state.home);
+  fillForm(qs('[data-form="inquiryForm"]'), {
+    videoTypeOptions: (state.inquiryForm.videoTypeOptions || []).join("\n"),
+    shootingOptions: (state.inquiryForm.shootingOptions || []).join("\n"),
+    budgetOptions: (state.inquiryForm.budgetOptions || []).join("\n"),
+  });
   fillForm(qs('[data-form="about"]'), {
     ...state.about,
     team: JSON.stringify(state.about.team || [], null, 2),
@@ -176,6 +183,21 @@ function parseAboutPayload(data) {
   };
 }
 
+function parseOptionsPayload(data) {
+  return {
+    videoTypeOptions: splitLines(data.videoTypeOptions),
+    shootingOptions: splitLines(data.shootingOptions),
+    budgetOptions: splitLines(data.budgetOptions),
+  };
+}
+
+function splitLines(value) {
+  return String(value || "")
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 async function saveSiteContent(id, data) {
   await api.setDoc("siteContent", id, data);
   setStatus("已儲存。");
@@ -208,7 +230,8 @@ function setupEvents() {
       event.preventDefault();
       const id = form.dataset.form;
       const data = formToObject(form);
-      await saveSiteContent(id, id === "about" ? parseAboutPayload(data) : data);
+      const payload = id === "about" ? parseAboutPayload(data) : id === "inquiryForm" ? parseOptionsPayload(data) : data;
+      await saveSiteContent(id, payload);
     });
   });
 

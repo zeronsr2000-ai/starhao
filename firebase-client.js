@@ -73,6 +73,7 @@
     await setDoc("siteContent", "site", defaults.site);
     await setDoc("siteContent", "home", defaults.home);
     await setDoc("siteContent", "about", defaults.about);
+    await setDoc("siteContent", "inquiryForm", defaults.inquiryForm);
     await Promise.all(defaults.works.map((item) => setDoc("works", item.id, item)));
     await Promise.all(defaults.services.map((item) => setDoc("services", item.id, item)));
     await Promise.all(defaults.process.map((item, index) => setDoc("process", `step-${index + 1}`, item)));

@@ -123,9 +123,6 @@
             <div class="grid-2"><label>客戶名稱<input name="client" /></label><label>專案年份<input name="year" /></label></div>
             <div class="grid-2"><label>封面樣式<select name="coverClass"><option>g1</option><option>g2</option><option>g3</option><option>g4</option><option>g5</option></select></label><label>影片連結<input name="videoUrl" /></label></div>
             <label>專案簡介<textarea name="summary"></textarea></label>
-            <label>客戶需求<textarea name="need"></textarea></label>
-            <label>製作內容<textarea name="production"></textarea></label>
-            <label>最終交付<textarea name="delivery"></textarea></label>
             <div class="grid-2"><label>排序<input name="sort" type="number" /></label><label>上架狀態<select name="status"><option value="published">上架</option><option value="draft">草稿</option><option value="hidden">下架</option></select></label></div>
             <label><input name="featured" type="checkbox" /> 設為首頁精選</label>
             <div class="actions"><button class="btn primary" type="submit">儲存作品</button><button class="btn ghost" data-new="works" type="button">新增空白作品</button></div>
@@ -191,6 +188,13 @@
         <section class="panel hidden" data-panel="inquiries">
           <p class="eyebrow">Inquiries</p>
           <h2>詢價管理</h2>
+          <form class="form" data-form="inquiryForm">
+            <p>以下選項每行一個，前台詢價表單會自動同步。</p>
+            <label>影片類型選項<textarea name="videoTypeOptions"></textarea></label>
+            <label>是否需要拍攝選項<textarea name="shootingOptions"></textarea></label>
+            <label>預算區間選項<textarea name="budgetOptions"></textarea></label>
+            <button class="btn primary" type="submit">儲存詢價選項</button>
+          </form>
           <div class="table-list" data-list="inquiries"></div>
         </section>
       </section>
