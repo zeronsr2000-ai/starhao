@@ -228,6 +228,9 @@ function setupInquiryForm(site) {
   const form = $("[data-inquiry-form]");
   const status = $("[data-form-status]");
   if (!form) return;
+  form._starhorizonSite = site;
+  if (form.dataset.inquiryBound === "true") return;
+  form.dataset.inquiryBound = "true";
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const formData = Object.fromEntries(new FormData(form).entries());
@@ -241,9 +244,10 @@ function setupInquiryForm(site) {
       form.reset();
       status.textContent = "已收到需求，我們會盡快與你聯繫。";
     } catch (error) {
+      const currentSite = form._starhorizonSite || site;
       const subject = encodeURIComponent("星澔文創網站詢價");
       const body = encodeURIComponent(Object.entries(formData).map(([key, value]) => `${key}: ${value}`).join("\n"));
-      status.innerHTML = `目前線上表單尚未啟用，請先用 Email 聯絡：<a href="mailto:${site.email}?subject=${subject}&body=${body}">${site.email}</a>`;
+      status.innerHTML = `目前線上表單尚未啟用，請先用 Email 聯絡：<a href="mailto:${currentSite.email}?subject=${subject}&body=${body}">${currentSite.email}</a>`;
     }
   });
 }
@@ -257,21 +261,75 @@ function renderInquiryFormOptions(inquiryForm) {
 async function initPage() {
   setupNav();
   setupGlow();
-  const site = await api.getDoc("siteContent", "site", defaults.site);
-  const home = await api.getDoc("siteContent", "home", defaults.home);
-  const about = await api.getDoc("siteContent", "about", defaults.about);
-  const inquiryForm = await api.getDoc("siteContent", "inquiryForm", defaults.inquiryForm);
-  const works = await api.getCollection("works", defaults.works);
-  const services = await api.getCollection("services", defaults.services);
-  const process = await api.getCollection("process", defaults.process);
-  setMeta(site);
-  renderHome(home, works, services, process);
-  renderWorkList(works);
-  renderServiceList(services);
-  renderProcess("[data-process-list]", process);
-  renderAbout(about);
-  renderInquiryFormOptions(inquiryForm);
-  setupInquiryForm(site);
+  const page = document.body.dataset.page || "home";
+  renderDefaultsForPage(page);
+
+  const sitePromise = api.getDoc("siteContent", "site", defaults.site).then((site) => {
+    setMeta(site);
+    setupInquiryForm(site);
+    return site;
+  });
+
+  if (page === "home") {
+    const [site, home, works, services, process] = await Promise.all([
+      sitePromise,
+      api.getDoc("siteContent", "home", defaults.home),
+      api.getCollection("works", defaults.works),
+      api.getCollection("services", defaults.services),
+      api.getCollection("process", defaults.process),
+    ]);
+    renderHome(home, works, services, process);
+    setupInquiryForm(site);
+    return;
+  }
+
+  if (page === "works") {
+    const [, works] = await Promise.all([sitePromise, api.getCollection("works", defaults.works)]);
+    renderWorkList(works);
+    return;
+  }
+
+  if (page === "services") {
+    const [, services] = await Promise.all([sitePromise, api.getCollection("services", defaults.services)]);
+    renderServiceList(services);
+    return;
+  }
+
+  if (page === "process") {
+    const [, process] = await Promise.all([sitePromise, api.getCollection("process", defaults.process)]);
+    renderProcess("[data-process-list]", process);
+    return;
+  }
+
+  if (page === "about") {
+    const [, about] = await Promise.all([sitePromise, api.getDoc("siteContent", "about", defaults.about)]);
+    renderAbout(about);
+    return;
+  }
+
+  if (page === "quote") {
+    const [site, inquiryForm] = await Promise.all([sitePromise, api.getDoc("siteContent", "inquiryForm", defaults.inquiryForm)]);
+    renderInquiryFormOptions(inquiryForm);
+    setupInquiryForm(site);
+  }
+}
+
+function renderDefaultsForPage(page) {
+  setMeta(defaults.site);
+  if (page === "home") {
+    renderHome(defaults.home, defaults.works, defaults.services, defaults.process);
+  } else if (page === "works") {
+    renderWorkList(defaults.works);
+  } else if (page === "services") {
+    renderServiceList(defaults.services);
+  } else if (page === "process") {
+    renderProcess("[data-process-list]", defaults.process);
+  } else if (page === "about") {
+    renderAbout(defaults.about);
+  } else if (page === "quote") {
+    renderInquiryFormOptions(defaults.inquiryForm);
+    setupInquiryForm(defaults.site);
+  }
 }
 
 document.addEventListener("DOMContentLoaded", initPage);
