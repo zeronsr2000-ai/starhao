@@ -83,18 +83,32 @@ function collectionDefaults(collection) {
 }
 
 async function loadAll() {
-  state.site = await api.getDoc("siteContent", "site", defaults.site);
-  state.home = await api.getDoc("siteContent", "home", defaults.home);
-  state.pages = await api.getDoc("siteContent", "pages", defaults.pages);
-  state.about = await api.getDoc("siteContent", "about", defaults.about);
-  state.inquiryForm = await api.getDoc("siteContent", "inquiryForm", defaults.inquiryForm);
-  state.works = await api.getCollection("works", defaults.works);
-  state.services = await api.getCollection("services", defaults.services);
-  state.extendedServices = await api.getCollection("extendedServices", defaults.extendedServices);
-  state.partners = await api.getCollection("partners", defaults.partners);
-  state.process = await api.getCollection("process", defaults.process);
-  state.media = await api.getCollection("media", []);
-  state.inquiries = await api.getCollection("inquiries", []);
+  const [site, home, pages, about, inquiryForm, works, services, extendedServices, partners, process, media, inquiries] = await Promise.all([
+    api.getDoc("siteContent", "site", defaults.site),
+    api.getDoc("siteContent", "home", defaults.home),
+    api.getDoc("siteContent", "pages", defaults.pages),
+    api.getDoc("siteContent", "about", defaults.about),
+    api.getDoc("siteContent", "inquiryForm", defaults.inquiryForm),
+    api.getCollection("works", defaults.works),
+    api.getCollection("services", defaults.services),
+    api.getCollection("extendedServices", defaults.extendedServices),
+    api.getCollection("partners", defaults.partners),
+    api.getCollection("process", defaults.process),
+    api.getCollection("media", []),
+    api.getCollection("inquiries", []),
+  ]);
+  state.site = site;
+  state.home = home;
+  state.pages = pages;
+  state.about = about;
+  state.inquiryForm = inquiryForm;
+  state.works = works;
+  state.services = services;
+  state.extendedServices = extendedServices;
+  state.partners = partners;
+  state.process = process;
+  state.media = media;
+  state.inquiries = inquiries;
   render();
 }
 

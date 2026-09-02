@@ -1,6 +1,34 @@
 (function () {
+  const CACHE_PREFIX = "starhorizon-cache:";
+
   function hasFirebase() {
     return window.firebase && window.firebase.apps !== undefined;
+  }
+
+  function readCache(key, fallback) {
+    try {
+      const value = window.localStorage.getItem(`${CACHE_PREFIX}${key}`);
+      return value ? JSON.parse(value) : fallback;
+    } catch (error) {
+      return fallback;
+    }
+  }
+
+  function writeCache(key, value) {
+    try {
+      window.localStorage.setItem(`${CACHE_PREFIX}${key}`, JSON.stringify(value));
+    } catch (error) {
+      console.warn("Unable to write local cache:", error);
+    }
+  }
+
+  function getCachedDoc(collection, id, fallback) {
+    return readCache(`doc:${collection}:${id}`, fallback);
+  }
+
+  function getCachedCollection(collection, fallback) {
+    const cached = readCache(`collection:${collection}`, null);
+    return Array.isArray(cached) && cached.length ? cached : fallback;
   }
 
   function getDb() {
@@ -15,28 +43,34 @@
 
   async function getDoc(collection, id, fallback) {
     const db = getDb();
-    if (!db) return fallback;
+    const cached = getCachedDoc(collection, id, fallback);
+    if (!db) return cached;
     try {
       const snap = await db.collection(collection).doc(id).get();
-      return snap.exists ? { ...(fallback || {}), id: snap.id, ...snap.data() } : fallback;
+      if (!snap.exists) return cached;
+      const row = { ...(fallback || {}), id: snap.id, ...snap.data() };
+      writeCache(`doc:${collection}:${id}`, row);
+      return row;
     } catch (error) {
       console.warn(`Unable to read ${collection}/${id}:`, error);
-      return fallback;
+      return cached;
     }
   }
 
   async function getCollection(collection, fallback) {
     const db = getDb();
-    if (!db) return fallback;
+    const cached = getCachedCollection(collection, fallback);
+    if (!db) return cached;
     try {
       const snap = await db.collection(collection).get();
       const rows = snap.docs
         .map((doc) => ({ id: doc.id, ...doc.data() }))
         .sort((a, b) => (a.sort || 0) - (b.sort || 0));
+      writeCache(`collection:${collection}`, rows);
       return rows.length ? rows : fallback;
     } catch (error) {
       console.warn(`Unable to read ${collection}:`, error);
-      return fallback;
+      return cached;
     }
   }
 
@@ -92,6 +126,8 @@
   window.StarhorizonFirebase = {
     hasFirebase,
     getDb,
+    getCachedDoc,
+    getCachedCollection,
     getDoc,
     getCollection,
     setDoc,

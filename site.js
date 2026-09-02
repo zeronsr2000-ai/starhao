@@ -351,6 +351,7 @@ async function initPage() {
   setupGlow();
   const page = document.body.dataset.page || "home";
   renderDefaultsForPage(page);
+  renderCachedForPage(page);
 
   const sitePromise = api.getDoc("siteContent", "site", defaults.site).then((site) => {
     setMeta(site);
@@ -437,6 +438,40 @@ function renderDefaultsForPage(page) {
     renderPages(defaults.pages);
     renderInquiryFormOptions(defaults.inquiryForm);
     setupInquiryForm(defaults.site);
+  }
+}
+
+function renderCachedForPage(page) {
+  if (!api.getCachedDoc || !api.getCachedCollection) return;
+  const site = api.getCachedDoc("siteContent", "site", defaults.site);
+  const pages = api.getCachedDoc("siteContent", "pages", defaults.pages);
+  setMeta(site);
+  renderPages(pages);
+  if (page === "home") {
+    renderHome(
+      api.getCachedDoc("siteContent", "home", defaults.home),
+      api.getCachedCollection("works", defaults.works),
+      api.getCachedCollection("services", defaults.services),
+      api.getCachedCollection("extendedServices", defaults.extendedServices),
+      api.getCachedCollection("process", defaults.process),
+      api.getCachedCollection("partners", defaults.partners),
+    );
+  } else if (page === "works") {
+    renderWorkList(api.getCachedCollection("works", defaults.works));
+  } else if (page === "services") {
+    const home = api.getCachedDoc("siteContent", "home", defaults.home);
+    text("[data-extended-eyebrow]", home.extendedEyebrow);
+    lines("[data-extended-title]", home.extendedTitle);
+    text("[data-extended-description]", home.extendedDescription);
+    renderServiceList(api.getCachedCollection("services", defaults.services));
+    renderServices("[data-extended-service-list]", published(api.getCachedCollection("extendedServices", defaults.extendedServices)));
+  } else if (page === "process") {
+    renderProcess("[data-process-list]", api.getCachedCollection("process", defaults.process));
+  } else if (page === "about") {
+    renderAbout(api.getCachedDoc("siteContent", "about", defaults.about));
+  } else if (page === "quote") {
+    renderInquiryFormOptions(api.getCachedDoc("siteContent", "inquiryForm", defaults.inquiryForm));
+    setupInquiryForm(site);
   }
 }
 
