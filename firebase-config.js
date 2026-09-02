@@ -4,6 +4,7 @@ window.STARHORIZON_FIREBASE_CONFIG = {
   projectId: "starhao-8f494",
   storageBucket: "starhao-8f494.firebasestorage.app",
   messagingSenderId: "1098920597138",
+  storageUploadsEnabled: false,
 };
 
 if (window.firebase && !window.firebase.apps.length) {

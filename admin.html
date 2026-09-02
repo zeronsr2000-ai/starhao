@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex" />
     <title>後台管理｜星澔文創</title>
     <script src="canonical-redirect.js?v=20260902-2"></script>
-    <link rel="stylesheet" href="admin.css?v=20260902-4" />
+    <link rel="stylesheet" href="admin.css?v=20260902-5" />
   </head>
   <body class="admin-body">
     <div class="grain" aria-hidden="true"></div>
@@ -138,7 +138,7 @@
         </section>
 
         <section class="panel hidden" data-panel="partners">
-          <p class="eyebrow">Home / Partners</p><h2>合作夥伴 Logo</h2><p class="panel-note">首頁會以正方形圖片由右往左循環顯示；不會連到其他網站。</p>
+          <p class="eyebrow">Home / Partners</p><h2>合作夥伴 Logo</h2><p class="panel-note">首頁會以正方形圖片由右往左循環顯示；目前會先壓縮圖片後直接儲存，不會卡在 Firebase Storage。</p>
           <form class="form" data-collection-form="partners"><input name="id" type="hidden" /><label>辨識名稱（只在後台顯示）<input name="title" required /></label><label>Logo 圖片網址<input name="imageUrl" /></label><label>或直接上傳圖片<input name="imageFile" type="file" accept="image/*" data-upload-field="imageUrl" /></label><label>圖片替代文字<input name="alt" /></label><div class="grid-2"><label>排序<input name="sort" type="number" /></label><label>顯示狀態<select name="status"><option value="published">顯示</option><option value="hidden">隱藏</option></select></label></div><div class="actions"><button class="btn primary" type="submit">儲存 Logo</button><button class="btn ghost" data-new="partners" type="button">新增 Logo</button></div></form><div class="table-list" data-list="partners"></div>
         </section>
 
@@ -215,7 +215,7 @@
         <section class="panel hidden" data-panel="media">
           <p class="eyebrow">Media</p>
           <h2>媒體素材庫</h2>
-          <p>可貼入外部網址，也可以直接上傳圖片到 Firebase Storage。</p>
+          <p>可貼入外部網址，也可以直接上傳圖片；目前會先壓縮圖片後直接儲存。</p>
           <form class="form" data-collection-form="media">
             <input name="id" type="hidden" />
             <div class="grid-2"><label>素材名稱<input name="title" required /></label><label>類型<select name="type"><option>image</option><option>video</option><option>og</option><option>logo</option></select></label></div>
@@ -248,7 +248,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-storage-compat.js"></script>
     <script src="firebase-config.js"></script>
     <script src="data.js"></script>
-    <script src="firebase-client.js?v=20260902-4"></script>
-    <script src="admin.js?v=20260902-4"></script>
+    <script src="firebase-client.js?v=20260902-5"></script>
+    <script src="admin.js?v=20260902-5"></script>
   </body>
 </html>

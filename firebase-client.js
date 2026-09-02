@@ -1,5 +1,6 @@
 (function () {
   const CACHE_PREFIX = "starhorizon-cache:";
+  const STORAGE_TIMEOUT_MS = 6000;
 
   function hasFirebase() {
     return window.firebase && window.firebase.apps !== undefined;
@@ -20,6 +21,30 @@
     } catch (error) {
       console.warn("Unable to write local cache:", error);
     }
+  }
+
+  function clearCache() {
+    try {
+      Object.keys(window.localStorage)
+        .filter((key) => key.startsWith(CACHE_PREFIX))
+        .forEach((key) => window.localStorage.removeItem(key));
+    } catch (error) {
+      console.warn("Unable to clear local cache:", error);
+    }
+  }
+
+  function shouldUseStorageUploads() {
+    const config = window.STARHORIZON_FIREBASE_CONFIG || {};
+    return config.storageUploadsEnabled === true && Boolean(window.firebase && window.firebase.storage);
+  }
+
+  function withTimeout(promise, message) {
+    return Promise.race([
+      promise,
+      new Promise((_, reject) => {
+        window.setTimeout(() => reject(new Error(message)), STORAGE_TIMEOUT_MS);
+      }),
+    ]);
   }
 
   function getCachedDoc(collection, id, fallback) {
@@ -84,22 +109,26 @@
       },
       { merge: true },
     );
+    clearCache();
   }
 
   async function addDoc(collection, data) {
     const db = getDb();
     if (!db) throw new Error("Firestore 尚未可用");
-    return db.collection(collection).add({
+    const ref = await db.collection(collection).add({
       ...data,
       createdAt: window.firebase.firestore.FieldValue.serverTimestamp(),
       updatedAt: window.firebase.firestore.FieldValue.serverTimestamp(),
     });
+    clearCache();
+    return ref;
   }
 
   async function deleteDoc(collection, id) {
     const db = getDb();
     if (!db) throw new Error("Firestore 尚未可用");
     await db.collection(collection).doc(id).delete();
+    clearCache();
   }
 
   async function seedDefaults() {
@@ -119,16 +148,19 @@
     if (!file || !file.type || !file.type.startsWith("image/")) throw new Error("只能上傳圖片檔案");
     if (file.size > 10 * 1024 * 1024) throw new Error("圖片不能超過 10MB");
     if (!hasFirebase() || !window.firebase.auth || !window.firebase.auth().currentUser) throw new Error("請先登入後台再上傳圖片");
-    if (!window.firebase.storage) return compressImageToDataUrl(file, folder);
+    if (!shouldUseStorageUploads()) return compressImageToDataUrl(file, folder);
     const cleanName = String(file.name || "image").replace(/[^a-zA-Z0-9._-]+/g, "-");
     const path = `uploads/${folder || "media"}/${Date.now()}-${cleanName}`;
     try {
-      const snapshot = await window.firebase.storage().ref(path).put(file, {
-        contentType: file.type,
-        customMetadata: {
-          uploadedBy: window.firebase.auth().currentUser.email || "admin",
-        },
-      });
+      const snapshot = await withTimeout(
+        window.firebase.storage().ref(path).put(file, {
+          contentType: file.type,
+          customMetadata: {
+            uploadedBy: window.firebase.auth().currentUser.email || "admin",
+          },
+        }),
+        "Storage 上傳逾時，改用內建圖片儲存",
+      );
       return snapshot.ref.getDownloadURL();
     } catch (error) {
       console.warn("Storage upload failed, falling back to Firestore image data:", error);
@@ -182,5 +214,6 @@
     deleteDoc,
     seedDefaults,
     uploadFile,
+    clearCache,
   };
 })();

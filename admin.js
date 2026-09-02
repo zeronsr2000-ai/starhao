@@ -276,6 +276,7 @@ function splitLines(value) {
 
 async function saveSiteContent(id, data) {
   await api.setDoc("siteContent", id, data);
+  api.clearCache?.();
   setStatus("已儲存，前台會自動同步。");
   await loadAll();
 }
@@ -284,6 +285,7 @@ async function saveCollection(collection, data) {
   const id = data.id || makeId(collection);
   delete data.id;
   await api.setDoc(collection, id, data);
+  api.clearCache?.();
   setStatus("已儲存，前台會自動同步。");
   await loadAll();
 }
@@ -293,7 +295,7 @@ async function uploadFormFiles(form, data) {
   for (const input of inputs) {
     const file = input.files && input.files[0];
     if (!file) continue;
-    setStatus(`正在上傳 ${file.name}...`);
+    setStatus(`正在處理 ${file.name}...`);
     data[input.dataset.uploadField] = await api.uploadFile(file, form.dataset.collectionForm || "media");
     const target = form.elements[input.dataset.uploadField];
     if (target) target.value = data[input.dataset.uploadField];
