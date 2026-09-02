@@ -29,8 +29,20 @@ function safe(value) {
 }
 
 function setStatus(message) {
-  const node = qs("[data-admin-status]");
-  if (node) node.textContent = message;
+  qsa("[data-admin-status]").forEach((node) => {
+    node.textContent = message;
+    node.classList.toggle("hidden", !message);
+  });
+}
+
+function errorMessage(error) {
+  return error && error.message ? error.message : "操作失敗，請稍後再試";
+}
+
+function setFormBusy(form, isBusy) {
+  qsa("button", form).forEach((button) => {
+    button.disabled = isBusy;
+  });
 }
 
 function formToObject(form) {
@@ -46,6 +58,7 @@ function formToObject(form) {
 }
 
 function fillForm(form, data) {
+  if (!form) return;
   Object.entries(data || {}).forEach(([key, value]) => {
     const input = form.elements[key];
     if (!input) return;
@@ -56,6 +69,9 @@ function fillForm(form, data) {
     } else {
       input.value = value ?? "";
     }
+  });
+  qsa('input[type="file"]', form).forEach((input) => {
+    input.value = "";
   });
 }
 
@@ -148,22 +164,47 @@ function rowActions(collection, id) {
   `;
 }
 
+function rowPreview(collection, item) {
+  if ((collection === "partners" || collection === "works") && (item.imageUrl || item.coverUrl)) {
+    const url = item.imageUrl || item.coverUrl;
+    const alt = item.alt || item.title || "圖片預覽";
+    return `<img class="row-thumb" src="${safe(url)}" alt="${safe(alt)}" loading="lazy" />`;
+  }
+  return "";
+}
+
+function rowMeta(collection, item) {
+  if (collection === "partners") {
+    return item.imageUrl ? "Logo 已設定" : "尚未設定 Logo";
+  }
+  if (collection === "works") {
+    const parts = [];
+    if (item.featured) parts.push("首頁精選");
+    if (item.coverUrl) parts.push("封面已設定");
+    if (item.videoUrl) parts.push("作品連結已設定");
+    return parts.join("｜") || item.status || "";
+  }
+  return item.summary || item.body || item.url || item.status || item.category || "";
+}
+
 function renderCollection(collection, rows) {
   const list = qs(`[data-list="${collection}"]`);
   if (!list) return;
   list.innerHTML = rows
     .sort((a, b) => (a.sort || 0) - (b.sort || 0))
-    .map(
-      (item) => `
-        <article class="row-card">
+    .map((item) => {
+      const preview = rowPreview(collection, item);
+      return `
+        <article class="row-card ${preview ? "has-preview" : ""}">
+          ${preview}
           <div>
             <h3>${safe(item.title || item.name || item.email || item.id)}</h3>
-            <p>${safe(item.summary || item.body || item.url || item.status || item.category || "")}</p>
+            <p>${safe(rowMeta(collection, item))}</p>
           </div>
           ${rowActions(collection, item.id)}
         </article>
-      `,
-    )
+      `;
+    })
     .join("");
 }
 
@@ -235,7 +276,7 @@ function splitLines(value) {
 
 async function saveSiteContent(id, data) {
   await api.setDoc("siteContent", id, data);
-  setStatus("已儲存。");
+  setStatus("已儲存，前台會自動同步。");
   await loadAll();
 }
 
@@ -243,7 +284,7 @@ async function saveCollection(collection, data) {
   const id = data.id || makeId(collection);
   delete data.id;
   await api.setDoc(collection, id, data);
-  setStatus("已儲存。");
+  setStatus("已儲存，前台會自動同步。");
   await loadAll();
 }
 
@@ -254,6 +295,9 @@ async function uploadFormFiles(form, data) {
     if (!file) continue;
     setStatus(`正在上傳 ${file.name}...`);
     data[input.dataset.uploadField] = await api.uploadFile(file, form.dataset.collectionForm || "media");
+    const target = form.elements[input.dataset.uploadField];
+    if (target) target.value = data[input.dataset.uploadField];
+    setStatus("圖片已處理完成，正在儲存資料...");
   }
   return data;
 }
@@ -274,18 +318,33 @@ function setupEvents() {
   qsa("[data-form]").forEach((form) => {
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
-      const id = form.dataset.form;
-      const data = formToObject(form);
-      const payload = id === "about" ? parseAboutPayload(data) : id === "inquiryForm" ? parseOptionsPayload(data) : id === "home" ? { ...data, showreelBottom: splitLines(data.showreelBottom), tickerItems: splitLines(data.tickerItems) } : data;
-      await saveSiteContent(id, payload);
+      setFormBusy(form, true);
+      try {
+        const id = form.dataset.form;
+        const data = formToObject(form);
+        const payload = id === "about" ? parseAboutPayload(data) : id === "inquiryForm" ? parseOptionsPayload(data) : id === "home" ? { ...data, showreelBottom: splitLines(data.showreelBottom), tickerItems: splitLines(data.tickerItems) } : data;
+        await saveSiteContent(id, payload);
+      } catch (error) {
+        setStatus(`儲存失敗：${errorMessage(error)}`);
+      } finally {
+        setFormBusy(form, false);
+      }
     });
   });
 
   qsa("[data-collection-form]").forEach((form) => {
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
-      const data = await uploadFormFiles(form, formToObject(form));
-      await saveCollection(form.dataset.collectionForm, data);
+      setFormBusy(form, true);
+      try {
+        const data = await uploadFormFiles(form, formToObject(form));
+        await saveCollection(form.dataset.collectionForm, data);
+        fillForm(form, collectionDefaults(form.dataset.collectionForm));
+      } catch (error) {
+        setStatus(`儲存失敗：${errorMessage(error)}`);
+      } finally {
+        setFormBusy(form, false);
+      }
     });
   });
 
@@ -297,23 +356,29 @@ function setupEvents() {
     const edit = event.target.closest("[data-edit]");
     const remove = event.target.closest("[data-delete]");
     const saveInquiry = event.target.closest("[data-save-inquiry]");
-    if (edit) {
-      const row = state[edit.dataset.edit].find((item) => item.id === edit.dataset.id);
-      fillForm(qs(`[data-collection-form="${edit.dataset.edit}"]`), row);
-    }
-    if (remove) {
-      if (!confirm("確定要刪除這筆資料？")) return;
-      await api.deleteDoc(remove.dataset.delete, remove.dataset.id);
-      await loadAll();
-    }
-    if (saveInquiry) {
-      const id = saveInquiry.dataset.saveInquiry;
-      await api.setDoc("inquiries", id, {
-        status: qs(`[data-inquiry-status="${id}"]`).value,
-        internalNote: qs(`[data-inquiry-note="${id}"]`).value,
-      });
-      setStatus("詢價狀態已更新。");
-      await loadAll();
+    try {
+      if (edit) {
+        const row = state[edit.dataset.edit].find((item) => item.id === edit.dataset.id);
+        fillForm(qs(`[data-collection-form="${edit.dataset.edit}"]`), row);
+        setStatus("已載入資料，可以編輯後儲存。");
+      }
+      if (remove) {
+        if (!confirm("確定要刪除這筆資料？")) return;
+        await api.deleteDoc(remove.dataset.delete, remove.dataset.id);
+        setStatus("已刪除。");
+        await loadAll();
+      }
+      if (saveInquiry) {
+        const id = saveInquiry.dataset.saveInquiry;
+        await api.setDoc("inquiries", id, {
+          status: qs(`[data-inquiry-status="${id}"]`).value,
+          internalNote: qs(`[data-inquiry-note="${id}"]`).value,
+        });
+        setStatus("詢價狀態已更新。");
+        await loadAll();
+      }
+    } catch (error) {
+      setStatus(`操作失敗：${errorMessage(error)}`);
     }
   });
 }

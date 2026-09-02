@@ -100,6 +100,13 @@ function getInstagramPath(url) {
   return match ? `${match[1]}/${match[2]}` : "";
 }
 
+function getFacebookEmbedUrl(url) {
+  const value = String(url || "").trim();
+  if (!value.includes("facebook.com") && !value.includes("fb.watch")) return "";
+  const plugin = /\/videos\/|\/reel\/|watch\/?\?v=/.test(value) ? "video" : "post";
+  return `https://www.facebook.com/plugins/${plugin}.php?href=${encodeURIComponent(value)}&show_text=false&width=900`;
+}
+
 function renderEmbed(url, work = {}) {
   const value = String(url || "").trim();
   if (!value) return "";
@@ -107,8 +114,13 @@ function renderEmbed(url, work = {}) {
   if (youtubeId) {
     return `<div class="embed"><iframe title="YouTube 作品影片" src="https://www.youtube.com/embed/${moneySafe(youtubeId)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>`;
   }
-  if (value.includes("facebook.com") || getInstagramPath(value)) {
-    return `<a class="social-work-link" href="${moneySafe(value)}" target="_blank" rel="noreferrer"><span>${value.includes("facebook.com") ? "Facebook" : "Instagram"}</span><strong>${moneySafe(work.title || "觀看作品")}</strong><small>前往原平台觀看完整內容 ↗</small></a>`;
+  const facebookEmbedUrl = getFacebookEmbedUrl(value);
+  if (facebookEmbedUrl) {
+    return `<div class="embed"><iframe title="Facebook 作品影片" src="${facebookEmbedUrl}" scrolling="no" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowfullscreen></iframe></div>`;
+  }
+  const instagramPath = getInstagramPath(value);
+  if (instagramPath) {
+    return `<div class="embed embed-phone"><iframe title="Instagram 作品" src="https://www.instagram.com/${moneySafe(instagramPath)}/embed" scrolling="no" allowtransparency="true"></iframe></div>`;
   }
   return `<a class="btn ghost" href="${moneySafe(value)}" target="_blank" rel="noreferrer">觀看作品連結</a>`;
 }
@@ -176,11 +188,14 @@ function renderShowreel(url) {
 function renderPartners(partners) {
   const root = $("[data-partner-track]");
   if (!root) return;
+  const marquee = root.closest(".partner-marquee");
   const rows = published(partners).filter((item) => item.imageUrl);
   if (!rows.length) {
-    root.closest(".partner-marquee")?.classList.add("is-empty");
+    marquee?.classList.add("is-empty");
+    root.innerHTML = "";
     return;
   }
+  marquee?.classList.remove("is-empty");
   const repeated = rows.length < 6 ? [...rows, ...rows, ...rows, ...rows] : [...rows, ...rows];
   root.innerHTML = repeated.map((item) => `<figure class="partner-logo"><img src="${moneySafe(item.imageUrl)}" alt="${moneySafe(item.alt || item.title || "合作夥伴")}" loading="lazy" /></figure>`).join("");
 }

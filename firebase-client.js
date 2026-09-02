@@ -116,11 +116,58 @@
   }
 
   async function uploadFile(file, folder) {
-    if (!hasFirebase() || !window.firebase.storage) throw new Error("圖片上傳服務尚未載入");
+    if (!file || !file.type || !file.type.startsWith("image/")) throw new Error("只能上傳圖片檔案");
+    if (file.size > 10 * 1024 * 1024) throw new Error("圖片不能超過 10MB");
+    if (!hasFirebase() || !window.firebase.auth || !window.firebase.auth().currentUser) throw new Error("請先登入後台再上傳圖片");
+    if (!window.firebase.storage) return compressImageToDataUrl(file, folder);
     const cleanName = String(file.name || "image").replace(/[^a-zA-Z0-9._-]+/g, "-");
     const path = `uploads/${folder || "media"}/${Date.now()}-${cleanName}`;
-    const snapshot = await window.firebase.storage().ref(path).put(file, { contentType: file.type });
-    return snapshot.ref.getDownloadURL();
+    try {
+      const snapshot = await window.firebase.storage().ref(path).put(file, {
+        contentType: file.type,
+        customMetadata: {
+          uploadedBy: window.firebase.auth().currentUser.email || "admin",
+        },
+      });
+      return snapshot.ref.getDownloadURL();
+    } catch (error) {
+      console.warn("Storage upload failed, falling back to Firestore image data:", error);
+      return compressImageToDataUrl(file, folder);
+    }
+  }
+
+  function readFileAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.addEventListener("load", () => resolve(reader.result));
+      reader.addEventListener("error", () => reject(new Error("無法讀取圖片檔案")));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function loadImage(src) {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.addEventListener("load", () => resolve(image));
+      image.addEventListener("error", () => reject(new Error("無法解析圖片，請改用 JPG、PNG 或 WebP")));
+      image.src = src;
+    });
+  }
+
+  async function compressImageToDataUrl(file, folder) {
+    if (file.type === "image/svg+xml" && file.size < 700 * 1024) return readFileAsDataUrl(file);
+    const source = await readFileAsDataUrl(file);
+    const image = await loadImage(source);
+    const maxSize = folder === "partners" ? 900 : 1600;
+    const scale = Math.min(1, maxSize / Math.max(image.naturalWidth, image.naturalHeight));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const context = canvas.getContext("2d");
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL("image/webp", folder === "partners" ? 0.82 : 0.78);
+    if (dataUrl.length > 900000) throw new Error("圖片壓縮後仍太大，請改用較小的圖片或先裁切後再上傳");
+    return dataUrl;
   }
 
   window.StarhorizonFirebase = {

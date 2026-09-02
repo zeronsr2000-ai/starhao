@@ -41,6 +41,11 @@ textarea {
   font: inherit;
 }
 
+button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
 .grain {
   position: fixed;
   inset: 0;
@@ -382,6 +387,20 @@ p {
   background: rgba(255, 255, 255, 0.05);
 }
 
+.row-card.has-preview {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.row-thumb {
+  width: 84px;
+  height: 64px;
+  object-fit: contain;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.28);
+}
+
 .row-card p {
   margin: 0;
 }
@@ -390,6 +409,18 @@ p {
   min-height: 24px;
   color: var(--lime);
   font-weight: 800;
+}
+
+.admin-global-status {
+  position: sticky;
+  z-index: 10;
+  top: 104px;
+  padding: 14px 16px;
+  border: 1px solid rgba(223, 255, 79, 0.35);
+  border-radius: 16px;
+  color: var(--text);
+  background: rgba(20, 22, 16, 0.94);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.32);
 }
 
 .hidden {
@@ -456,5 +487,10 @@ p {
 
   .row-card {
     grid-template-columns: 1fr;
+  }
+
+  .row-thumb {
+    width: 100%;
+    height: 120px;
   }
 }
