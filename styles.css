@@ -486,6 +486,24 @@ p {
   gap: 16px;
 }
 
+.category-pills {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.category-pills span {
+  padding: 9px 13px;
+  border: 1px solid rgba(223, 255, 79, 0.28);
+  border-radius: 999px;
+  color: var(--lime);
+  background: rgba(223, 255, 79, 0.06);
+  font-size: 13px;
+  font-weight: 900;
+}
+
 .work-card,
 .service,
 .step,
@@ -519,6 +537,10 @@ p {
   grid-column: span 2;
 }
 
+.work-card.portrait {
+  min-height: 520px;
+}
+
 .thumb {
   position: relative;
   flex: 1;
@@ -526,6 +548,16 @@ p {
   overflow: hidden;
   background-position: center;
   background-size: cover;
+}
+
+.thumb .embed {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  pointer-events: none;
 }
 
 .thumb span {
@@ -693,7 +725,7 @@ p {
 
 .case-list {
   display: grid;
-  gap: 20px;
+  gap: 64px;
 }
 
 .case-card {
@@ -724,6 +756,69 @@ p {
 .embed-phone {
   max-width: 460px;
   aspect-ratio: 9 / 14;
+}
+
+.embed-compact {
+  margin-top: 0;
+}
+
+.showreel-embed {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  max-width: none;
+  border: 0;
+  border-radius: 0;
+}
+
+.work-showcase {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.showcase-card {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  min-height: 260px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.showcase-card h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.showcase-card.portrait {
+  max-width: 280px;
+}
+
+.work-category {
+  display: grid;
+  gap: 20px;
+}
+
+.category-cover {
+  min-height: 420px;
+}
+
+.category-media {
+  display: grid;
+  place-items: center;
+  min-height: 360px;
+  padding: 24px;
+}
+
+.category-media .embed {
+  margin-top: 0;
+}
+
+.category-work-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .social-work-link {
@@ -974,6 +1069,7 @@ footer p {
   }
 
   .work-grid,
+  .work-showcase,
   .service-list,
   .team-grid,
   .timeline,
@@ -1036,6 +1132,7 @@ footer p {
   }
 
   .work-grid,
+  .work-showcase,
   .service-list,
   .team-grid,
   .timeline,

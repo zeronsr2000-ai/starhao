@@ -138,6 +138,8 @@
     await setDoc("siteContent", "pages", defaults.pages);
     await setDoc("siteContent", "about", defaults.about);
     await setDoc("siteContent", "inquiryForm", defaults.inquiryForm);
+    await setDoc("siteContent", "workSettings", defaults.workSettings);
+    await Promise.all(defaults.workCategories.map((item) => setDoc("workCategories", item.id, item)));
     await Promise.all(defaults.works.map((item) => setDoc("works", item.id, item)));
     await Promise.all(defaults.services.map((item) => setDoc("services", item.id, item)));
     await Promise.all(defaults.extendedServices.map((item) => setDoc("extendedServices", item.id, item)));

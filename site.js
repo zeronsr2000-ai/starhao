@@ -30,6 +30,39 @@ function published(items) {
   return [...items].filter((item) => item.status !== "draft" && item.status !== "hidden").sort((a, b) => (a.sort || 0) - (b.sort || 0));
 }
 
+function findWork(works, id) {
+  return works.find((work) => work.id === id);
+}
+
+function categoryIdForWork(categories, work) {
+  if (work.categoryId) return work.categoryId;
+  return categories.find((category) => category.title === work.category)?.id || "";
+}
+
+function categoryLabel(categories, work) {
+  return categories.find((category) => category.id === categoryIdForWork(categories, work))?.title || work.category || "未分類";
+}
+
+function workVideoUrl(work) {
+  return work?.videoUrl || work?.coverUrl || "";
+}
+
+function fallbackShowcaseWorks(works, settings) {
+  const selected = (settings.showcaseWorkIds || []).map((id) => findWork(works, id)).filter(Boolean);
+  const auto = works.filter((work) => work.showcase !== false && !selected.some((item) => item.id === work.id));
+  return [...selected, ...auto].slice(0, 4);
+}
+
+function resolveCategoryCover(category, works) {
+  const categoryWorks = works.filter((work) => work.categoryId === category.id || (!work.categoryId && work.category === category.title));
+  if (category.coverMode === "selected" && category.coverWorkId) {
+    return findWork(categoryWorks, category.coverWorkId) || categoryWorks[0];
+  }
+  if (!categoryWorks.length) return null;
+  const index = Math.abs([...category.id].reduce((sum, char) => sum + char.charCodeAt(0), 0)) % categoryWorks.length;
+  return categoryWorks[index];
+}
+
 function setMeta(site) {
   document.title = site.seoTitle || document.title;
   attr('meta[name="description"]', "content", site.seoDescription);
@@ -107,25 +140,27 @@ function getFacebookEmbedUrl(url) {
   return `https://www.facebook.com/plugins/${plugin}.php?href=${encodeURIComponent(value)}&show_text=false&width=900`;
 }
 
-function renderEmbed(url, work = {}) {
+function renderEmbed(url, work = {}, compact = false) {
   const value = String(url || "").trim();
   if (!value) return "";
   const youtubeId = getYoutubeId(value);
+  const shape = work.orientation === "portrait" ? " embed-phone" : "";
+  const compactClass = compact ? " embed-compact" : "";
   if (youtubeId) {
-    return `<div class="embed"><iframe title="YouTube 作品影片" src="https://www.youtube.com/embed/${moneySafe(youtubeId)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>`;
+    return `<div class="embed${shape}${compactClass}"><iframe title="YouTube 作品影片" src="https://www.youtube.com/embed/${moneySafe(youtubeId)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>`;
   }
   const facebookEmbedUrl = getFacebookEmbedUrl(value);
   if (facebookEmbedUrl) {
-    return `<div class="embed"><iframe title="Facebook 作品影片" src="${facebookEmbedUrl}" scrolling="no" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowfullscreen></iframe></div>`;
+    return `<div class="embed${shape}${compactClass}"><iframe title="Facebook 作品影片" src="${facebookEmbedUrl}" scrolling="no" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowfullscreen></iframe></div>`;
   }
   const instagramPath = getInstagramPath(value);
   if (instagramPath) {
-    return `<div class="embed embed-phone"><iframe title="Instagram 作品" src="https://www.instagram.com/${moneySafe(instagramPath)}/embed" scrolling="no" allowtransparency="true"></iframe></div>`;
+    return `<div class="embed embed-phone${compactClass}"><iframe title="Instagram 作品" src="https://www.instagram.com/${moneySafe(instagramPath)}/embed" scrolling="no" allowtransparency="true"></iframe></div>`;
   }
   return `<a class="btn ghost" href="${moneySafe(value)}" target="_blank" rel="noreferrer">觀看作品連結</a>`;
 }
 
-function renderHome(home, works, services, extendedServices, process, partners) {
+function renderHome(home, works, services, extendedServices, process, partners, categories, workSettings) {
   text("[data-home-eyebrow]", home.eyebrow);
   lines("[data-home-title]", home.title);
   text("[data-home-subtitle]", home.subtitle);
@@ -134,7 +169,7 @@ function renderHome(home, works, services, extendedServices, process, partners) 
   text("[data-secondary-cta]", home.secondaryCtaText);
   attr("[data-secondary-cta]", "href", home.secondaryCtaLink);
   text("[data-showreel-label]", home.showreelLabel);
-  renderShowreel(home.showreelUrl);
+  renderShowreel(home.showreelUrl, findWork(works, workSettings.showreelWorkId || home.showreelWorkId));
   renderSimpleList("[data-showreel-bottom]", home.showreelBottom);
   renderTicker(home.tickerItems);
   text("[data-partners-eyebrow]", home.partnersEyebrow);
@@ -158,7 +193,7 @@ function renderHome(home, works, services, extendedServices, process, partners) 
   text("[data-cta-body]", home.ctaBody);
   text("[data-cta-text]", home.ctaText);
   attr("[data-cta-text]", "href", home.ctaLink);
-  renderWorks("[data-featured-works]", published(works).filter((item) => item.featured));
+  renderWorks("[data-featured-works]", published(works).filter((item) => item.featured), published(categories).filter((item) => item.showOnHome !== false), workSettings);
   renderServices("[data-service-preview]", published(services).slice(0, 6));
   renderServices("[data-extended-service-preview]", published(extendedServices));
   renderProcess("[data-process-preview]", process.slice(0, 4));
@@ -175,13 +210,11 @@ function renderTicker(items) {
   if (root) root.innerHTML = values.map((item) => `<span>${moneySafe(item)}</span>`).join("");
 }
 
-function renderShowreel(url) {
+function renderShowreel(url, work) {
   const root = $("[data-showreel-media]");
-  if (!root || !url) return;
-  const youtubeId = getYoutubeId(url);
-  root.innerHTML = youtubeId
-    ? `<iframe title="Showreel" src="https://www.youtube.com/embed/${moneySafe(youtubeId)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`
-    : `<video controls playsinline src="${moneySafe(url)}"></video>`;
+  const value = workVideoUrl(work) || url;
+  if (!root || !value) return;
+  root.innerHTML = renderEmbed(value, work || { orientation: "landscape" }, true).replace('class="embed', 'class="showreel-embed embed');
   root.classList.add("has-media");
 }
 
@@ -199,15 +232,18 @@ function renderPartners(partners) {
   root.innerHTML = rows.map((item) => `<figure class="partner-logo"><img src="${moneySafe(item.imageUrl)}" alt="${moneySafe(item.alt || item.title || "合作夥伴")}" loading="lazy" /></figure>`).join("");
 }
 
-function renderWorks(selector, works) {
+function renderWorks(selector, works, categories = [], settings = {}) {
   const root = $(selector);
   if (!root) return;
-  root.innerHTML = works
+  const allowed = new Set(settings.featuredCategoryIds?.length ? settings.featuredCategoryIds : categories.map((item) => item.id));
+  const rows = works.filter((work) => !allowed.size || allowed.has(categoryIdForWork(categories, work)));
+  const chips = categories.length ? `<div class="category-pills">${categories.map((item) => `<span>${moneySafe(item.title)}</span>`).join("")}</div>` : "";
+  root.innerHTML = chips + rows
     .map(
       (work, index) => `
-        <article class="work-card ${index === 0 ? "big" : index === 4 ? "wide" : ""}">
+        <article class="work-card ${index === 0 ? "big" : index === 4 ? "wide" : ""} ${work.orientation === "portrait" ? "portrait" : ""}">
           <a href="works.html#${moneySafe(work.id)}">
-            <div class="thumb ${moneySafe(work.coverClass || "g1")}" ${work.coverUrl ? `style="background-image:url('${moneySafe(work.coverUrl)}')"` : ""}><span>${moneySafe(work.category)}</span></div>
+            <div class="thumb ${moneySafe(work.coverClass || "g1")}"><span>${moneySafe(categoryLabel(categories, work))}</span>${renderEmbed(workVideoUrl(work), work, true)}</div>
             <div class="work-info">
               <p>${moneySafe(work.client || work.year || "案例")}</p>
               <h3>${moneySafe(work.title)}</h3>
@@ -220,23 +256,47 @@ function renderWorks(selector, works) {
     .join("");
 }
 
-function renderWorkList(works) {
+function renderShowcaseWorks(works, settings) {
+  const root = $("[data-work-showcase]");
+  if (!root) return;
+  const rows = fallbackShowcaseWorks(published(works), settings);
+  root.innerHTML = rows.map((work) => `<article class="showcase-card ${work.orientation === "portrait" ? "portrait" : ""}">${renderEmbed(workVideoUrl(work), work, true)}<h3>${moneySafe(work.title)}</h3></article>`).join("");
+}
+
+function renderWorkList(works, categories = [], settings = {}) {
   const root = $("[data-work-list]");
   if (!root) return;
   const rows = published(works);
-  root.innerHTML = rows
+  renderShowcaseWorks(rows, settings);
+  const visibleCategories = published(categories).filter((category) => category.showOnWorks !== false);
+  root.innerHTML = visibleCategories
     .map(
-      (work) => `
-        <article class="case-card" id="${moneySafe(work.id)}">
-          <div class="thumb ${moneySafe(work.coverClass || "g1")}" ${work.coverUrl ? `style="background-image:url('${moneySafe(work.coverUrl)}')"` : ""}><span>${moneySafe(work.category)}</span></div>
-          <div class="case-body">
-            <p class="eyebrow">${moneySafe(work.category)} / ${moneySafe(work.year)}</p>
-            <h2>${moneySafe(work.title)}</h2>
-            <p>${moneySafe(work.summary)}</p>
-            ${renderEmbed(work.videoUrl, work)}
-          </div>
-        </article>
-      `,
+      (category) => {
+        const items = rows.filter((work) => categoryIdForWork(categories, work) === category.id || work.category === category.title);
+        const cover = resolveCategoryCover(category, rows);
+        return `
+          <section class="work-category" id="${moneySafe(category.id)}">
+            <div class="case-card category-cover">
+              <div class="category-media ${cover?.orientation === "portrait" ? "portrait" : ""}">${cover ? renderEmbed(workVideoUrl(cover), cover, true) : ""}</div>
+              <div class="case-body">
+                <p class="eyebrow">${moneySafe(category.coverMode === "selected" ? "Selected Cover" : "Random Cover")}</p>
+                <h2>${moneySafe(category.title)}</h2>
+                <p>${moneySafe(category.description)}</p>
+              </div>
+            </div>
+            <div class="work-grid category-work-grid">
+              ${items.map((work) => `
+                <article class="work-card ${work.orientation === "portrait" ? "portrait" : ""}" id="${moneySafe(work.id)}">
+                  <a href="${moneySafe(work.videoUrl || "#")}" target="_blank" rel="noreferrer">
+                    <div class="thumb ${moneySafe(work.coverClass || "g1")}"><span>${moneySafe(work.year || "作品")}</span>${renderEmbed(workVideoUrl(work), work, true)}</div>
+                    <div class="work-info"><p>${moneySafe(work.client || category.title)}</p><h3>${moneySafe(work.title)}</h3><small>${moneySafe(work.summary)}</small></div>
+                  </a>
+                </article>
+              `).join("")}
+            </div>
+          </section>
+        `;
+      }
     )
     .join("");
 }
@@ -374,10 +434,12 @@ async function initPage() {
   });
 
   if (page === "home") {
-    const [site, home, pages, works, services, extendedServices, process, partners] = await Promise.all([
+    const [site, home, pages, workSettings, workCategories, works, services, extendedServices, process, partners] = await Promise.all([
       sitePromise,
       api.getDoc("siteContent", "home", defaults.home),
       api.getDoc("siteContent", "pages", defaults.pages),
+      api.getDoc("siteContent", "workSettings", defaults.workSettings),
+      api.getCollection("workCategories", defaults.workCategories),
       api.getCollection("works", defaults.works),
       api.getCollection("services", defaults.services),
       api.getCollection("extendedServices", defaults.extendedServices),
@@ -385,15 +447,15 @@ async function initPage() {
       api.getCollection("partners", defaults.partners),
     ]);
     renderPages(pages);
-    renderHome(home, works, services, extendedServices, process, partners);
+    renderHome(home, works, services, extendedServices, process, partners, workCategories, workSettings);
     setupInquiryForm(site);
     return;
   }
 
   if (page === "works") {
-    const [, pages, works] = await Promise.all([sitePromise, api.getDoc("siteContent", "pages", defaults.pages), api.getCollection("works", defaults.works)]);
+    const [, pages, workSettings, workCategories, works] = await Promise.all([sitePromise, api.getDoc("siteContent", "pages", defaults.pages), api.getDoc("siteContent", "workSettings", defaults.workSettings), api.getCollection("workCategories", defaults.workCategories), api.getCollection("works", defaults.works)]);
     renderPages(pages);
-    renderWorkList(works);
+    renderWorkList(works, workCategories, workSettings);
     return;
   }
 
@@ -434,10 +496,10 @@ function renderDefaultsForPage(page) {
   setMeta(defaults.site);
   if (page === "home") {
     renderPages(defaults.pages);
-    renderHome(defaults.home, defaults.works, defaults.services, defaults.extendedServices, defaults.process, defaults.partners);
+    renderHome(defaults.home, defaults.works, defaults.services, defaults.extendedServices, defaults.process, defaults.partners, defaults.workCategories, defaults.workSettings);
   } else if (page === "works") {
     renderPages(defaults.pages);
-    renderWorkList(defaults.works);
+    renderWorkList(defaults.works, defaults.workCategories, defaults.workSettings);
   } else if (page === "services") {
     renderPages(defaults.pages);
     renderServiceList(defaults.services);
@@ -469,9 +531,11 @@ function renderCachedForPage(page) {
       api.getCachedCollection("extendedServices", defaults.extendedServices),
       api.getCachedCollection("process", defaults.process),
       api.getCachedCollection("partners", defaults.partners),
+      api.getCachedCollection("workCategories", defaults.workCategories),
+      api.getCachedDoc("siteContent", "workSettings", defaults.workSettings),
     );
   } else if (page === "works") {
-    renderWorkList(api.getCachedCollection("works", defaults.works));
+    renderWorkList(api.getCachedCollection("works", defaults.works), api.getCachedCollection("workCategories", defaults.workCategories), api.getCachedDoc("siteContent", "workSettings", defaults.workSettings));
   } else if (page === "services") {
     const home = api.getCachedDoc("siteContent", "home", defaults.home);
     text("[data-extended-eyebrow]", home.extendedEyebrow);

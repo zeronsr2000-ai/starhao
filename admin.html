@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex" />
     <title>後台管理｜星澔文創</title>
     <script src="canonical-redirect.js?v=20260902-2"></script>
-    <link rel="stylesheet" href="admin.css?v=20260902-5" />
+    <link rel="stylesheet" href="admin.css?v=20260903-1" />
   </head>
   <body class="admin-body">
     <div class="grain" aria-hidden="true"></div>
@@ -23,7 +23,9 @@
         <button class="admin-tab" data-tab="site" type="button">網站設定</button>
         <button class="admin-tab" data-tab="home" type="button">首頁各區塊</button>
         <button class="admin-tab" data-tab="partners" type="button">合作夥伴 Logo</button>
-        <button class="admin-tab" data-tab="works" type="button">作品管理</button>
+        <button class="admin-tab" data-tab="workCategories" type="button">作品分類</button>
+        <button class="admin-tab" data-tab="works" type="button">作品列表</button>
+        <button class="admin-tab" data-tab="workSettings" type="button">首頁／展示設定</button>
         <button class="admin-tab" data-tab="services" type="button">影音服務</button>
         <button class="admin-tab" data-tab="extendedServices" type="button">網站與 SEO</button>
         <button class="admin-tab" data-tab="process" type="button">流程管理</button>
@@ -122,7 +124,7 @@
             </div>
             <div class="grid-2">
               <label>Showreel 標籤<input name="showreelLabel" /></label>
-              <label>Showreel 影片連結<input name="showreelUrl" /></label>
+              <label>Showreel 備用影片連結<input name="showreelUrl" /></label>
             </div>
             <label>Showreel 下方標籤（每行一個）<textarea name="showreelBottom"></textarea></label>
             </div>
@@ -142,21 +144,83 @@
           <form class="form" data-collection-form="partners"><input name="id" type="hidden" /><label>辨識名稱（只在後台顯示）<input name="title" required /></label><label>Logo 圖片網址<input name="imageUrl" /></label><label>或直接上傳圖片<input name="imageFile" type="file" accept="image/*" data-upload-field="imageUrl" /></label><label>圖片替代文字<input name="alt" /></label><div class="grid-2"><label>排序<input name="sort" type="number" /></label><label>顯示狀態<select name="status"><option value="published">顯示</option><option value="hidden">隱藏</option></select></label></div><div class="actions"><button class="btn primary" type="submit">儲存 Logo</button><button class="btn ghost" data-new="partners" type="button">新增 Logo</button></div></form><div class="table-list" data-list="partners"></div>
         </section>
 
+        <section class="panel hidden" data-panel="workCategories">
+          <p class="eyebrow">Works / Categories</p>
+          <h2>作品分類</h2>
+          <p class="panel-note">分類會同步到作品下拉選單、首頁精選作品區塊與作品案例頁。若分類底下還有作品，系統會阻止直接刪除。</p>
+          <form class="form" data-collection-form="workCategories">
+            <input name="id" type="hidden" />
+            <div class="grid-2">
+              <label>分類名稱<input name="title" required /></label>
+              <label>排序<input name="sort" type="number" /></label>
+            </div>
+            <label>分類說明<textarea name="description"></textarea></label>
+            <div class="grid-2">
+              <label>分類封面模式
+                <select name="coverMode" data-cover-mode>
+                  <option value="random">隨機選擇此分類作品</option>
+                  <option value="selected">指定作品</option>
+                </select>
+              </label>
+              <label>指定封面作品
+                <select name="coverWorkId" data-work-select data-category-aware>
+                  <option value="">請先選擇作品</option>
+                </select>
+              </label>
+            </div>
+            <div class="grid-2">
+              <label><input name="showOnHome" type="checkbox" /> 顯示在首頁精選分類</label>
+              <label><input name="showOnWorks" type="checkbox" /> 顯示在作品案例頁</label>
+            </div>
+            <label>顯示狀態<select name="status"><option value="published">上架</option><option value="hidden">隱藏</option></select></label>
+            <div class="actions"><button class="btn primary" type="submit">儲存分類</button><button class="btn ghost" data-new="workCategories" type="button">新增分類</button></div>
+          </form>
+          <div class="table-list" data-list="workCategories"></div>
+        </section>
+
         <section class="panel hidden" data-panel="works">
-          <p class="eyebrow">Works</p>
-          <h2>作品管理</h2>
+          <p class="eyebrow">Works / Library</p>
+          <h2>作品列表</h2>
+          <p class="panel-note">作品只使用 YouTube／IG／FB 連結嵌入，不上傳影片檔。橫式與直式會在前台使用不同容器呈現。</p>
           <form class="form" data-collection-form="works">
             <input name="id" type="hidden" />
-            <div class="grid-2"><label>作品標題<input name="title" required /></label><label>分類<input name="category" required /></label></div>
+            <div class="grid-2"><label>作品標題<input name="title" required /></label><label>分類<select name="categoryId" data-category-select required></select></label></div>
             <div class="grid-2"><label>客戶名稱<input name="client" /></label><label>專案年份<input name="year" /></label></div>
-            <div class="grid-2"><label>備用封面樣式<select name="coverClass"><option>g1</option><option>g2</option><option>g3</option><option>g4</option><option>g5</option></select></label><label>YouTube／IG／FB 網址<input name="videoUrl" /></label></div>
-            <label>封面圖片網址<input name="coverUrl" /></label><label>或直接上傳封面<input name="coverFile" type="file" accept="image/*" data-upload-field="coverUrl" /></label>
+            <div class="grid-2"><label>影片方向<select name="orientation"><option value="landscape">橫式 16:9</option><option value="portrait">直式 9:16</option></select></label><label>備用封面樣式<select name="coverClass"><option>g1</option><option>g2</option><option>g3</option><option>g4</option><option>g5</option></select></label></div>
+            <label>YouTube／IG／FB 作品網址<input name="videoUrl" required /></label>
             <label>專案簡介<textarea name="summary"></textarea></label>
             <div class="grid-2"><label>排序<input name="sort" type="number" /></label><label>上架狀態<select name="status"><option value="published">上架</option><option value="draft">草稿</option><option value="hidden">下架</option></select></label></div>
-            <label><input name="featured" type="checkbox" /> 設為首頁精選</label>
+            <div class="grid-2"><label><input name="featured" type="checkbox" /> 可顯示在首頁精選</label><label><input name="showcase" type="checkbox" /> 可作為展示影片</label></div>
             <div class="actions"><button class="btn primary" type="submit">儲存作品</button><button class="btn ghost" data-new="works" type="button">新增空白作品</button></div>
           </form>
           <div class="table-list" data-list="works"></div>
+        </section>
+
+        <section class="panel hidden" data-panel="workSettings">
+          <p class="eyebrow">Works / Display</p>
+          <h2>首頁與作品頁展示設定</h2>
+          <p class="panel-note">首頁 Showreel 與作品案例頁上方四支展示影片，都從「作品列表」選擇。首頁精選分類也在這裡集中管理。</p>
+          <form class="form" data-form="workSettings">
+            <div class="field-group">
+              <h3>首頁 Showreel</h3>
+              <label>Showreel 播放作品<select name="showreelWorkId" data-work-select><option value="">使用首頁備用影片連結</option></select></label>
+            </div>
+            <div class="field-group">
+              <h3>首頁精選作品分類</h3>
+              <p>勾選後，首頁精選作品區會顯示這些分類與分類底下的精選作品。</p>
+              <div class="choice-list" data-featured-category-options></div>
+            </div>
+            <div class="field-group">
+              <h3>作品案例頁上方四支展示影片</h3>
+              <div class="grid-2">
+                <label>展示影片 1<select name="showcaseWorkId1" data-work-select><option value="">自動選擇</option></select></label>
+                <label>展示影片 2<select name="showcaseWorkId2" data-work-select><option value="">自動選擇</option></select></label>
+                <label>展示影片 3<select name="showcaseWorkId3" data-work-select><option value="">自動選擇</option></select></label>
+                <label>展示影片 4<select name="showcaseWorkId4" data-work-select><option value="">自動選擇</option></select></label>
+              </div>
+            </div>
+            <button class="btn primary" type="submit">儲存展示設定</button>
+          </form>
         </section>
 
         <section class="panel hidden" data-panel="extendedServices">
@@ -248,7 +312,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-storage-compat.js"></script>
     <script src="firebase-config.js"></script>
     <script src="data.js"></script>
-    <script src="firebase-client.js?v=20260902-5"></script>
-    <script src="admin.js?v=20260902-5"></script>
+    <script src="firebase-client.js?v=20260903-1"></script>
+    <script src="admin.js?v=20260903-1"></script>
   </body>
 </html>

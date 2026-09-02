@@ -6,6 +6,8 @@ let state = {
   pages: defaults.pages,
   about: defaults.about,
   works: defaults.works,
+  workCategories: defaults.workCategories,
+  workSettings: defaults.workSettings,
   services: defaults.services,
   extendedServices: defaults.extendedServices,
   partners: defaults.partners,
@@ -81,7 +83,10 @@ function makeId(prefix) {
 
 function collectionDefaults(collection) {
   if (collection === "works") {
-    return { id: "", title: "", category: "品牌形象", client: "", year: "2026", coverClass: "g1", coverUrl: "", videoUrl: "", summary: "", featured: false, sort: state.works.length + 1, status: "published" };
+    return { id: "", title: "", categoryId: state.workCategories[0]?.id || "", category: state.workCategories[0]?.title || "", client: "", year: "2026", coverClass: "g1", coverUrl: "", videoUrl: "", orientation: "landscape", summary: "", featured: false, showcase: true, sort: state.works.length + 1, status: "published" };
+  }
+  if (collection === "workCategories") {
+    return { id: "", title: "", description: "", coverMode: "random", coverWorkId: "", showOnHome: true, showOnWorks: true, sort: state.workCategories.length + 1, status: "published" };
   }
   if (collection === "services") {
     return { id: "", title: "", summary: "", target: "", deliverables: "", sort: state.services.length + 1, status: "published" };
@@ -99,12 +104,14 @@ function collectionDefaults(collection) {
 }
 
 async function loadAll() {
-  const [site, home, pages, about, inquiryForm, works, services, extendedServices, partners, process, media, inquiries] = await Promise.all([
+  const [site, home, pages, about, inquiryForm, workSettings, workCategories, works, services, extendedServices, partners, process, media, inquiries] = await Promise.all([
     api.getDoc("siteContent", "site", defaults.site),
     api.getDoc("siteContent", "home", defaults.home),
     api.getDoc("siteContent", "pages", defaults.pages),
     api.getDoc("siteContent", "about", defaults.about),
     api.getDoc("siteContent", "inquiryForm", defaults.inquiryForm),
+    api.getDoc("siteContent", "workSettings", defaults.workSettings),
+    api.getCollection("workCategories", defaults.workCategories),
     api.getCollection("works", defaults.works),
     api.getCollection("services", defaults.services),
     api.getCollection("extendedServices", defaults.extendedServices),
@@ -118,6 +125,8 @@ async function loadAll() {
   state.pages = pages;
   state.about = about;
   state.inquiryForm = inquiryForm;
+  state.workSettings = normalizeWorkSettings(workSettings);
+  state.workCategories = workCategories;
   state.works = works;
   state.services = services;
   state.extendedServices = extendedServices;
@@ -132,6 +141,45 @@ function renderCounts() {
   qs("[data-count-works]").textContent = state.works.length;
   qs("[data-count-services]").textContent = state.services.length;
   qs("[data-count-inquiries]").textContent = state.inquiries.length;
+}
+
+function normalizeWorkSettings(settings = {}) {
+  const showcaseWorkIds = settings.showcaseWorkIds || [settings.showcaseWorkId1, settings.showcaseWorkId2, settings.showcaseWorkId3, settings.showcaseWorkId4].filter(Boolean);
+  return {
+    ...defaults.workSettings,
+    ...settings,
+    showcaseWorkIds,
+  };
+}
+
+function categoryTitle(id) {
+  return state.workCategories.find((item) => item.id === id)?.title || "";
+}
+
+function renderWorkControls() {
+  const categories = [...state.workCategories].sort((a, b) => (a.sort || 0) - (b.sort || 0));
+  qsa("[data-category-select]").forEach((select) => {
+    const current = select.value;
+    select.innerHTML = categories.map((item) => `<option value="${safe(item.id)}">${safe(item.title)}</option>`).join("");
+    if (current) select.value = current;
+  });
+
+  const works = state.works.filter((item) => item.status !== "hidden").sort((a, b) => (a.sort || 0) - (b.sort || 0));
+  qsa("[data-work-select]").forEach((select) => {
+    const first = select.querySelector("option")?.outerHTML || '<option value="">請選擇作品</option>';
+    const current = select.value;
+    select.innerHTML = first + works.map((item) => `<option value="${safe(item.id)}">${safe(item.title)}｜${safe(categoryTitle(item.categoryId) || item.category)}</option>`).join("");
+    if (current) select.value = current;
+  });
+
+  const featured = qs("[data-featured-category-options]");
+  if (featured) {
+    const selected = new Set(state.workSettings.featuredCategoryIds || []);
+    featured.innerHTML = categories
+      .map((item) => `<label><input name="featuredCategoryIds" type="checkbox" value="${safe(item.id)}" ${selected.has(item.id) ? "checked" : ""} /> ${safe(item.title)}</label>`)
+      .join("");
+  }
+  syncCoverModeFields();
 }
 
 function renderForms() {
@@ -152,6 +200,14 @@ function renderForms() {
     ...state.about,
     team: JSON.stringify(state.about.team || [], null, 2),
     clients: JSON.stringify(state.about.clients || [], null, 2),
+  });
+  renderWorkControls();
+  fillForm(qs('[data-form="workSettings"]'), {
+    showreelWorkId: state.workSettings.showreelWorkId || state.home.showreelWorkId || "",
+    showcaseWorkId1: state.workSettings.showcaseWorkIds?.[0] || "",
+    showcaseWorkId2: state.workSettings.showcaseWorkIds?.[1] || "",
+    showcaseWorkId3: state.workSettings.showcaseWorkIds?.[2] || "",
+    showcaseWorkId4: state.workSettings.showcaseWorkIds?.[3] || "",
   });
 }
 
@@ -179,10 +235,15 @@ function rowMeta(collection, item) {
   }
   if (collection === "works") {
     const parts = [];
+    parts.push(categoryTitle(item.categoryId) || item.category || "未分類");
+    parts.push(item.orientation === "portrait" ? "直式" : "橫式");
     if (item.featured) parts.push("首頁精選");
-    if (item.coverUrl) parts.push("封面已設定");
+    if (item.showcase) parts.push("可展示");
     if (item.videoUrl) parts.push("作品連結已設定");
     return parts.join("｜") || item.status || "";
+  }
+  if (collection === "workCategories") {
+    return `${item.showOnHome ? "首頁顯示" : "首頁隱藏"}｜${item.showOnWorks ? "作品頁顯示" : "作品頁隱藏"}｜${item.coverMode === "selected" ? "指定封面" : "隨機封面"}`;
   }
   return item.summary || item.body || item.url || item.status || item.category || "";
 }
@@ -237,6 +298,7 @@ function renderInquiries() {
 function render() {
   renderCounts();
   renderForms();
+  renderCollection("workCategories", state.workCategories);
   renderCollection("works", state.works);
   renderCollection("services", state.services);
   renderCollection("extendedServices", state.extendedServices);
@@ -267,6 +329,30 @@ function parseOptionsPayload(data) {
   };
 }
 
+function parseWorkSettingsPayload(form, data) {
+  return {
+    showreelWorkId: data.showreelWorkId || "",
+    featuredCategoryIds: qsa('input[name="featuredCategoryIds"]:checked', form).map((input) => input.value),
+    showcaseWorkIds: [data.showcaseWorkId1, data.showcaseWorkId2, data.showcaseWorkId3, data.showcaseWorkId4].filter(Boolean),
+  };
+}
+
+function normalizeWorkPayload(data) {
+  const category = state.workCategories.find((item) => item.id === data.categoryId);
+  return {
+    ...data,
+    category: category?.title || data.category || "",
+    orientation: data.orientation || "landscape",
+  };
+}
+
+function normalizeCategoryPayload(data) {
+  return {
+    ...data,
+    coverWorkId: data.coverMode === "random" ? "" : data.coverWorkId,
+  };
+}
+
 function splitLines(value) {
   return String(value || "")
     .split(/\r?\n/)
@@ -284,6 +370,8 @@ async function saveSiteContent(id, data) {
 async function saveCollection(collection, data) {
   const id = data.id || makeId(collection);
   delete data.id;
+  if (collection === "works") data = normalizeWorkPayload(data);
+  if (collection === "workCategories") data = normalizeCategoryPayload(data);
   await api.setDoc(collection, id, data);
   api.clearCache?.();
   setStatus("已儲存，前台會自動同步。");
@@ -302,6 +390,17 @@ async function uploadFormFiles(form, data) {
     setStatus("圖片已處理完成，正在儲存資料...");
   }
   return data;
+}
+
+function syncCoverModeFields() {
+  qsa("[data-cover-mode]").forEach((select) => {
+    const form = select.closest("form");
+    const coverSelect = form?.elements.coverWorkId;
+    if (!coverSelect) return;
+    const isRandom = select.value !== "selected";
+    coverSelect.disabled = isRandom;
+    if (isRandom) coverSelect.value = "";
+  });
 }
 
 function setupEvents() {
@@ -324,7 +423,7 @@ function setupEvents() {
       try {
         const id = form.dataset.form;
         const data = formToObject(form);
-        const payload = id === "about" ? parseAboutPayload(data) : id === "inquiryForm" ? parseOptionsPayload(data) : id === "home" ? { ...data, showreelBottom: splitLines(data.showreelBottom), tickerItems: splitLines(data.tickerItems) } : data;
+        const payload = id === "about" ? parseAboutPayload(data) : id === "inquiryForm" ? parseOptionsPayload(data) : id === "workSettings" ? parseWorkSettingsPayload(form, data) : id === "home" ? { ...data, showreelBottom: splitLines(data.showreelBottom), tickerItems: splitLines(data.tickerItems) } : data;
         await saveSiteContent(id, payload);
       } catch (error) {
         setStatus(`儲存失敗：${errorMessage(error)}`);
@@ -351,7 +450,14 @@ function setupEvents() {
   });
 
   qsa("[data-new]").forEach((button) => {
-    button.addEventListener("click", () => fillForm(qs(`[data-collection-form="${button.dataset.new}"]`), collectionDefaults(button.dataset.new)));
+    button.addEventListener("click", () => {
+      fillForm(qs(`[data-collection-form="${button.dataset.new}"]`), collectionDefaults(button.dataset.new));
+      syncCoverModeFields();
+    });
+  });
+
+  qsa("[data-cover-mode]").forEach((select) => {
+    select.addEventListener("change", syncCoverModeFields);
   });
 
   document.addEventListener("click", async (event) => {
@@ -362,10 +468,16 @@ function setupEvents() {
       if (edit) {
         const row = state[edit.dataset.edit].find((item) => item.id === edit.dataset.id);
         fillForm(qs(`[data-collection-form="${edit.dataset.edit}"]`), row);
+        syncCoverModeFields();
         setStatus("已載入資料，可以編輯後儲存。");
       }
       if (remove) {
         if (!confirm("確定要刪除這筆資料？")) return;
+        const removingCategory = state.workCategories.find((item) => item.id === remove.dataset.id);
+        if (remove.dataset.delete === "workCategories" && state.works.some((item) => item.categoryId === remove.dataset.id || item.category === removingCategory?.title)) {
+          setStatus("這個分類底下還有作品，請先移動作品或隱藏分類。");
+          return;
+        }
         await api.deleteDoc(remove.dataset.delete, remove.dataset.id);
         setStatus("已刪除。");
         await loadAll();
