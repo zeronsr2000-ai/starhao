@@ -196,8 +196,7 @@ function renderPartners(partners) {
     return;
   }
   marquee?.classList.remove("is-empty");
-  const repeated = rows.length < 6 ? [...rows, ...rows, ...rows, ...rows] : [...rows, ...rows];
-  root.innerHTML = repeated.map((item) => `<figure class="partner-logo"><img src="${moneySafe(item.imageUrl)}" alt="${moneySafe(item.alt || item.title || "合作夥伴")}" loading="lazy" /></figure>`).join("");
+  root.innerHTML = rows.map((item) => `<figure class="partner-logo"><img src="${moneySafe(item.imageUrl)}" alt="${moneySafe(item.alt || item.title || "合作夥伴")}" loading="lazy" /></figure>`).join("");
 }
 
 function renderWorks(selector, works) {

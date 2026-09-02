@@ -404,7 +404,8 @@ p {
   width: max-content;
   gap: 18px;
   padding: 10px 0;
-  animation: partner-marquee 34s linear infinite;
+  animation: partner-marquee 17s linear infinite;
+  will-change: transform;
 }
 
 .partner-logo {
@@ -442,8 +443,8 @@ p {
 }
 
 @keyframes partner-marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  from { transform: translateX(100vw); }
+  to { transform: translateX(calc(-100% - 24px)); }
 }
 
 .section-head {
