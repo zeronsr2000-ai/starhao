@@ -6,6 +6,8 @@
     <meta name="description" content="星澔文創提供品牌影片、人物訪談、Podcast、短影音、活動紀錄與後期剪輯包裝。" />
     <meta property="og:title" content="星澔文創｜影音製作工作室" />
     <meta property="og:description" content="好看、好理解、能協助成交的品牌影像。" />
+    <meta property="og:image" content="https://zeronsr2000-ai.github.io/starhao/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
     <title>星澔文創｜影音製作工作室</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -14,18 +16,18 @@
     <div class="glow" aria-hidden="true"></div>
     <header class="header">
       <a href="index.html" class="logo" aria-label="星澔文創首頁">
-        <span class="logo-mark">S</span>
+        <span class="logo-mark" data-logo-letter>S</span>
         <div><span data-brand>星澔文創</span><small data-english>STARHORIZON CREATIVE</small></div>
       </a>
       <nav class="nav" data-nav>
-        <a class="active" href="index.html">首頁</a>
-        <a href="works.html">作品案例</a>
-        <a href="services.html">服務項目</a>
-        <a href="process.html">製作流程</a>
-        <a href="about.html">關於我們</a>
-        <a href="quote.html">詢價</a>
+        <a class="active" href="index.html" data-nav-home>首頁</a>
+        <a href="works.html" data-nav-works>作品案例</a>
+        <a href="services.html" data-nav-services>服務項目</a>
+        <a href="process.html" data-nav-process>製作流程</a>
+        <a href="about.html" data-nav-about>關於我們</a>
+        <a href="quote.html" data-nav-quote>詢價</a>
       </nav>
-      <a class="top-cta" href="quote.html">取得報價</a>
+      <a class="top-cta" href="quote.html" data-top-cta>取得報價</a>
       <button class="menu" type="button" aria-label="開啟選單" aria-expanded="false" data-menu>MENU</button>
     </header>
     <main>
@@ -40,60 +42,68 @@
           </div>
         </div>
         <div class="showreel" aria-label="Showreel 視覺區塊">
+          <div class="showreel-media" data-showreel-media></div>
           <div class="reel-tag" data-showreel-label>SHOWREEL 2026</div>
           <div class="play" aria-hidden="true">▶</div>
-          <div class="reel-bottom"><span>Commercial</span><span>Interview</span><span>Shorts</span></div>
+          <div class="reel-bottom" data-showreel-bottom><span>Commercial</span><span>Interview</span><span>Shorts</span></div>
         </div>
       </section>
       <div class="ticker" aria-hidden="true">
-        <div class="ticker-track">
+        <div class="ticker-track" data-ticker-track>
           <span>BRAND FILM</span><span>INTERVIEW</span><span>PODCAST</span><span>EVENT RECAP</span><span>SOCIAL CUTS</span><span>POST PRODUCTION</span>
           <span>BRAND FILM</span><span>INTERVIEW</span><span>PODCAST</span><span>EVENT RECAP</span><span>SOCIAL CUTS</span><span>POST PRODUCTION</span>
         </div>
       </div>
-      <section class="section intro">
-        <div class="intro-label">ABOUT THE APPROACH</div>
-        <div>
-          <h2>不是只拍漂亮畫面，而是讓每支影片都有明確目的。</h2>
-          <p>我們先理解受眾、產品、銷售情境與投放平台，再規劃腳本、節奏、視覺與剪輯版本，讓影片能被看完、被理解，也能推動下一步行動。</p>
+      <section class="section partners-section">
+        <div class="section-head">
+          <div><p class="eyebrow" data-partners-eyebrow>Partners</p><h2 data-partners-title>合作夥伴</h2></div>
+          <p data-partners-description>與不同領域的品牌並肩，把每一次溝通轉化成有影響力的影像。</p>
         </div>
+        <div class="partner-marquee"><div class="partner-track" data-partner-track></div><p class="partner-empty">合作夥伴 Logo 可由後台新增與排序。</p></div>
       </section>
       <section class="section">
         <div class="section-head">
-          <div><p class="eyebrow">Selected Works</p><h2>精選作品</h2></div>
-          <p>用案例方式呈現需求、製作內容與交付項目，不只是放影片縮圖。</p>
+          <div><p class="eyebrow" data-works-eyebrow>Selected Works</p><h2 data-works-title>精選作品</h2></div>
+          <p data-works-description>用案例方式呈現需求、製作內容與交付項目，不只是放影片縮圖。</p>
         </div>
         <div class="work-grid" data-featured-works></div>
       </section>
       <section class="section">
         <div class="section-head">
-          <div><p class="eyebrow">Services</p><h2>服務項目</h2></div>
-          <p>以客戶能理解的解決方案呈現，而不只是列出攝影、剪輯、後製。</p>
+          <div><p class="eyebrow" data-services-eyebrow>Services</p><h2 data-services-title>影音製作服務</h2></div>
+          <p data-services-description>以客戶能理解的解決方案呈現，而不只是列出攝影、剪輯、後製。</p>
         </div>
         <div class="service-list" data-service-preview></div>
       </section>
+      <section class="section extended-section">
+        <div class="section-head">
+          <div><p class="eyebrow" data-extended-eyebrow>Extended Services</p><h2 data-extended-title>數位延伸服務</h2></div>
+          <p data-extended-description>以網站與搜尋優化延伸影像內容的效益，讓品牌被看見之後，也更容易被找到。</p>
+        </div>
+        <div class="service-list extended-service-list" data-extended-service-preview></div>
+      </section>
       <section class="section">
         <div class="section-head">
-          <div><p class="eyebrow">Workflow</p><h2>合作流程</h2></div>
-          <p>降低客戶不確定感，清楚知道每個階段要準備什麼。</p>
+          <div><p class="eyebrow" data-process-eyebrow>Workflow</p><h2 data-process-title>合作流程</h2></div>
+          <p data-process-description>降低客戶不確定感，清楚知道每個階段要準備什麼。</p>
         </div>
         <div class="timeline" data-process-preview></div>
       </section>
       <section class="section quote">
         <div class="quote-card">
           <div>
-            <p class="eyebrow">Start A Project</p>
-            <h2>想把品牌故事拍成更有質感的影片嗎？</h2>
-            <p>告訴我們你想製作的內容、用途與時程，我們會協助你整理適合的影片形式與製作方案。</p>
+            <p class="eyebrow" data-cta-eyebrow>Start A Project</p>
+            <h2 data-cta-title>想把品牌故事拍成更有質感的影片嗎？</h2>
+            <p data-cta-body>告訴我們你想製作的內容、用途與時程，我們會協助你整理適合的影片形式與製作方案。</p>
           </div>
-          <a class="btn primary" href="quote.html">填寫詢價表單</a>
+          <a class="btn primary" href="quote.html" data-cta-text>填寫詢價表單</a>
         </div>
       </section>
     </main>
-    <footer><div><strong data-brand-footer>星澔文創</strong><p>Brand Film / Interview / Podcast / Social Cuts</p></div><a href="admin.html">後台登入</a></footer>
-    <script src="/__/firebase/10.12.4/firebase-app-compat.js"></script>
-    <script src="/__/firebase/10.12.4/firebase-firestore-compat.js"></script>
-    <script src="/__/firebase/init.js"></script>
+    <footer><div><strong data-brand-footer>星澔文創</strong><p data-footer-text>Brand Film / Interview / Podcast / Social Cuts</p></div><a href="admin.html" data-footer-cta>後台登入</a></footer>
+    <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
     <script src="data.js"></script>
     <script src="firebase-client.js"></script>
     <script src="site.js"></script>

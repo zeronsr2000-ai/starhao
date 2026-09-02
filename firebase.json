@@ -1,4 +1,7 @@
 {
+  "storage": {
+    "rules": "storage.rules"
+  },
   "firestore": {
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
@@ -10,6 +13,7 @@
       ".firebaserc",
       "firestore.rules",
       "firestore.indexes.json",
+      "storage.rules",
       "**/.*",
       "**/node_modules/**"
     ],

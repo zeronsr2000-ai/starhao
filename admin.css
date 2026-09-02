@@ -226,6 +226,28 @@ textarea {
   background: rgba(255, 255, 255, 0.065);
 }
 
+.panel-note {
+  margin: 0;
+  padding: 14px 16px;
+  border-left: 3px solid var(--lime);
+  background: rgba(223, 255, 79, 0.055);
+}
+
+.field-group {
+  display: grid;
+  gap: 14px;
+  margin: 4px 0;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.field-group h3,
+.field-group p {
+  margin: 0;
+}
+
 .admin-layout.is-login .panel {
   padding: clamp(26px, 4vw, 42px);
 }

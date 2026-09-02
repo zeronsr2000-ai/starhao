@@ -10,6 +10,13 @@ function text(selector, value) {
   if (node) node.textContent = value || "";
 }
 
+function lines(selector, value) {
+  const node = $(selector);
+  if (!node) return;
+  node.textContent = value || "";
+  node.classList.add("balanced-copy");
+}
+
 function attr(selector, name, value) {
   const node = $(selector);
   if (node && value) node.setAttribute(name, value);
@@ -30,6 +37,30 @@ function setMeta(site) {
   text("[data-brand-footer]", site.brandName);
   text("[data-english]", site.englishName);
   text("[data-email]", site.email);
+  text("[data-logo-letter]", site.logoLetter || "S");
+  text(".logo-mark", site.logoLetter || "S");
+  text("[data-nav-home]", site.navHome);
+  text("[data-nav-works]", site.navWorks);
+  text("[data-nav-services]", site.navServices);
+  text("[data-nav-process]", site.navProcess);
+  text("[data-nav-about]", site.navAbout);
+  text("[data-nav-quote]", site.navQuote);
+  text('.nav a[href="index.html"]', site.navHome);
+  text('.nav a[href="works.html"]', site.navWorks);
+  text('.nav a[href="services.html"]', site.navServices);
+  text('.nav a[href="process.html"]', site.navProcess);
+  text('.nav a[href="about.html"]', site.navAbout);
+  text('.nav a[href="quote.html"]', site.navQuote);
+  text("[data-top-cta]", site.topCtaText);
+  attr("[data-top-cta]", "href", site.topCtaLink);
+  text(".top-cta", site.topCtaText);
+  attr(".top-cta", "href", site.topCtaLink);
+  text("[data-footer-text]", site.footerText);
+  text("[data-footer-cta]", site.footerCtaText);
+  attr("[data-footer-cta]", "href", site.footerCtaLink);
+  text("footer p", site.footerText);
+  text("footer > a", site.footerCtaText);
+  attr("footer > a", "href", site.footerCtaLink);
   renderContactInfo(site);
 }
 
@@ -69,36 +100,89 @@ function getInstagramPath(url) {
   return match ? `${match[1]}/${match[2]}` : "";
 }
 
-function renderEmbed(url) {
+function renderEmbed(url, work = {}) {
   const value = String(url || "").trim();
   if (!value) return "";
   const youtubeId = getYoutubeId(value);
   if (youtubeId) {
     return `<div class="embed"><iframe title="YouTube 作品影片" src="https://www.youtube.com/embed/${moneySafe(youtubeId)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>`;
   }
-  if (value.includes("facebook.com")) {
-    const src = `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(value)}&show_text=false&width=900`;
-    return `<div class="embed"><iframe title="Facebook 作品影片" src="${src}" scrolling="no" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowfullscreen></iframe></div>`;
-  }
-  const instagramPath = getInstagramPath(value);
-  if (instagramPath) {
-    return `<div class="embed embed-phone"><iframe title="Instagram 作品" src="https://www.instagram.com/${moneySafe(instagramPath)}/embed" scrolling="no" allowtransparency="true"></iframe></div>`;
+  if (value.includes("facebook.com") || getInstagramPath(value)) {
+    return `<a class="social-work-link" href="${moneySafe(value)}" target="_blank" rel="noreferrer"><span>${value.includes("facebook.com") ? "Facebook" : "Instagram"}</span><strong>${moneySafe(work.title || "觀看作品")}</strong><small>前往原平台觀看完整內容 ↗</small></a>`;
   }
   return `<a class="btn ghost" href="${moneySafe(value)}" target="_blank" rel="noreferrer">觀看作品連結</a>`;
 }
 
-function renderHome(home, works, services, process) {
+function renderHome(home, works, services, extendedServices, process, partners) {
   text("[data-home-eyebrow]", home.eyebrow);
-  text("[data-home-title]", home.title);
+  lines("[data-home-title]", home.title);
   text("[data-home-subtitle]", home.subtitle);
   text("[data-primary-cta]", home.primaryCtaText);
   attr("[data-primary-cta]", "href", home.primaryCtaLink);
   text("[data-secondary-cta]", home.secondaryCtaText);
   attr("[data-secondary-cta]", "href", home.secondaryCtaLink);
   text("[data-showreel-label]", home.showreelLabel);
-  renderWorks("[data-featured-works]", published(works).filter((item) => item.featured).slice(0, 6));
+  renderShowreel(home.showreelUrl);
+  renderSimpleList("[data-showreel-bottom]", home.showreelBottom);
+  renderTicker(home.tickerItems);
+  text("[data-partners-eyebrow]", home.partnersEyebrow);
+  lines("[data-partners-title]", home.partnersTitle);
+  text("[data-partners-description]", home.partnersDescription);
+  renderPartners(partners);
+  text("[data-works-eyebrow]", home.worksEyebrow);
+  lines("[data-works-title]", home.worksTitle);
+  text("[data-works-description]", home.worksDescription);
+  text("[data-services-eyebrow]", home.servicesEyebrow);
+  lines("[data-services-title]", home.servicesTitle);
+  text("[data-services-description]", home.servicesDescription);
+  text("[data-extended-eyebrow]", home.extendedEyebrow);
+  lines("[data-extended-title]", home.extendedTitle);
+  text("[data-extended-description]", home.extendedDescription);
+  text("[data-process-eyebrow]", home.processEyebrow);
+  lines("[data-process-title]", home.processTitle);
+  text("[data-process-description]", home.processDescription);
+  text("[data-cta-eyebrow]", home.ctaEyebrow);
+  lines("[data-cta-title]", home.ctaTitle);
+  text("[data-cta-body]", home.ctaBody);
+  text("[data-cta-text]", home.ctaText);
+  attr("[data-cta-text]", "href", home.ctaLink);
+  renderWorks("[data-featured-works]", published(works).filter((item) => item.featured));
   renderServices("[data-service-preview]", published(services).slice(0, 6));
+  renderServices("[data-extended-service-preview]", published(extendedServices));
   renderProcess("[data-process-preview]", process.slice(0, 4));
+}
+
+function renderSimpleList(selector, items) {
+  const root = $(selector);
+  if (root) root.innerHTML = (items || []).map((item) => `<span>${moneySafe(item)}</span>`).join("");
+}
+
+function renderTicker(items) {
+  const values = [...(items || []), ...(items || [])];
+  const root = $("[data-ticker-track]");
+  if (root) root.innerHTML = values.map((item) => `<span>${moneySafe(item)}</span>`).join("");
+}
+
+function renderShowreel(url) {
+  const root = $("[data-showreel-media]");
+  if (!root || !url) return;
+  const youtubeId = getYoutubeId(url);
+  root.innerHTML = youtubeId
+    ? `<iframe title="Showreel" src="https://www.youtube.com/embed/${moneySafe(youtubeId)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`
+    : `<video controls playsinline src="${moneySafe(url)}"></video>`;
+  root.classList.add("has-media");
+}
+
+function renderPartners(partners) {
+  const root = $("[data-partner-track]");
+  if (!root) return;
+  const rows = published(partners).filter((item) => item.imageUrl);
+  if (!rows.length) {
+    root.closest(".partner-marquee")?.classList.add("is-empty");
+    return;
+  }
+  const repeated = rows.length < 6 ? [...rows, ...rows, ...rows, ...rows] : [...rows, ...rows];
+  root.innerHTML = repeated.map((item) => `<figure class="partner-logo"><img src="${moneySafe(item.imageUrl)}" alt="${moneySafe(item.alt || item.title || "合作夥伴")}" loading="lazy" /></figure>`).join("");
 }
 
 function renderWorks(selector, works) {
@@ -109,7 +193,7 @@ function renderWorks(selector, works) {
       (work, index) => `
         <article class="work-card ${index === 0 ? "big" : index === 4 ? "wide" : ""}">
           <a href="works.html#${moneySafe(work.id)}">
-            <div class="thumb ${moneySafe(work.coverClass || "g1")}"><span>${moneySafe(work.category)}</span></div>
+            <div class="thumb ${moneySafe(work.coverClass || "g1")}" ${work.coverUrl ? `style="background-image:url('${moneySafe(work.coverUrl)}')"` : ""}><span>${moneySafe(work.category)}</span></div>
             <div class="work-info">
               <p>${moneySafe(work.client || work.year || "案例")}</p>
               <h3>${moneySafe(work.title)}</h3>
@@ -130,12 +214,12 @@ function renderWorkList(works) {
     .map(
       (work) => `
         <article class="case-card" id="${moneySafe(work.id)}">
-          <div class="thumb ${moneySafe(work.coverClass || "g1")}"><span>${moneySafe(work.category)}</span></div>
+          <div class="thumb ${moneySafe(work.coverClass || "g1")}" ${work.coverUrl ? `style="background-image:url('${moneySafe(work.coverUrl)}')"` : ""}><span>${moneySafe(work.category)}</span></div>
           <div class="case-body">
             <p class="eyebrow">${moneySafe(work.category)} / ${moneySafe(work.year)}</p>
             <h2>${moneySafe(work.title)}</h2>
             <p>${moneySafe(work.summary)}</p>
-            ${renderEmbed(work.videoUrl)}
+            ${renderEmbed(work.videoUrl, work)}
           </div>
         </article>
       `,
@@ -205,6 +289,10 @@ function renderAbout(about) {
   }
 }
 
+function renderPages(pages) {
+  Object.entries(pages || {}).forEach(([key, value]) => lines(`[data-page-${key}]`, value));
+}
+
 function setupNav() {
   const menu = $("[data-menu]");
   const nav = $("[data-nav]");
@@ -271,44 +359,57 @@ async function initPage() {
   });
 
   if (page === "home") {
-    const [site, home, works, services, process] = await Promise.all([
+    const [site, home, pages, works, services, extendedServices, process, partners] = await Promise.all([
       sitePromise,
       api.getDoc("siteContent", "home", defaults.home),
+      api.getDoc("siteContent", "pages", defaults.pages),
       api.getCollection("works", defaults.works),
       api.getCollection("services", defaults.services),
+      api.getCollection("extendedServices", defaults.extendedServices),
       api.getCollection("process", defaults.process),
+      api.getCollection("partners", defaults.partners),
     ]);
-    renderHome(home, works, services, process);
+    renderPages(pages);
+    renderHome(home, works, services, extendedServices, process, partners);
     setupInquiryForm(site);
     return;
   }
 
   if (page === "works") {
-    const [, works] = await Promise.all([sitePromise, api.getCollection("works", defaults.works)]);
+    const [, pages, works] = await Promise.all([sitePromise, api.getDoc("siteContent", "pages", defaults.pages), api.getCollection("works", defaults.works)]);
+    renderPages(pages);
     renderWorkList(works);
     return;
   }
 
   if (page === "services") {
-    const [, services] = await Promise.all([sitePromise, api.getCollection("services", defaults.services)]);
+    const [, pages, home, services, extendedServices] = await Promise.all([sitePromise, api.getDoc("siteContent", "pages", defaults.pages), api.getDoc("siteContent", "home", defaults.home), api.getCollection("services", defaults.services), api.getCollection("extendedServices", defaults.extendedServices)]);
+    renderPages(pages);
+    text("[data-extended-eyebrow]", home.extendedEyebrow);
+    lines("[data-extended-title]", home.extendedTitle);
+    text("[data-extended-description]", home.extendedDescription);
     renderServiceList(services);
+    renderServices("[data-extended-service-list]", published(extendedServices));
     return;
   }
 
   if (page === "process") {
-    const [, process] = await Promise.all([sitePromise, api.getCollection("process", defaults.process)]);
+    const [, pages, process] = await Promise.all([sitePromise, api.getDoc("siteContent", "pages", defaults.pages), api.getCollection("process", defaults.process)]);
+    renderPages(pages);
     renderProcess("[data-process-list]", process);
     return;
   }
 
   if (page === "about") {
-    const [, about] = await Promise.all([sitePromise, api.getDoc("siteContent", "about", defaults.about)]);
+    const [, pages, about] = await Promise.all([sitePromise, api.getDoc("siteContent", "pages", defaults.pages), api.getDoc("siteContent", "about", defaults.about)]);
+    renderPages(pages);
     renderAbout(about);
     return;
   }
 
   if (page === "quote") {
-    const [site, inquiryForm] = await Promise.all([sitePromise, api.getDoc("siteContent", "inquiryForm", defaults.inquiryForm)]);
+    const [site, pages, inquiryForm] = await Promise.all([sitePromise, api.getDoc("siteContent", "pages", defaults.pages), api.getDoc("siteContent", "inquiryForm", defaults.inquiryForm)]);
+    renderPages(pages);
     renderInquiryFormOptions(inquiryForm);
     setupInquiryForm(site);
   }
@@ -317,16 +418,23 @@ async function initPage() {
 function renderDefaultsForPage(page) {
   setMeta(defaults.site);
   if (page === "home") {
-    renderHome(defaults.home, defaults.works, defaults.services, defaults.process);
+    renderPages(defaults.pages);
+    renderHome(defaults.home, defaults.works, defaults.services, defaults.extendedServices, defaults.process, defaults.partners);
   } else if (page === "works") {
+    renderPages(defaults.pages);
     renderWorkList(defaults.works);
   } else if (page === "services") {
+    renderPages(defaults.pages);
     renderServiceList(defaults.services);
+    renderServices("[data-extended-service-list]", defaults.extendedServices);
   } else if (page === "process") {
+    renderPages(defaults.pages);
     renderProcess("[data-process-list]", defaults.process);
   } else if (page === "about") {
+    renderPages(defaults.pages);
     renderAbout(defaults.about);
   } else if (page === "quote") {
+    renderPages(defaults.pages);
     renderInquiryFormOptions(defaults.inquiryForm);
     setupInquiryForm(defaults.site);
   }

@@ -4,6 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="填寫星澔文創影音製作詢價表單，提供影片類型、預算、時程與需求說明。" />
+    <meta property="og:image" content="https://zeronsr2000-ai.github.io/starhao/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
     <title>詢價表單｜星澔文創</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -22,9 +24,9 @@
       <section class="section quote" style="padding-top: 140px;">
         <div class="quote-card">
           <div>
-            <p class="eyebrow">Start A Project</p>
-            <h1>告訴我們你的影片需求。</h1>
-            <p>表單會收集足夠資訊，讓我們能初步判斷製作範圍、預算與時程。送出後會進入後台詢價管理。</p>
+            <p class="eyebrow" data-page-quoteEyebrow>Start A Project</p>
+            <h1 data-page-quoteTitle>告訴我們你的影片需求。</h1>
+            <p data-page-quoteLead>表單會收集足夠資訊，讓我們能初步判斷製作範圍、預算與時程。送出後會進入後台詢價管理。</p>
             <div class="contact-strip" data-contact-info></div>
           </div>
           <form class="form" data-inquiry-form>
@@ -50,16 +52,16 @@
               <select name="budget" data-budget-options required></select>
             </label>
             <label>補充需求<textarea name="message" required placeholder="請描述影片用途、參考風格、預計平台、目前素材狀況等。"></textarea></label>
-            <button class="btn primary full" type="submit">送出詢價</button>
+            <button class="btn primary full" type="submit" data-page-quoteSubmitText>送出詢價</button>
             <div class="status" data-form-status></div>
           </form>
         </div>
       </section>
     </main>
     <footer><div><strong data-brand-footer>星澔文創</strong><p>Brand Film / Interview / Podcast / Social Cuts</p></div><a href="admin.html">後台登入</a></footer>
-    <script src="/__/firebase/10.12.4/firebase-app-compat.js"></script>
-    <script src="/__/firebase/10.12.4/firebase-firestore-compat.js"></script>
-    <script src="/__/firebase/init.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
     <script src="data.js"></script>
     <script src="firebase-client.js"></script>
     <script src="site.js"></script>

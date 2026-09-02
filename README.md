@@ -28,6 +28,17 @@
 - 關於我們、團隊、服務領域管理
 - 媒體素材 URL 管理
 - 詢價資料查看、狀態更新、內部備註與 CSV 匯出
+- 首頁每個區塊的標題、說明、按鈕與跑馬文字皆可直接修改
+- 合作夥伴 Logo 上傳、排序與顯示控制
+- 作品封面直接上傳，YouTube 可播放，Instagram / Facebook 以穩定連結卡呈現
+- 影音製作與網站／SEO 延伸服務分開管理
+- 各內頁首屏標題集中管理
+
+## GitHub Pages 後台
+
+網站已改用 Firebase 官方 CDN 與明確的專案設定，因此 GitHub Pages 也能讀取 Firestore。請在 Firebase Authentication 的 Authorized domains 加入 `zeronsr2000-ai.github.io`，後台登入才能在 GitHub Pages 網址使用。
+
+第一次登入新版後台後，請按「初始化預設內容」，再開始修改。若要使用圖片上傳，需一併部署 `storage.rules`。
 
 ## 連接 GitHub
 

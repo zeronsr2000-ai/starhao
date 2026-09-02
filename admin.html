@@ -20,11 +20,14 @@
       <aside class="admin-sidebar hidden" data-admin-tabs>
         <button class="admin-tab active" data-tab="dashboard" type="button">總覽</button>
         <button class="admin-tab" data-tab="site" type="button">網站設定</button>
-        <button class="admin-tab" data-tab="home" type="button">首頁管理</button>
+        <button class="admin-tab" data-tab="home" type="button">首頁各區塊</button>
+        <button class="admin-tab" data-tab="partners" type="button">合作夥伴 Logo</button>
         <button class="admin-tab" data-tab="works" type="button">作品管理</button>
-        <button class="admin-tab" data-tab="services" type="button">服務管理</button>
+        <button class="admin-tab" data-tab="services" type="button">影音服務</button>
+        <button class="admin-tab" data-tab="extendedServices" type="button">網站與 SEO</button>
         <button class="admin-tab" data-tab="process" type="button">流程管理</button>
         <button class="admin-tab" data-tab="about" type="button">關於我們</button>
+        <button class="admin-tab" data-tab="pages" type="button">各頁標題</button>
         <button class="admin-tab" data-tab="media" type="button">媒體素材庫</button>
         <button class="admin-tab" data-tab="inquiries" type="button">詢價管理</button>
       </aside>
@@ -72,6 +75,11 @@
               <label>英文名稱<input name="englishName" /></label>
             </div>
             <label>品牌標語<input name="tagline" /></label>
+            <div class="field-group"><h3>導覽列與 Logo</h3><p>對應每一頁最上方的選單。</p>
+              <div class="grid-2"><label>Logo 圓圈字樣<input name="logoLetter" /></label><label>右上按鈕文字<input name="topCtaText" /></label></div>
+              <label>右上按鈕連結<input name="topCtaLink" /></label>
+              <div class="grid-2"><label>首頁選單<input name="navHome" /></label><label>作品選單<input name="navWorks" /></label><label>服務選單<input name="navServices" /></label><label>流程選單<input name="navProcess" /></label><label>關於選單<input name="navAbout" /></label><label>詢價選單<input name="navQuote" /></label></div>
+            </div>
             <div class="grid-2">
               <label>Email<input name="email" type="email" /></label>
               <label>電話<input name="phone" /></label>
@@ -87,14 +95,17 @@
             <label>Meta Pixel ID<input name="metaPixelId" /></label>
             <label>SEO Title<input name="seoTitle" /></label>
             <label>Meta Description<textarea name="seoDescription"></textarea></label>
+            <div class="field-group"><h3>頁尾</h3><p>對應每一頁最下方。</p><label>頁尾服務文字<input name="footerText" /></label><div class="grid-2"><label>頁尾按鈕文字<input name="footerCtaText" /></label><label>頁尾按鈕連結<input name="footerCtaLink" /></label></div></div>
             <button class="btn primary" type="submit">儲存網站設定</button>
           </form>
         </section>
 
         <section class="panel hidden" data-panel="home">
           <p class="eyebrow">Home</p>
-          <h2>首頁管理</h2>
+          <h2>首頁各區塊</h2>
+          <p class="panel-note">欄位順序與首頁由上到下相同。標題會自動平衡換行；如要指定斷行，可直接在文字框中按 Enter。</p>
           <form class="form" data-form="home">
+            <div class="field-group"><h3>01｜首頁首屏</h3>
             <label>小標<input name="eyebrow" /></label>
             <label>主標題<textarea name="title"></textarea></label>
             <label>副標題<textarea name="subtitle"></textarea></label>
@@ -110,8 +121,22 @@
               <label>Showreel 標籤<input name="showreelLabel" /></label>
               <label>Showreel 影片連結<input name="showreelUrl" /></label>
             </div>
+            <label>Showreel 下方標籤（每行一個）<textarea name="showreelBottom"></textarea></label>
+            </div>
+            <div class="field-group"><h3>02｜影音類型跑馬燈</h3><label>跑馬文字（每行一個）<textarea name="tickerItems"></textarea></label></div>
+            <div class="field-group"><h3>03｜合作夥伴</h3><div class="grid-2"><label>英文小標<input name="partnersEyebrow" /></label><label>區塊標題<input name="partnersTitle" /></label></div><label>區塊說明<textarea name="partnersDescription"></textarea></label></div>
+            <div class="field-group"><h3>04｜精選作品</h3><div class="grid-2"><label>英文小標<input name="worksEyebrow" /></label><label>區塊標題<input name="worksTitle" /></label></div><label>區塊說明<textarea name="worksDescription"></textarea></label></div>
+            <div class="field-group"><h3>05｜影音製作服務</h3><div class="grid-2"><label>英文小標<input name="servicesEyebrow" /></label><label>區塊標題<input name="servicesTitle" /></label></div><label>區塊說明<textarea name="servicesDescription"></textarea></label></div>
+            <div class="field-group"><h3>06｜數位延伸服務</h3><div class="grid-2"><label>英文小標<input name="extendedEyebrow" /></label><label>區塊標題<input name="extendedTitle" /></label></div><label>區塊說明<textarea name="extendedDescription"></textarea></label></div>
+            <div class="field-group"><h3>07｜合作流程</h3><div class="grid-2"><label>英文小標<input name="processEyebrow" /></label><label>區塊標題<input name="processTitle" /></label></div><label>區塊說明<textarea name="processDescription"></textarea></label></div>
+            <div class="field-group"><h3>08｜底部詢價行動</h3><div class="grid-2"><label>英文小標<input name="ctaEyebrow" /></label><label>標題<input name="ctaTitle" /></label></div><label>說明<textarea name="ctaBody"></textarea></label><div class="grid-2"><label>按鈕文字<input name="ctaText" /></label><label>按鈕連結<input name="ctaLink" /></label></div></div>
             <button class="btn primary" type="submit">儲存首頁</button>
           </form>
+        </section>
+
+        <section class="panel hidden" data-panel="partners">
+          <p class="eyebrow">Home / Partners</p><h2>合作夥伴 Logo</h2><p class="panel-note">首頁會以正方形圖片由右往左循環顯示；不會連到其他網站。</p>
+          <form class="form" data-collection-form="partners"><input name="id" type="hidden" /><label>辨識名稱（只在後台顯示）<input name="title" required /></label><label>Logo 圖片網址<input name="imageUrl" /></label><label>或直接上傳圖片<input name="imageFile" type="file" accept="image/*" data-upload-field="imageUrl" /></label><label>圖片替代文字<input name="alt" /></label><div class="grid-2"><label>排序<input name="sort" type="number" /></label><label>顯示狀態<select name="status"><option value="published">顯示</option><option value="hidden">隱藏</option></select></label></div><div class="actions"><button class="btn primary" type="submit">儲存 Logo</button><button class="btn ghost" data-new="partners" type="button">新增 Logo</button></div></form><div class="table-list" data-list="partners"></div>
         </section>
 
         <section class="panel hidden" data-panel="works">
@@ -121,13 +146,19 @@
             <input name="id" type="hidden" />
             <div class="grid-2"><label>作品標題<input name="title" required /></label><label>分類<input name="category" required /></label></div>
             <div class="grid-2"><label>客戶名稱<input name="client" /></label><label>專案年份<input name="year" /></label></div>
-            <div class="grid-2"><label>封面樣式<select name="coverClass"><option>g1</option><option>g2</option><option>g3</option><option>g4</option><option>g5</option></select></label><label>影片連結<input name="videoUrl" /></label></div>
+            <div class="grid-2"><label>備用封面樣式<select name="coverClass"><option>g1</option><option>g2</option><option>g3</option><option>g4</option><option>g5</option></select></label><label>YouTube／IG／FB 網址<input name="videoUrl" /></label></div>
+            <label>封面圖片網址<input name="coverUrl" /></label><label>或直接上傳封面<input name="coverFile" type="file" accept="image/*" data-upload-field="coverUrl" /></label>
             <label>專案簡介<textarea name="summary"></textarea></label>
             <div class="grid-2"><label>排序<input name="sort" type="number" /></label><label>上架狀態<select name="status"><option value="published">上架</option><option value="draft">草稿</option><option value="hidden">下架</option></select></label></div>
             <label><input name="featured" type="checkbox" /> 設為首頁精選</label>
             <div class="actions"><button class="btn primary" type="submit">儲存作品</button><button class="btn ghost" data-new="works" type="button">新增空白作品</button></div>
           </form>
           <div class="table-list" data-list="works"></div>
+        </section>
+
+        <section class="panel hidden" data-panel="extendedServices">
+          <p class="eyebrow">Extended Services</p><h2>網站製作與 SEO</h2><p class="panel-note">這些項目會獨立顯示在影音服務之後，維持影音製作為主要業務。</p>
+          <form class="form" data-collection-form="extendedServices"><input name="id" type="hidden" /><label>服務名稱<input name="title" required /></label><label>服務簡介<textarea name="summary"></textarea></label><label>適合對象<textarea name="target"></textarea></label><label>交付內容<textarea name="deliverables"></textarea></label><div class="grid-2"><label>排序<input name="sort" type="number" /></label><label>上架狀態<select name="status"><option value="published">上架</option><option value="draft">草稿</option><option value="hidden">下架</option></select></label></div><div class="actions"><button class="btn primary" type="submit">儲存延伸服務</button><button class="btn ghost" data-new="extendedServices" type="button">新增延伸服務</button></div></form><div class="table-list" data-list="extendedServices"></div>
         </section>
 
         <section class="panel hidden" data-panel="services">
@@ -171,14 +202,22 @@
           </form>
         </section>
 
+        <section class="panel hidden" data-panel="pages"><p class="eyebrow">Page Headings</p><h2>各頁標題與說明</h2><p class="panel-note">集中管理作品、服務、流程、關於我們與詢價頁最上方的文字。</p><form class="form" data-form="pages">
+          <div class="field-group"><h3>作品案例頁</h3><label>英文小標<input name="worksEyebrow" /></label><label>主標題<textarea name="worksTitle"></textarea></label><label>說明<textarea name="worksLead"></textarea></label></div>
+          <div class="field-group"><h3>服務項目頁</h3><label>英文小標<input name="servicesEyebrow" /></label><label>主標題<textarea name="servicesTitle"></textarea></label><label>說明<textarea name="servicesLead"></textarea></label></div>
+          <div class="field-group"><h3>製作流程頁</h3><label>英文小標<input name="processEyebrow" /></label><label>主標題<textarea name="processTitle"></textarea></label><label>說明<textarea name="processLead"></textarea></label></div>
+          <div class="field-group"><h3>關於我們頁</h3><label>英文小標<input name="aboutEyebrow" /></label><div class="grid-2"><label>觀點小標<input name="aboutPointLabel" /></label><label>觀點標題<input name="aboutPointTitle" /></label><label>團隊小標<input name="teamEyebrow" /></label><label>團隊標題<input name="teamTitle" /></label></div><label>團隊說明<textarea name="teamDescription"></textarea></label><div class="grid-2"><label>服務領域小標<input name="clientsEyebrow" /></label><label>服務領域標題<input name="clientsTitle" /></label></div></div>
+          <div class="field-group"><h3>詢價頁</h3><label>英文小標<input name="quoteEyebrow" /></label><label>主標題<textarea name="quoteTitle"></textarea></label><label>說明<textarea name="quoteLead"></textarea></label><label>送出按鈕文字<input name="quoteSubmitText" /></label></div><button class="btn primary" type="submit">儲存各頁文字</button></form></section>
+
         <section class="panel hidden" data-panel="media">
           <p class="eyebrow">Media</p>
           <h2>媒體素材庫</h2>
-          <p>第一版先管理圖片、影片與 OG 圖的外部 URL；之後可再升級成 Firebase Storage 上傳。</p>
+          <p>可貼入外部網址，也可以直接上傳圖片到 Firebase Storage。</p>
           <form class="form" data-collection-form="media">
             <input name="id" type="hidden" />
             <div class="grid-2"><label>素材名稱<input name="title" required /></label><label>類型<select name="type"><option>image</option><option>video</option><option>og</option><option>logo</option></select></label></div>
             <label>URL<input name="url" /></label>
+            <label>或直接上傳圖片<input name="mediaFile" type="file" accept="image/*" data-upload-field="url" /></label>
             <label>Alt 文字<input name="alt" /></label>
             <div class="actions"><button class="btn primary" type="submit">儲存素材</button><button class="btn ghost" data-new="media" type="button">新增素材</button></div>
           </form>
@@ -200,10 +239,11 @@
       </section>
     </main>
 
-    <script src="/__/firebase/10.12.4/firebase-app-compat.js"></script>
-    <script src="/__/firebase/10.12.4/firebase-auth-compat.js"></script>
-    <script src="/__/firebase/10.12.4/firebase-firestore-compat.js"></script>
-    <script src="/__/firebase/init.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-storage-compat.js"></script>
+    <script src="firebase-config.js"></script>
     <script src="data.js"></script>
     <script src="firebase-client.js"></script>
     <script src="admin.js"></script>

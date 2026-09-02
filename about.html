@@ -4,6 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="關於星澔文創，影音製作工作室的品牌理念、團隊與服務地區。" />
+    <meta property="og:image" content="https://zeronsr2000-ai.github.io/starhao/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
     <title>關於我們｜星澔文創</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -21,28 +23,28 @@
     <main>
       <section class="hero page-hero">
         <div>
-          <p class="eyebrow">About Starhorizon</p>
+          <p class="eyebrow" data-page-aboutEyebrow>About Starhorizon</p>
           <h1 data-about-title>我們相信，好的影像不是單純記錄。</h1>
           <p class="lead" data-about-body></p>
         </div>
       </section>
       <section class="section intro">
-        <div class="intro-label">POINT OF VIEW</div>
-        <div><h2>我們的製作觀點</h2><p data-about-philosophy></p></div>
+        <div class="intro-label" data-page-aboutPointLabel>POINT OF VIEW</div>
+        <div><h2 data-page-aboutPointTitle>我們的製作觀點</h2><p data-about-philosophy></p></div>
       </section>
       <section class="section">
-        <div class="section-head"><div><p class="eyebrow">Team</p><h2>團隊分工</h2></div><p>依專案需求組合企劃、拍攝與後製人員。</p></div>
+        <div class="section-head"><div><p class="eyebrow" data-page-teamEyebrow>Team</p><h2 data-page-teamTitle>團隊分工</h2></div><p data-page-teamDescription>依專案需求組合企劃、拍攝與後製人員。</p></div>
         <div class="team-grid" data-team></div>
       </section>
       <section class="section">
-        <div class="section-head"><div><p class="eyebrow">Clients</p><h2>服務領域</h2></div><p data-service-area></p></div>
+        <div class="section-head"><div><p class="eyebrow" data-page-clientsEyebrow>Clients</p><h2 data-page-clientsTitle>服務領域</h2></div><p data-service-area></p></div>
         <div class="logo-cloud" data-clients></div>
       </section>
     </main>
     <footer><div><strong data-brand-footer>星澔文創</strong><p>Brand Film / Interview / Podcast / Social Cuts</p></div><a href="quote.html">開始詢價</a></footer>
-    <script src="/__/firebase/10.12.4/firebase-app-compat.js"></script>
-    <script src="/__/firebase/10.12.4/firebase-firestore-compat.js"></script>
-    <script src="/__/firebase/init.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
     <script src="data.js"></script>
     <script src="firebase-client.js"></script>
     <script src="site.js"></script>

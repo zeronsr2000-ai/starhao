@@ -18,7 +18,7 @@
     if (!db) return fallback;
     try {
       const snap = await db.collection(collection).doc(id).get();
-      return snap.exists ? { id: snap.id, ...snap.data() } : fallback;
+      return snap.exists ? { ...(fallback || {}), id: snap.id, ...snap.data() } : fallback;
     } catch (error) {
       console.warn(`Unable to read ${collection}/${id}:`, error);
       return fallback;
@@ -72,11 +72,21 @@
     const defaults = window.STARHORIZON_DEFAULTS;
     await setDoc("siteContent", "site", defaults.site);
     await setDoc("siteContent", "home", defaults.home);
+    await setDoc("siteContent", "pages", defaults.pages);
     await setDoc("siteContent", "about", defaults.about);
     await setDoc("siteContent", "inquiryForm", defaults.inquiryForm);
     await Promise.all(defaults.works.map((item) => setDoc("works", item.id, item)));
     await Promise.all(defaults.services.map((item) => setDoc("services", item.id, item)));
+    await Promise.all(defaults.extendedServices.map((item) => setDoc("extendedServices", item.id, item)));
     await Promise.all(defaults.process.map((item, index) => setDoc("process", `step-${index + 1}`, item)));
+  }
+
+  async function uploadFile(file, folder) {
+    if (!hasFirebase() || !window.firebase.storage) throw new Error("圖片上傳服務尚未載入");
+    const cleanName = String(file.name || "image").replace(/[^a-zA-Z0-9._-]+/g, "-");
+    const path = `uploads/${folder || "media"}/${Date.now()}-${cleanName}`;
+    const snapshot = await window.firebase.storage().ref(path).put(file, { contentType: file.type });
+    return snapshot.ref.getDownloadURL();
   }
 
   window.StarhorizonFirebase = {
@@ -88,5 +98,6 @@
     addDoc,
     deleteDoc,
     seedDefaults,
+    uploadFile,
   };
 })();

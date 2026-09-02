@@ -3,9 +3,12 @@ const api = window.StarhorizonFirebase;
 let state = {
   site: defaults.site,
   home: defaults.home,
+  pages: defaults.pages,
   about: defaults.about,
   works: defaults.works,
   services: defaults.services,
+  extendedServices: defaults.extendedServices,
+  partners: defaults.partners,
   process: defaults.process,
   inquiryForm: defaults.inquiryForm,
   media: [],
@@ -38,6 +41,7 @@ function formToObject(form) {
   qsa('input[type="number"]', form).forEach((input) => {
     data[input.name] = Number(input.value || 0);
   });
+  qsa('input[type="file"]', form).forEach((input) => delete data[input.name]);
   return data;
 }
 
@@ -61,10 +65,16 @@ function makeId(prefix) {
 
 function collectionDefaults(collection) {
   if (collection === "works") {
-    return { id: "", title: "", category: "品牌形象", client: "", year: "2026", coverClass: "g1", videoUrl: "", summary: "", featured: false, sort: state.works.length + 1, status: "published" };
+    return { id: "", title: "", category: "品牌形象", client: "", year: "2026", coverClass: "g1", coverUrl: "", videoUrl: "", summary: "", featured: false, sort: state.works.length + 1, status: "published" };
   }
   if (collection === "services") {
     return { id: "", title: "", summary: "", target: "", deliverables: "", sort: state.services.length + 1, status: "published" };
+  }
+  if (collection === "extendedServices") {
+    return { id: "", title: "", summary: "", target: "", deliverables: "", sort: state.extendedServices.length + 1, status: "published" };
+  }
+  if (collection === "partners") {
+    return { id: "", title: "", imageUrl: "", alt: "", sort: state.partners.length + 1, status: "published" };
   }
   if (collection === "process") {
     return { id: "", title: "", body: "", sort: state.process.length + 1 };
@@ -75,10 +85,13 @@ function collectionDefaults(collection) {
 async function loadAll() {
   state.site = await api.getDoc("siteContent", "site", defaults.site);
   state.home = await api.getDoc("siteContent", "home", defaults.home);
+  state.pages = await api.getDoc("siteContent", "pages", defaults.pages);
   state.about = await api.getDoc("siteContent", "about", defaults.about);
   state.inquiryForm = await api.getDoc("siteContent", "inquiryForm", defaults.inquiryForm);
   state.works = await api.getCollection("works", defaults.works);
   state.services = await api.getCollection("services", defaults.services);
+  state.extendedServices = await api.getCollection("extendedServices", defaults.extendedServices);
+  state.partners = await api.getCollection("partners", defaults.partners);
   state.process = await api.getCollection("process", defaults.process);
   state.media = await api.getCollection("media", []);
   state.inquiries = await api.getCollection("inquiries", []);
@@ -94,6 +107,12 @@ function renderCounts() {
 function renderForms() {
   fillForm(qs('[data-form="site"]'), state.site);
   fillForm(qs('[data-form="home"]'), state.home);
+  fillForm(qs('[data-form="pages"]'), state.pages);
+  fillForm(qs('[data-form="home"]'), {
+    ...state.home,
+    showreelBottom: (state.home.showreelBottom || []).join("\n"),
+    tickerItems: (state.home.tickerItems || []).join("\n"),
+  });
   fillForm(qs('[data-form="inquiryForm"]'), {
     videoTypeOptions: (state.inquiryForm.videoTypeOptions || []).join("\n"),
     shootingOptions: (state.inquiryForm.shootingOptions || []).join("\n"),
@@ -165,6 +184,8 @@ function render() {
   renderForms();
   renderCollection("works", state.works);
   renderCollection("services", state.services);
+  renderCollection("extendedServices", state.extendedServices);
+  renderCollection("partners", state.partners);
   renderCollection("process", state.process);
   renderCollection("media", state.media);
   renderInquiries();
@@ -212,6 +233,17 @@ async function saveCollection(collection, data) {
   await loadAll();
 }
 
+async function uploadFormFiles(form, data) {
+  const inputs = qsa('input[type="file"][data-upload-field]', form);
+  for (const input of inputs) {
+    const file = input.files && input.files[0];
+    if (!file) continue;
+    setStatus(`正在上傳 ${file.name}...`);
+    data[input.dataset.uploadField] = await api.uploadFile(file, form.dataset.collectionForm || "media");
+  }
+  return data;
+}
+
 function setupEvents() {
   if (eventsReady) return;
   eventsReady = true;
@@ -230,7 +262,7 @@ function setupEvents() {
       event.preventDefault();
       const id = form.dataset.form;
       const data = formToObject(form);
-      const payload = id === "about" ? parseAboutPayload(data) : id === "inquiryForm" ? parseOptionsPayload(data) : data;
+      const payload = id === "about" ? parseAboutPayload(data) : id === "inquiryForm" ? parseOptionsPayload(data) : id === "home" ? { ...data, showreelBottom: splitLines(data.showreelBottom), tickerItems: splitLines(data.tickerItems) } : data;
       await saveSiteContent(id, payload);
     });
   });
@@ -238,7 +270,8 @@ function setupEvents() {
   qsa("[data-collection-form]").forEach((form) => {
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
-      await saveCollection(form.dataset.collectionForm, formToObject(form));
+      const data = await uploadFormFiles(form, formToObject(form));
+      await saveCollection(form.dataset.collectionForm, data);
     });
   });
 
