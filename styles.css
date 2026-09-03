@@ -949,18 +949,19 @@ p {
   background: rgba(0, 0, 0, 0.48);
   backdrop-filter: blur(10px);
 }
-}
 
 .featured-work-info,
 .library-work-info {
   display: grid;
   gap: 8px;
   align-content: start;
-  padding: 18px;
+  min-height: 126px;
+  padding: 20px 18px 22px;
 }
 
 [data-featured-works] .featured-work-info {
-  padding: 14px;
+  min-height: 118px;
+  padding: 18px 16px 20px;
 }
 
 .featured-work-info p,
@@ -975,13 +976,13 @@ p {
 .featured-work-info h3,
 .library-work-info h3 {
   margin: 0;
-  font-size: clamp(18px, 2vw, 25px);
-  line-height: 1.18;
+  font-size: clamp(17px, 1.7vw, 22px);
+  line-height: 1.24;
   letter-spacing: -0.03em;
 }
 
 [data-featured-works] .featured-work-info h3 {
-  font-size: clamp(15px, 1.25vw, 19px);
+  font-size: clamp(15px, 1.12vw, 18px);
 }
 
 .featured-work-info small,
