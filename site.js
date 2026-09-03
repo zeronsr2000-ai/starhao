@@ -179,7 +179,7 @@ function renderHome(home, works, services, extendedServices, process, partners, 
   text("[data-partners-eyebrow]", home.partnersEyebrow);
   lines("[data-partners-title]", home.partnersTitle);
   text("[data-partners-description]", home.partnersDescription);
-  renderPartners(partners);
+  renderPartners(partners, home.partnerMarqueeDuration);
   text("[data-works-eyebrow]", home.worksEyebrow);
   lines("[data-works-title]", home.worksTitle);
   text("[data-works-description]", home.worksDescription);
@@ -222,7 +222,7 @@ function renderShowreel(url, work) {
   root.classList.add("has-media");
 }
 
-function renderPartners(partners) {
+function renderPartners(partners, duration) {
   const root = $("[data-partner-track]");
   if (!root) return;
   const marquee = root.closest(".partner-marquee");
@@ -233,7 +233,22 @@ function renderPartners(partners) {
     return;
   }
   marquee?.classList.remove("is-empty");
-  root.innerHTML = rows.map((item) => `<figure class="partner-logo"><img src="${moneySafe(item.imageUrl)}" alt="${moneySafe(item.alt || item.title || "合作夥伴")}" loading="lazy" /></figure>`).join("");
+  root.style.setProperty("--partner-marquee-duration", `${normalizeMarqueeDuration(duration)}s`);
+  const repeatedRows = repeatForMarquee(rows);
+  const logoSet = repeatedRows.map((item) => `<figure class="partner-logo"><img src="${moneySafe(item.imageUrl)}" alt="${moneySafe(item.alt || item.title || "合作夥伴")}" loading="lazy" /></figure>`).join("");
+  root.innerHTML = `<div class="partner-set">${logoSet}</div><div class="partner-set" aria-hidden="true">${logoSet}</div>`;
+}
+
+function normalizeMarqueeDuration(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return 34;
+  return Math.min(180, Math.max(8, number));
+}
+
+function repeatForMarquee(rows) {
+  const minItems = 10;
+  const copies = Math.max(1, Math.ceil(minItems / rows.length));
+  return Array.from({ length: copies }, () => rows).flat();
 }
 
 function renderWorks(selector, works, categories = [], settings = {}) {

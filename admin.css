@@ -253,6 +253,12 @@ button:disabled {
   margin: 0;
 }
 
+.field-hint {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
 .admin-layout.is-login .panel {
   padding: clamp(26px, 4vw, 42px);
 }

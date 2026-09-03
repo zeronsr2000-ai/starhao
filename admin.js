@@ -348,6 +348,15 @@ function parseOptionsPayload(data) {
   };
 }
 
+function parseHomePayload(data) {
+  return {
+    ...data,
+    showreelBottom: splitLines(data.showreelBottom),
+    tickerItems: splitLines(data.tickerItems),
+    partnerMarqueeDuration: clampNumber(data.partnerMarqueeDuration, 34, 8, 180),
+  };
+}
+
 function parseWorkSettingsPayload(form, data) {
   return {
     showreelWorkId: data.showreelWorkId || "",
@@ -384,6 +393,12 @@ async function saveSiteContent(id, data) {
   api.clearCache?.();
   setStatus("已儲存，前台會自動同步。");
   await loadAll();
+}
+
+function clampNumber(value, fallback, min, max) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.min(max, Math.max(min, number));
 }
 
 async function saveCollection(collection, data) {
@@ -442,7 +457,7 @@ function setupEvents() {
       try {
         const id = form.dataset.form;
         const data = formToObject(form);
-        const payload = id === "about" ? parseAboutPayload(data) : id === "inquiryForm" ? parseOptionsPayload(data) : id === "workSettings" ? parseWorkSettingsPayload(form, data) : id === "home" ? { ...data, showreelBottom: splitLines(data.showreelBottom), tickerItems: splitLines(data.tickerItems) } : data;
+        const payload = id === "about" ? parseAboutPayload(data) : id === "inquiryForm" ? parseOptionsPayload(data) : id === "workSettings" ? parseWorkSettingsPayload(form, data) : id === "home" ? parseHomePayload(data) : data;
         await saveSiteContent(id, payload);
       } catch (error) {
         setStatus(`儲存失敗：${errorMessage(error)}`);

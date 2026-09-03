@@ -56,6 +56,7 @@ window.STARHORIZON_DEFAULTS = {
     partnersEyebrow: "Partners",
     partnersTitle: "合作夥伴",
     partnersDescription: "與不同領域的品牌並肩，把每一次溝通轉化成有影響力的影像。",
+    partnerMarqueeDuration: 34,
     worksEyebrow: "Selected Works",
     worksTitle: "精選作品",
     worksDescription: "用案例方式呈現需求、製作內容與交付項目，不只是放影片縮圖。",

@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex" />
     <title>後台管理｜星澔文創</title>
     <script src="canonical-redirect.js?v=20260902-2"></script>
-    <link rel="stylesheet" href="admin.css?v=20260903-3" />
+    <link rel="stylesheet" href="admin.css?v=20260903-4" />
   </head>
   <body class="admin-body">
     <div class="grain" aria-hidden="true"></div>
@@ -129,7 +129,7 @@
             <label>Showreel 下方標籤（每行一個）<textarea name="showreelBottom"></textarea></label>
             </div>
             <div class="field-group"><h3>02｜影音類型跑馬燈</h3><label>跑馬文字（每行一個）<textarea name="tickerItems"></textarea></label></div>
-            <div class="field-group"><h3>03｜合作夥伴</h3><div class="grid-2"><label>英文小標<input name="partnersEyebrow" /></label><label>區塊標題<input name="partnersTitle" /></label></div><label>區塊說明<textarea name="partnersDescription"></textarea></label></div>
+            <div class="field-group"><h3>03｜合作夥伴</h3><div class="grid-2"><label>英文小標<input name="partnersEyebrow" /></label><label>區塊標題<input name="partnersTitle" /></label></div><label>區塊說明<textarea name="partnersDescription"></textarea></label><label>Logo 跑馬燈一輪秒數<input name="partnerMarqueeDuration" type="number" min="8" max="180" step="1" /></label><p class="field-hint">數字越大速度越慢；預設 34 秒，約是原本速度再慢一倍。</p></div>
             <div class="field-group"><h3>04｜精選作品</h3><div class="grid-2"><label>英文小標<input name="worksEyebrow" /></label><label>區塊標題<input name="worksTitle" /></label></div><label>區塊說明<textarea name="worksDescription"></textarea></label></div>
             <div class="field-group"><h3>05｜影音製作服務</h3><div class="grid-2"><label>英文小標<input name="servicesEyebrow" /></label><label>區塊標題<input name="servicesTitle" /></label></div><label>區塊說明<textarea name="servicesDescription"></textarea></label></div>
             <div class="field-group"><h3>06｜數位延伸服務</h3><div class="grid-2"><label>英文小標<input name="extendedEyebrow" /></label><label>區塊標題<input name="extendedTitle" /></label></div><label>區塊說明<textarea name="extendedDescription"></textarea></label></div>
@@ -308,8 +308,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-storage-compat.js"></script>
     <script src="firebase-config.js"></script>
-    <script src="data.js"></script>
+    <script src="data.js?v=20260903-1"></script>
     <script src="firebase-client.js?v=20260903-1"></script>
-    <script src="admin.js?v=20260903-3"></script>
+    <script src="admin.js?v=20260903-4"></script>
   </body>
 </html>

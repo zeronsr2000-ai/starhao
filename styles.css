@@ -440,10 +440,16 @@ p {
 .partner-track {
   display: flex;
   width: max-content;
-  gap: 18px;
   padding: 10px 0;
-  animation: partner-marquee 17s linear infinite;
+  animation: partner-marquee var(--partner-marquee-duration, 34s) linear infinite;
   will-change: transform;
+}
+
+.partner-set {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 18px;
+  padding-right: 18px;
 }
 
 .partner-logo {
@@ -481,8 +487,8 @@ p {
 }
 
 @keyframes partner-marquee {
-  from { transform: translateX(100vw); }
-  to { transform: translateX(calc(-100% - 24px)); }
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }
 
 .section-head {
