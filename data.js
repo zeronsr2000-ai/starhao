@@ -9,6 +9,7 @@ window.STARHORIZON_DEFAULTS = {
     instagram: "",
     youtube: "",
     gaId: "",
+    googleSiteVerification: "",
     metaPixelId: "",
     seoTitle: "星澔文創｜品牌影片、訪談、Podcast 與社群短影音製作",
     seoDescription:
@@ -107,6 +108,7 @@ window.STARHORIZON_DEFAULTS = {
     {
       id: "video-production-seo-guide",
       slug: "video-production-seo-guide",
+      staticPath: "article-video-production-seo-guide.html",
       title: "品牌影片如何幫助 SEO 與信任建立",
       category: "SEO 觀點",
       publishedAt: "2026-09-03",

@@ -26,6 +26,17 @@ function attr(selector, name, value) {
   if (node && value) node.setAttribute(name, value);
 }
 
+function ensureMeta(name, content) {
+  if (!content) return;
+  let node = $(`meta[name="${name}"]`);
+  if (!node) {
+    node = document.createElement("meta");
+    node.setAttribute("name", name);
+    document.head.appendChild(node);
+  }
+  node.setAttribute("content", content);
+}
+
 function moneySafe(value) {
   return String(value || "").replace(/[<>"']/g, "");
 }
@@ -70,6 +81,7 @@ function resolveCategoryCover(category, works) {
 function setMeta(site) {
   document.title = site.seoTitle || document.title;
   attr('meta[name="description"]', "content", site.seoDescription);
+  ensureMeta("google-site-verification", site.googleSiteVerification);
   text("[data-brand]", site.brandName);
   text("[data-brand-footer]", site.brandName);
   text("[data-english]", site.englishName);
@@ -438,6 +450,7 @@ function articleSlug(article) {
 }
 
 function articleHref(article) {
+  if (article.staticPath) return article.staticPath;
   const slug = articleSlug(article);
   return `article.html?id=${encodeURIComponent(slug)}`;
 }

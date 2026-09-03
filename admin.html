@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex" />
     <title>後台管理｜星澔文創</title>
-    <link rel="stylesheet" href="admin.css?v=20260903-5" />
+    <link rel="stylesheet" href="admin.css?v=20260903-6" />
   </head>
   <body class="admin-body">
     <div class="grain" aria-hidden="true"></div>
@@ -18,21 +18,56 @@
 
     <main class="admin-layout is-login" data-admin-layout>
       <aside class="admin-sidebar hidden" data-admin-tabs>
-        <button class="admin-tab active" data-tab="dashboard" type="button">總覽</button>
-        <button class="admin-tab" data-tab="site" type="button">網站設定</button>
-        <button class="admin-tab" data-tab="home" type="button">首頁各區塊</button>
-        <button class="admin-tab" data-tab="partners" type="button">合作夥伴 Logo</button>
-        <button class="admin-tab" data-tab="workCategories" type="button">作品分類</button>
-        <button class="admin-tab" data-tab="works" type="button">作品列表</button>
-        <button class="admin-tab" data-tab="workSettings" type="button">首頁／展示設定</button>
-        <button class="admin-tab" data-tab="articles" type="button">最新消息</button>
-        <button class="admin-tab" data-tab="services" type="button">影音服務</button>
-        <button class="admin-tab" data-tab="extendedServices" type="button">網站與 SEO</button>
-        <button class="admin-tab" data-tab="process" type="button">流程管理</button>
-        <button class="admin-tab" data-tab="about" type="button">關於我們</button>
-        <button class="admin-tab" data-tab="pages" type="button">各頁標題</button>
-        <button class="admin-tab" data-tab="media" type="button">媒體素材庫</button>
-        <button class="admin-tab" data-tab="inquiries" type="button">詢價管理</button>
+        <div class="admin-menu-group is-open" data-admin-group="overview">
+          <button class="admin-group-toggle" data-admin-group-toggle type="button" aria-expanded="true">總覽</button>
+          <div class="admin-submenu">
+            <button class="admin-tab active" data-tab="dashboard" type="button">內容管理總覽</button>
+          </div>
+        </div>
+        <div class="admin-menu-group" data-admin-group="site">
+          <button class="admin-group-toggle" data-admin-group-toggle type="button" aria-expanded="false">網站基本</button>
+          <div class="admin-submenu">
+            <button class="admin-tab" data-tab="site" type="button">網站設定</button>
+            <button class="admin-tab" data-tab="pages" type="button">各頁標題</button>
+            <button class="admin-tab" data-tab="media" type="button">媒體素材庫</button>
+          </div>
+        </div>
+        <div class="admin-menu-group" data-admin-group="home">
+          <button class="admin-group-toggle" data-admin-group-toggle type="button" aria-expanded="false">首頁內容</button>
+          <div class="admin-submenu">
+            <button class="admin-tab" data-tab="home" type="button">首頁各區塊</button>
+            <button class="admin-tab" data-tab="partners" type="button">合作夥伴 Logo</button>
+          </div>
+        </div>
+        <div class="admin-menu-group" data-admin-group="works">
+          <button class="admin-group-toggle" data-admin-group-toggle type="button" aria-expanded="false">作品管理</button>
+          <div class="admin-submenu">
+            <button class="admin-tab" data-tab="workCategories" type="button">作品分類</button>
+            <button class="admin-tab" data-tab="works" type="button">作品列表</button>
+            <button class="admin-tab" data-tab="workSettings" type="button">首頁／展示設定</button>
+          </div>
+        </div>
+        <div class="admin-menu-group" data-admin-group="news">
+          <button class="admin-group-toggle" data-admin-group-toggle type="button" aria-expanded="false">最新消息</button>
+          <div class="admin-submenu">
+            <button class="admin-tab" data-tab="articles" type="button">文章管理</button>
+          </div>
+        </div>
+        <div class="admin-menu-group" data-admin-group="services">
+          <button class="admin-group-toggle" data-admin-group-toggle type="button" aria-expanded="false">服務內容</button>
+          <div class="admin-submenu">
+            <button class="admin-tab" data-tab="services" type="button">影音服務</button>
+            <button class="admin-tab" data-tab="extendedServices" type="button">網站與 SEO</button>
+            <button class="admin-tab" data-tab="process" type="button">流程管理</button>
+            <button class="admin-tab" data-tab="about" type="button">關於我們</button>
+          </div>
+        </div>
+        <div class="admin-menu-group" data-admin-group="inquiries">
+          <button class="admin-group-toggle" data-admin-group-toggle type="button" aria-expanded="false">詢價</button>
+          <div class="admin-submenu">
+            <button class="admin-tab" data-tab="inquiries" type="button">詢價管理</button>
+          </div>
+        </div>
       </aside>
 
       <section class="admin-main">
@@ -98,6 +133,7 @@
               <label>Instagram<input name="instagram" /></label>
               <label>GA ID<input name="gaId" /></label>
             </div>
+            <label>Google Search Console 驗證碼<input name="googleSiteVerification" placeholder="貼上 content 裡面的驗證碼即可" /></label>
             <label>Meta Pixel ID<input name="metaPixelId" /></label>
             <label>SEO Title<input name="seoTitle" /></label>
             <label>Meta Description<textarea name="seoDescription"></textarea></label>
@@ -355,8 +391,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-storage-compat.js"></script>
     <script src="firebase-config.js"></script>
-    <script src="data.js?v=20260903-2"></script>
+    <script src="data.js?v=20260903-3"></script>
     <script src="firebase-client.js?v=20260903-2"></script>
-    <script src="admin.js?v=20260903-6"></script>
+    <script src="admin.js?v=20260903-7"></script>
   </body>
 </html>

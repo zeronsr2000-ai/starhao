@@ -343,6 +343,12 @@ function render() {
 function switchTab(tabName) {
   qsa("[data-panel]").forEach((panel) => panel.classList.toggle("hidden", panel.dataset.panel !== tabName));
   qsa("[data-tab]").forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === tabName));
+  const activeTab = qs(`[data-tab="${tabName}"]`);
+  const group = activeTab?.closest("[data-admin-group]");
+  if (group) {
+    group.classList.add("is-open");
+    qs("[data-admin-group-toggle]", group)?.setAttribute("aria-expanded", "true");
+  }
 }
 
 function parseAboutPayload(data) {
@@ -546,6 +552,13 @@ function syncCoverModeFields() {
 function setupEvents() {
   if (eventsReady) return;
   eventsReady = true;
+  qsa("[data-admin-group-toggle]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const group = button.closest("[data-admin-group]");
+      const isOpen = group.classList.toggle("is-open");
+      button.setAttribute("aria-expanded", String(isOpen));
+    });
+  });
   qsa("[data-tab]").forEach((tab) => tab.addEventListener("click", () => switchTab(tab.dataset.tab)));
   qs("[data-refresh]").addEventListener("click", loadAll);
   qs("[data-seed]").addEventListener("click", async () => {

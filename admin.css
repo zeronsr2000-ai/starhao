@@ -192,11 +192,18 @@ button:disabled {
   top: 112px;
   align-self: start;
   display: grid;
-  gap: 8px;
+  gap: 10px;
   max-height: calc(100vh - 132px);
   overflow: auto;
+  padding-right: 4px;
 }
 
+.admin-menu-group {
+  display: grid;
+  gap: 6px;
+}
+
+.admin-group-toggle,
 .admin-tab {
   display: block;
   width: 100%;
@@ -208,6 +215,39 @@ button:disabled {
   background: rgba(255, 255, 255, 0.06);
   text-align: left;
   cursor: pointer;
+}
+
+.admin-group-toggle {
+  position: relative;
+  color: var(--lime);
+  background: rgba(223, 255, 79, 0.08);
+  font-weight: 950;
+}
+
+.admin-group-toggle::after {
+  position: absolute;
+  right: 16px;
+  content: "+";
+}
+
+.admin-menu-group.is-open .admin-group-toggle::after {
+  content: "−";
+}
+
+.admin-submenu {
+  display: none;
+  gap: 6px;
+  padding-left: 12px;
+}
+
+.admin-menu-group.is-open .admin-submenu {
+  display: grid;
+}
+
+.admin-submenu .admin-tab {
+  min-height: 40px;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.045);
 }
 
 .admin-tab.active {
@@ -523,6 +563,7 @@ p {
     flex-wrap: wrap;
     width: 100%;
     max-height: none;
+    overflow: visible;
   }
 
   .admin-body.is-authenticated .admin-sidebar,
@@ -533,6 +574,14 @@ p {
 
   .admin-tab {
     width: auto;
+  }
+
+  .admin-menu-group {
+    min-width: min(100%, 220px);
+  }
+
+  .admin-submenu .admin-tab {
+    width: 100%;
   }
 }
 
