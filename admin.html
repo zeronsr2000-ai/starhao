@@ -180,13 +180,15 @@
         <section class="panel hidden" data-panel="works">
           <p class="eyebrow">Works / Library</p>
           <h2>作品列表</h2>
-          <p class="panel-note">作品只使用 YouTube／IG／FB 連結嵌入，不上傳影片檔。橫式與直式會在前台使用不同容器呈現。</p>
+          <p class="panel-note">作品只使用 YouTube／IG／FB 連結，不上傳影片檔。前台卡片會優先顯示自訂封面，點擊後開啟作品連結。</p>
           <form class="form" data-collection-form="works">
             <input name="id" type="hidden" />
             <div class="grid-2"><label>作品標題<input name="title" required /></label><label>分類<select name="categoryId" data-category-select required></select></label></div>
             <div class="grid-2"><label>客戶名稱<input name="client" /></label><label>專案年份<input name="year" /></label></div>
             <div class="grid-2"><label>影片方向<select name="orientation"><option value="landscape">橫式 16:9</option><option value="portrait">直式 9:16</option></select></label><label>備用封面樣式<select name="coverClass"><option>g1</option><option>g2</option><option>g3</option><option>g4</option><option>g5</option></select></label></div>
             <label>YouTube／IG／FB 作品網址<input name="videoUrl" required /></label>
+            <label>自訂封面圖片網址<input name="coverUrl" /></label>
+            <label>或上傳自訂封面<input name="coverFile" type="file" accept="image/*" data-upload-field="coverUrl" /></label>
             <label>專案簡介<textarea name="summary"></textarea></label>
             <div class="grid-2"><label>排序<input name="sort" type="number" /></label><label>上架狀態<select name="status"><option value="published">上架</option><option value="draft">草稿</option><option value="hidden">下架</option></select></label></div>
             <div class="grid-2"><label><input name="featured" type="checkbox" /> 可顯示在首頁精選</label><label><input name="showcase" type="checkbox" /> 可作為展示影片</label></div>
@@ -309,6 +311,6 @@
     <script src="firebase-config.js"></script>
     <script src="data.js?v=20260903-1"></script>
     <script src="firebase-client.js?v=20260903-1"></script>
-    <script src="admin.js?v=20260903-4"></script>
+    <script src="admin.js?v=20260903-5"></script>
   </body>
 </html>

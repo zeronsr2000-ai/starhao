@@ -144,6 +144,33 @@ function getFacebookEmbedUrl(url) {
   return `https://www.facebook.com/plugins/${plugin}.php?href=${encodeURIComponent(value)}&show_text=false&width=900`;
 }
 
+function platformLabel(url) {
+  const value = String(url || "").toLowerCase();
+  if (value.includes("youtube.com") || value.includes("youtu.be")) return "YouTube";
+  if (value.includes("instagram.com")) return "Instagram";
+  if (value.includes("facebook.com") || value.includes("fb.watch")) return "Facebook";
+  return "作品連結";
+}
+
+function youtubeThumbnailUrl(url) {
+  const id = getYoutubeId(url);
+  return id ? `https://img.youtube.com/vi/${moneySafe(id)}/hqdefault.jpg` : "";
+}
+
+function workCoverUrl(work) {
+  return work?.coverUrl || youtubeThumbnailUrl(work?.videoUrl) || "";
+}
+
+function renderWorkCover(work) {
+  const cover = workCoverUrl(work);
+  const label = platformLabel(work?.videoUrl);
+  const title = moneySafe(work?.title || "作品封面");
+  const media = cover
+    ? `<img class="work-cover-image" src="${moneySafe(cover)}" alt="${title}" loading="lazy" />`
+    : `<div class="work-cover-fallback"><span>${title}</span></div>`;
+  return `${media}<span class="work-play-badge" aria-hidden="true">▶</span><span class="work-platform-badge">觀看平台：${moneySafe(label)}</span>`;
+}
+
 function renderEmbed(url, work = {}, compact = false) {
   const value = String(url || "").trim();
   if (!value) return "";
@@ -265,7 +292,7 @@ function renderWorks(selector, works, categories = [], settings = {}) {
       (work, index) => `
         <article class="featured-work-card ${index === 0 ? "is-large" : ""} ${work.orientation === "portrait" ? "portrait" : ""}">
           <a href="${moneySafe(work.videoUrl || `works.html#${work.id}`)}" target="_blank" rel="noreferrer">
-            <div class="featured-work-media ${moneySafe(work.coverClass || "g1")}">${renderEmbed(workVideoUrl(work), work, true)}</div>
+            <div class="featured-work-media ${moneySafe(work.coverClass || "g1")}">${renderWorkCover(work)}</div>
             <div class="featured-work-info">
               <p>${moneySafe(categoryLabel(categories, work))} /</p>
               <h3>${moneySafe(work.title)}</h3>
@@ -289,7 +316,7 @@ function renderFeaturedCard(work, categories, index) {
   return `
     <article class="featured-work-card ${index === 0 ? "is-large" : ""} ${work.orientation === "portrait" ? "portrait" : ""}">
       <a href="${moneySafe(work.videoUrl || "#")}" target="_blank" rel="noreferrer">
-        <div class="featured-work-media ${moneySafe(work.coverClass || "g1")}">${renderEmbed(workVideoUrl(work), work, true)}</div>
+        <div class="featured-work-media ${moneySafe(work.coverClass || "g1")}">${renderWorkCover(work)}</div>
         <div class="featured-work-info">
           <p>${moneySafe(categoryLabel(categories, work))} /</p>
           <h3>${moneySafe(work.title)}</h3>
@@ -318,7 +345,7 @@ function renderPaginatedWorks(root, rows, categories, page = 1) {
       ${pageRows.map((work) => `
         <article class="library-work-card ${work.orientation === "portrait" ? "portrait" : ""}" id="${moneySafe(work.id)}">
           <a href="${moneySafe(work.videoUrl || "#")}" target="_blank" rel="noreferrer">
-            <div class="library-work-media ${moneySafe(work.coverClass || "g1")}">${renderEmbed(workVideoUrl(work), work, true)}</div>
+            <div class="library-work-media ${moneySafe(work.coverClass || "g1")}">${renderWorkCover(work)}</div>
             <div class="library-work-info">
               <p>${moneySafe(categoryLabel(categories, work))} /</p>
               <h3>${moneySafe(work.title)}</h3>
