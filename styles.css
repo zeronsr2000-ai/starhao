@@ -730,7 +730,8 @@ p {
 }
 
 .quote-card {
-  grid-template-columns: 1fr 460px;
+  overflow: hidden;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 460px);
   padding: clamp(28px, 5vw, 70px);
   border-radius: 42px;
   background:
@@ -738,9 +739,21 @@ p {
     linear-gradient(135deg, rgba(255, 255, 255, 0.085), rgba(255, 255, 255, 0.035));
 }
 
+.quote {
+  padding-top: 150px;
+}
+
+.quote-card > *,
+.quote-card .form,
+.quote-card .form label,
+.quote-card .grid-2 {
+  min-width: 0;
+}
+
 .form {
   display: grid;
   gap: 14px;
+  min-width: 0;
 }
 
 .form label {
@@ -754,6 +767,8 @@ p {
 .form select,
 .form textarea {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   padding: 15px 16px;
   border: 1px solid var(--line);
   border-radius: 18px;
@@ -763,6 +778,8 @@ p {
 }
 
 .form textarea {
+  max-width: 100%;
+  min-width: 0;
   min-height: 120px;
   resize: vertical;
 }
@@ -1213,7 +1230,7 @@ dd {
 
 .grid-2 {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
 }
 
@@ -1600,6 +1617,10 @@ footer p {
   .section {
     width: min(calc(100% - 28px), var(--max));
     padding: 76px 0;
+  }
+
+  .quote {
+    padding-top: 104px;
   }
 
   .hero {
