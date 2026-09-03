@@ -5,6 +5,7 @@ let state = {
   home: defaults.home,
   pages: defaults.pages,
   about: defaults.about,
+  articles: defaults.articles,
   works: defaults.works,
   workCategories: defaults.workCategories,
   workSettings: defaults.workSettings,
@@ -88,6 +89,9 @@ function collectionDefaults(collection) {
   if (collection === "workCategories") {
     return { id: "", title: "", description: "", coverMode: "random", coverWorkId: "", showOnHome: true, showOnWorks: true, sort: state.workCategories.length + 1, status: "published" };
   }
+  if (collection === "articles") {
+    return { id: "", slug: "", title: "", category: "最新消息", publishedAt: new Date().toISOString().slice(0, 10), coverUrl: "", coverAlt: "", excerpt: "", seoTitle: "", seoDescription: "", blocks: [{ type: "paragraph", text: "" }], sort: state.articles.length + 1, status: "published" };
+  }
   if (collection === "services") {
     return { id: "", title: "", summary: "", target: "", deliverables: "", sort: state.services.length + 1, status: "published" };
   }
@@ -104,7 +108,7 @@ function collectionDefaults(collection) {
 }
 
 async function loadAll() {
-  const [site, home, pages, about, inquiryForm, workSettings, workCategories, works, services, extendedServices, partners, process, media, inquiries] = await Promise.all([
+  const [site, home, pages, about, inquiryForm, workSettings, workCategories, works, articles, services, extendedServices, partners, process, media, inquiries] = await Promise.all([
     api.getDoc("siteContent", "site", defaults.site),
     api.getDoc("siteContent", "home", defaults.home),
     api.getDoc("siteContent", "pages", defaults.pages),
@@ -113,6 +117,7 @@ async function loadAll() {
     api.getDoc("siteContent", "workSettings", defaults.workSettings),
     api.getCollection("workCategories", defaults.workCategories),
     api.getCollection("works", defaults.works),
+    api.getCollection("articles", defaults.articles),
     api.getCollection("services", defaults.services),
     api.getCollection("extendedServices", defaults.extendedServices),
     api.getCollection("partners", defaults.partners),
@@ -128,6 +133,7 @@ async function loadAll() {
   state.workSettings = normalizeWorkSettings(workSettings);
   state.workCategories = workCategories;
   state.works = works;
+  state.articles = articles;
   state.services = services;
   state.extendedServices = extendedServices;
   state.partners = partners;
@@ -139,6 +145,8 @@ async function loadAll() {
 
 function renderCounts() {
   qs("[data-count-works]").textContent = state.works.length;
+  const articleCount = qs("[data-count-articles]");
+  if (articleCount) articleCount.textContent = state.articles.length;
   qs("[data-count-services]").textContent = state.services.length;
   qs("[data-count-inquiries]").textContent = state.inquiries.length;
 }
@@ -228,6 +236,7 @@ function renderForms() {
   fillForm(qs('[data-form="workSettings"]'), {
     showreelWorkId: state.workSettings.showreelWorkId || state.home.showreelWorkId || "",
   });
+  renderArticleEditor(qs('[data-collection-form="articles"]'), parseArticleBlocks(collectionDefaults("articles").blocks));
 }
 
 function rowActions(collection, id) {
@@ -240,7 +249,7 @@ function rowActions(collection, id) {
 }
 
 function rowPreview(collection, item) {
-  if ((collection === "partners" || collection === "works") && (item.imageUrl || item.coverUrl)) {
+  if ((collection === "partners" || collection === "works" || collection === "articles") && (item.imageUrl || item.coverUrl)) {
     const url = item.imageUrl || item.coverUrl;
     const alt = item.alt || item.title || "圖片預覽";
     return `<img class="row-thumb" src="${safe(url)}" alt="${safe(alt)}" loading="lazy" />`;
@@ -260,6 +269,9 @@ function rowMeta(collection, item) {
     if (item.showcase) parts.push("可展示");
     if (item.videoUrl) parts.push("作品連結已設定");
     return parts.join("｜") || item.status || "";
+  }
+  if (collection === "articles") {
+    return `${item.category || "最新消息"}｜${item.publishedAt || "未設定日期"}｜${item.status === "draft" ? "草稿" : "已發布"}`;
   }
   if (collection === "workCategories") {
     return `${item.showOnHome ? "首頁顯示" : "首頁隱藏"}｜${item.showOnWorks ? "作品頁顯示" : "作品頁隱藏"}｜${item.coverMode === "selected" ? "指定封面" : "隨機封面"}`;
@@ -319,6 +331,7 @@ function render() {
   renderForms();
   renderCollection("workCategories", state.workCategories);
   renderCollection("works", state.works);
+  renderCollection("articles", state.articles);
   renderCollection("services", state.services);
   renderCollection("extendedServices", state.extendedServices);
   renderCollection("partners", state.partners);
@@ -381,6 +394,98 @@ function normalizeCategoryPayload(data) {
   };
 }
 
+function normalizeArticlePayload(data, form) {
+  const slug = slugify(data.slug || data.title || data.id || makeId("article"));
+  return {
+    ...data,
+    slug,
+    publishedAt: data.publishedAt || new Date().toISOString().slice(0, 10),
+    blocks: readArticleBlocks(form),
+  };
+}
+
+function slugify(value) {
+  const slug = String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^\w\u4e00-\u9fa5]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return slug || `article-${Date.now().toString(36)}`;
+}
+
+function parseArticleBlocks(value) {
+  if (Array.isArray(value)) return value;
+  try {
+    const parsed = JSON.parse(value || "[]");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function newArticleBlock(type) {
+  if (type === "heading") return { type, text: "新的小標題" };
+  if (type === "image") return { type, url: "", alt: "", caption: "" };
+  if (type === "video") return { type, url: "", caption: "", orientation: "landscape" };
+  if (type === "quote") return { type, text: "" };
+  if (type === "list") return { type, text: "" };
+  return { type: "paragraph", text: "" };
+}
+
+function renderArticleEditor(form, blocks = []) {
+  if (!form) return;
+  const editor = qs("[data-article-editor]", form);
+  if (!editor) return;
+  const rows = blocks.length ? blocks : [newArticleBlock("paragraph")];
+  editor.innerHTML = rows
+    .map((block, index) => articleBlockTemplate(block, index))
+    .join("");
+  syncArticleStore(form);
+}
+
+function articleBlockTemplate(block, index) {
+  const type = block.type || "paragraph";
+  const common = `
+    <div class="article-block-head">
+      <strong>${index + 1}. ${safe(articleBlockLabel(type))}</strong>
+      <div class="actions">
+        <button class="btn ghost" type="button" data-article-move="${index}" data-dir="-1">上移</button>
+        <button class="btn ghost" type="button" data-article-move="${index}" data-dir="1">下移</button>
+        <button class="btn danger" type="button" data-article-remove="${index}">刪除</button>
+      </div>
+    </div>`;
+  if (type === "image") {
+    return `<div class="article-block-editor" data-article-block="${index}" data-type="image">${common}<label>圖片網址<input data-block-field="url" value="${safe(block.url)}" /></label><label>或上傳圖片<input type="file" accept="image/*" data-article-image-upload data-target="${index}" /></label><div class="grid-2"><label>圖片 ALT<input data-block-field="alt" value="${safe(block.alt)}" /></label><label>圖片說明<input data-block-field="caption" value="${safe(block.caption)}" /></label></div></div>`;
+  }
+  if (type === "video") {
+    return `<div class="article-block-editor" data-article-block="${index}" data-type="video">${common}<label>YouTube／IG／FB 連結<input data-block-field="url" value="${safe(block.url)}" /></label><div class="grid-2"><label>影片說明<input data-block-field="caption" value="${safe(block.caption)}" /></label><label>影片方向<select data-block-field="orientation"><option value="landscape" ${block.orientation !== "portrait" ? "selected" : ""}>橫式</option><option value="portrait" ${block.orientation === "portrait" ? "selected" : ""}>直式</option></select></label></div></div>`;
+  }
+  const multiline = type === "paragraph" || type === "quote" || type === "list";
+  return `<div class="article-block-editor" data-article-block="${index}" data-type="${safe(type)}">${common}<label>${type === "list" ? "清單內容（每行一項）" : "內容"}${multiline ? `<textarea data-block-field="text">${safe(block.text)}</textarea>` : `<input data-block-field="text" value="${safe(block.text)}" />`}</label></div>`;
+}
+
+function articleBlockLabel(type) {
+  return { paragraph: "段落", heading: "小標題", image: "圖片", video: "影片嵌入", quote: "引用", list: "清單" }[type] || "段落";
+}
+
+function readArticleBlocks(form) {
+  return qsa("[data-article-block]", form)
+    .map((row) => {
+      const block = { type: row.dataset.type || "paragraph" };
+      qsa("[data-block-field]", row).forEach((field) => {
+        block[field.dataset.blockField] = field.value;
+      });
+      return block;
+    })
+    .filter((block) => block.type === "image" || block.type === "video" ? block.url : block.text || block.url);
+}
+
+function syncArticleStore(form) {
+  if (!form) return;
+  const store = qs('textarea[name="blocks"]', form);
+  if (store) store.value = JSON.stringify(readArticleBlocks(form), null, 2);
+}
+
 function splitLines(value) {
   return String(value || "")
     .split(/\r?\n/)
@@ -401,11 +506,12 @@ function clampNumber(value, fallback, min, max) {
   return Math.min(max, Math.max(min, number));
 }
 
-async function saveCollection(collection, data) {
+async function saveCollection(collection, data, form) {
   const id = data.id || makeId(collection);
   delete data.id;
   if (collection === "works") data = normalizeWorkPayload(data);
   if (collection === "workCategories") data = normalizeCategoryPayload(data);
+  if (collection === "articles") data = normalizeArticlePayload(data, form);
   await api.setDoc(collection, id, data);
   api.clearCache?.();
   setStatus("已儲存，前台會自動同步。");
@@ -473,8 +579,9 @@ function setupEvents() {
       setFormBusy(form, true);
       try {
         const data = await uploadFormFiles(form, formToObject(form));
-        await saveCollection(form.dataset.collectionForm, data);
+        await saveCollection(form.dataset.collectionForm, data, form);
         fillForm(form, collectionDefaults(form.dataset.collectionForm));
+        if (form.dataset.collectionForm === "articles") renderArticleEditor(form, collectionDefaults("articles").blocks);
       } catch (error) {
         setStatus(`儲存失敗：${errorMessage(error)}`);
       } finally {
@@ -486,6 +593,7 @@ function setupEvents() {
   qsa("[data-new]").forEach((button) => {
     button.addEventListener("click", () => {
       fillForm(qs(`[data-collection-form="${button.dataset.new}"]`), collectionDefaults(button.dataset.new));
+      if (button.dataset.new === "articles") renderArticleEditor(qs('[data-collection-form="articles"]'), collectionDefaults("articles").blocks);
       syncCoverModeFields();
     });
   });
@@ -500,7 +608,34 @@ function setupEvents() {
     const edit = event.target.closest("[data-edit]");
     const remove = event.target.closest("[data-delete]");
     const saveInquiry = event.target.closest("[data-save-inquiry]");
+    const addArticleBlock = event.target.closest("[data-add-article-block]");
+    const removeArticleBlock = event.target.closest("[data-article-remove]");
+    const moveArticleBlock = event.target.closest("[data-article-move]");
     try {
+      if (addArticleBlock) {
+        const form = addArticleBlock.closest("form");
+        const blocks = readArticleBlocks(form);
+        blocks.push(newArticleBlock(addArticleBlock.dataset.addArticleBlock));
+        renderArticleEditor(form, blocks);
+        return;
+      }
+      if (removeArticleBlock) {
+        const form = removeArticleBlock.closest("form");
+        const index = Number(removeArticleBlock.dataset.articleRemove);
+        const blocks = readArticleBlocks(form).filter((_, itemIndex) => itemIndex !== index);
+        renderArticleEditor(form, blocks);
+        return;
+      }
+      if (moveArticleBlock) {
+        const form = moveArticleBlock.closest("form");
+        const index = Number(moveArticleBlock.dataset.articleMove);
+        const nextIndex = index + Number(moveArticleBlock.dataset.dir);
+        const blocks = readArticleBlocks(form);
+        if (nextIndex < 0 || nextIndex >= blocks.length) return;
+        [blocks[index], blocks[nextIndex]] = [blocks[nextIndex], blocks[index]];
+        renderArticleEditor(form, blocks);
+        return;
+      }
       if (addShowcase) {
         const values = qsa('select[name="showcaseWorkIds"]').map((select) => select.value);
         if (values.length >= 6) {
@@ -519,7 +654,9 @@ function setupEvents() {
       }
       if (edit) {
         const row = state[edit.dataset.edit].find((item) => item.id === edit.dataset.id);
-        fillForm(qs(`[data-collection-form="${edit.dataset.edit}"]`), row);
+        const form = qs(`[data-collection-form="${edit.dataset.edit}"]`);
+        fillForm(form, row);
+        if (edit.dataset.edit === "articles") renderArticleEditor(form, parseArticleBlocks(row.blocks));
         syncCoverModeFields();
         setStatus("已載入資料，可以編輯後儲存。");
       }
@@ -545,6 +682,30 @@ function setupEvents() {
       }
     } catch (error) {
       setStatus(`操作失敗：${errorMessage(error)}`);
+    }
+  });
+
+  document.addEventListener("input", (event) => {
+    const field = event.target.closest("[data-block-field]");
+    if (field) syncArticleStore(field.closest("form"));
+  });
+
+  document.addEventListener("change", async (event) => {
+    const upload = event.target.closest("[data-article-image-upload]");
+    const field = event.target.closest("[data-block-field]");
+    if (field) syncArticleStore(field.closest("form"));
+    if (!upload || !upload.files || !upload.files[0]) return;
+    const form = upload.closest("form");
+    const row = upload.closest("[data-article-block]");
+    try {
+      setStatus(`正在處理 ${upload.files[0].name}...`);
+      const url = await api.uploadFile(upload.files[0], "articles");
+      const input = qs('[data-block-field="url"]', row);
+      if (input) input.value = url;
+      syncArticleStore(form);
+      setStatus("文章圖片已處理完成，記得按儲存文章。");
+    } catch (error) {
+      setStatus(`上傳失敗：${errorMessage(error)}`);
     }
   });
 }

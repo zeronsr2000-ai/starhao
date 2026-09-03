@@ -76,18 +76,7 @@ function setMeta(site) {
   text("[data-email]", site.email);
   text("[data-logo-letter]", site.logoLetter || "S");
   text(".logo-mark", site.logoLetter || "S");
-  text("[data-nav-home]", site.navHome);
-  text("[data-nav-works]", site.navWorks);
-  text("[data-nav-services]", site.navServices);
-  text("[data-nav-process]", site.navProcess);
-  text("[data-nav-about]", site.navAbout);
-  text("[data-nav-quote]", site.navQuote);
-  text('.nav a[href="index.html"]', site.navHome);
-  text('.nav a[href="works.html"]', site.navWorks);
-  text('.nav a[href="services.html"]', site.navServices);
-  text('.nav a[href="process.html"]', site.navProcess);
-  text('.nav a[href="about.html"]', site.navAbout);
-  text('.nav a[href="quote.html"]', site.navQuote);
+  renderNav(site);
   text("[data-top-cta]", site.topCtaText);
   attr("[data-top-cta]", "href", site.topCtaLink);
   text(".top-cta", site.topCtaText);
@@ -99,6 +88,22 @@ function setMeta(site) {
   text("footer > a", site.footerCtaText);
   attr("footer > a", "href", site.footerCtaLink);
   renderContactInfo(site);
+}
+
+function renderNav(site) {
+  const nav = $("[data-nav]");
+  if (!nav) return;
+  const page = document.body.dataset.page || "home";
+  const items = [
+    ["home", "index.html", site.navHome || "首頁"],
+    ["works", "works.html", site.navWorks || "作品案例"],
+    ["news", "news.html", site.navNews || "最新消息"],
+    ["services", "services.html", site.navServices || "服務項目"],
+    ["process", "process.html", site.navProcess || "製作流程"],
+    ["about", "about.html", site.navAbout || "關於我們"],
+    ["quote", "quote.html", site.navQuote || "詢價"],
+  ];
+  nav.innerHTML = items.map(([key, href, label]) => `<a class="${page === key || (page === "article" && key === "news") ? "active" : ""}" href="${href}">${moneySafe(label)}</a>`).join("");
 }
 
 function hasContactValue(value) {
@@ -428,6 +433,128 @@ function renderPages(pages) {
   Object.entries(pages || {}).forEach(([key, value]) => lines(`[data-page-${key}]`, value));
 }
 
+function articleSlug(article) {
+  return String(article.slug || article.id || "").trim();
+}
+
+function articleHref(article) {
+  const slug = articleSlug(article);
+  return `article.html?id=${encodeURIComponent(slug)}`;
+}
+
+function sortedArticles(articles) {
+  return published(articles).sort((a, b) => {
+    const dateA = String(a.publishedAt || "");
+    const dateB = String(b.publishedAt || "");
+    if (dateA !== dateB) return dateB.localeCompare(dateA);
+    return (a.sort || 0) - (b.sort || 0);
+  });
+}
+
+function parseArticleBlocks(value) {
+  if (Array.isArray(value)) return value;
+  try {
+    const parsed = JSON.parse(value || "[]");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function renderNewsList(articles) {
+  const root = $("[data-news-list]");
+  if (!root) return;
+  const rows = sortedArticles(articles);
+  if (!rows.length) {
+    root.innerHTML = `<p class="empty-note">目前尚未發布最新消息。</p>`;
+    return;
+  }
+  root.innerHTML = rows
+    .map((article) => {
+      const cover = article.coverUrl
+        ? `<img src="${moneySafe(article.coverUrl)}" alt="${moneySafe(article.coverAlt || article.title)}" loading="lazy" />`
+        : `<div class="news-card-fallback">${moneySafe(article.category || "News")}</div>`;
+      return `
+        <article class="news-card">
+          <a href="${articleHref(article)}">
+            <div class="news-card-media">${cover}</div>
+            <div class="news-card-body">
+              <p>${moneySafe(article.category || "最新消息")} / ${moneySafe(article.publishedAt || "")}</p>
+              <h2>${moneySafe(article.title)}</h2>
+              <small>${moneySafe(article.excerpt || "")}</small>
+            </div>
+          </a>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+function renderArticleBlocks(blocks) {
+  return parseArticleBlocks(blocks)
+    .map((block) => {
+      const type = block.type || "paragraph";
+      if (type === "heading") return `<h2>${moneySafe(block.text)}</h2>`;
+      if (type === "image") {
+        return `<figure>${block.url ? `<img src="${moneySafe(block.url)}" alt="${moneySafe(block.alt || block.caption || "")}" loading="lazy" />` : ""}${block.caption ? `<figcaption>${moneySafe(block.caption)}</figcaption>` : ""}</figure>`;
+      }
+      if (type === "video") return `<div class="article-video">${renderEmbed(block.url, { orientation: block.orientation || "landscape" }, true)}${block.caption ? `<p>${moneySafe(block.caption)}</p>` : ""}</div>`;
+      if (type === "quote") return `<blockquote>${moneySafe(block.text)}</blockquote>`;
+      if (type === "list") {
+        const items = String(block.text || "").split(/\r?\n/).map((item) => item.trim()).filter(Boolean);
+        return `<ul>${items.map((item) => `<li>${moneySafe(item)}</li>`).join("")}</ul>`;
+      }
+      return `<p>${moneySafe(block.text)}</p>`;
+    })
+    .join("");
+}
+
+function setArticleSeo(article) {
+  const title = article.seoTitle || `${article.title || "最新消息"}｜星澔文創`;
+  const description = article.seoDescription || article.excerpt || "";
+  document.title = title;
+  attr('meta[name="description"]', "content", description);
+  attr('meta[property="og:title"]', "content", title);
+  attr('meta[property="og:description"]', "content", description);
+  attr('meta[property="og:image"]', "content", article.coverUrl);
+  const jsonLd = $("#article-json-ld");
+  if (jsonLd) {
+    jsonLd.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: article.title,
+      description,
+      image: article.coverUrl || undefined,
+      datePublished: article.publishedAt || undefined,
+      author: { "@type": "Organization", name: defaults.site.brandName },
+      publisher: { "@type": "Organization", name: defaults.site.brandName },
+    });
+  }
+}
+
+function renderArticle(articles) {
+  const root = $("[data-article]");
+  if (!root) return;
+  const id = new URLSearchParams(window.location.search).get("id") || "";
+  const rows = sortedArticles(articles);
+  const article = rows.find((item) => item.id === id || articleSlug(item) === id) || rows[0];
+  if (!article) {
+    root.innerHTML = `<p class="empty-note">目前找不到這篇文章。</p>`;
+    return;
+  }
+  setArticleSeo(article);
+  const cover = article.coverUrl ? `<figure class="article-cover"><img src="${moneySafe(article.coverUrl)}" alt="${moneySafe(article.coverAlt || article.title)}" /></figure>` : "";
+  root.innerHTML = `
+    <header class="article-head">
+      <p class="eyebrow">${moneySafe(article.category || "News")} / ${moneySafe(article.publishedAt || "")}</p>
+      <h1>${moneySafe(article.title)}</h1>
+      <p>${moneySafe(article.excerpt || "")}</p>
+    </header>
+    ${cover}
+    <div class="article-content">${renderArticleBlocks(article.blocks)}</div>
+  `;
+}
+
 function setupNav() {
   const menu = $("[data-menu]");
   const nav = $("[data-nav]");
@@ -520,6 +647,19 @@ async function initPage() {
     return;
   }
 
+  if (page === "news") {
+    const [, pages, articles] = await Promise.all([sitePromise, api.getDoc("siteContent", "pages", defaults.pages), api.getCollection("articles", defaults.articles)]);
+    renderPages(pages);
+    renderNewsList(articles);
+    return;
+  }
+
+  if (page === "article") {
+    const [, articles] = await Promise.all([sitePromise, api.getCollection("articles", defaults.articles)]);
+    renderArticle(articles);
+    return;
+  }
+
   if (page === "services") {
     const [, pages, home, services, extendedServices] = await Promise.all([sitePromise, api.getDoc("siteContent", "pages", defaults.pages), api.getDoc("siteContent", "home", defaults.home), api.getCollection("services", defaults.services), api.getCollection("extendedServices", defaults.extendedServices)]);
     renderPages(pages);
@@ -561,6 +701,11 @@ function renderDefaultsForPage(page) {
   } else if (page === "works") {
     renderPages(defaults.pages);
     renderWorkList(defaults.works, defaults.workCategories, defaults.workSettings);
+  } else if (page === "news") {
+    renderPages(defaults.pages);
+    renderNewsList(defaults.articles);
+  } else if (page === "article") {
+    renderArticle(defaults.articles);
   } else if (page === "services") {
     renderPages(defaults.pages);
     renderServiceList(defaults.services);
@@ -597,6 +742,10 @@ function renderCachedForPage(page) {
     );
   } else if (page === "works") {
     renderWorkList(api.getCachedCollection("works", defaults.works), api.getCachedCollection("workCategories", defaults.workCategories), api.getCachedDoc("siteContent", "workSettings", defaults.workSettings));
+  } else if (page === "news") {
+    renderNewsList(api.getCachedCollection("articles", defaults.articles));
+  } else if (page === "article") {
+    renderArticle(api.getCachedCollection("articles", defaults.articles));
   } else if (page === "services") {
     const home = api.getCachedDoc("siteContent", "home", defaults.home);
     text("[data-extended-eyebrow]", home.extendedEyebrow);

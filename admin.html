@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex" />
     <title>後台管理｜星澔文創</title>
-    <link rel="stylesheet" href="admin.css?v=20260903-4" />
+    <link rel="stylesheet" href="admin.css?v=20260903-5" />
   </head>
   <body class="admin-body">
     <div class="grain" aria-hidden="true"></div>
@@ -25,6 +25,7 @@
         <button class="admin-tab" data-tab="workCategories" type="button">作品分類</button>
         <button class="admin-tab" data-tab="works" type="button">作品列表</button>
         <button class="admin-tab" data-tab="workSettings" type="button">首頁／展示設定</button>
+        <button class="admin-tab" data-tab="articles" type="button">最新消息</button>
         <button class="admin-tab" data-tab="services" type="button">影音服務</button>
         <button class="admin-tab" data-tab="extendedServices" type="button">網站與 SEO</button>
         <button class="admin-tab" data-tab="process" type="button">流程管理</button>
@@ -64,6 +65,7 @@
           </div>
           <div class="contact-strip">
             <div><strong data-count-works>0</strong><p>作品案例</p></div>
+            <div><strong data-count-articles>0</strong><p>最新消息</p></div>
             <div><strong data-count-services>0</strong><p>服務項目</p></div>
             <div><strong data-count-inquiries>0</strong><p>詢價資料</p></div>
           </div>
@@ -82,7 +84,7 @@
             <div class="field-group"><h3>導覽列與 Logo</h3><p>對應每一頁最上方的選單。</p>
               <div class="grid-2"><label>Logo 圓圈字樣<input name="logoLetter" /></label><label>右上按鈕文字<input name="topCtaText" /></label></div>
               <label>右上按鈕連結<input name="topCtaLink" /></label>
-              <div class="grid-2"><label>首頁選單<input name="navHome" /></label><label>作品選單<input name="navWorks" /></label><label>服務選單<input name="navServices" /></label><label>流程選單<input name="navProcess" /></label><label>關於選單<input name="navAbout" /></label><label>詢價選單<input name="navQuote" /></label></div>
+              <div class="grid-2"><label>首頁選單<input name="navHome" /></label><label>作品選單<input name="navWorks" /></label><label>最新消息選單<input name="navNews" /></label><label>服務選單<input name="navServices" /></label><label>流程選單<input name="navProcess" /></label><label>關於選單<input name="navAbout" /></label><label>詢價選單<input name="navQuote" /></label></div>
             </div>
             <div class="grid-2">
               <label>Email<input name="email" type="email" /></label>
@@ -221,6 +223,49 @@
           </form>
         </section>
 
+        <section class="panel hidden" data-panel="articles">
+          <p class="eyebrow">News / SEO Articles</p>
+          <h2>最新消息文章</h2>
+          <p class="panel-note">文章會顯示在最新消息頁，每篇都有固定連結、SEO 標題與描述。圖片可直接上傳，影片請貼 YouTube／IG／FB 連結。</p>
+          <form class="form" data-collection-form="articles">
+            <input name="id" type="hidden" />
+            <div class="grid-2">
+              <label>文章標題<input name="title" required /></label>
+              <label>網址代號 Slug<input name="slug" placeholder="例如 video-production-seo-guide" /></label>
+            </div>
+            <div class="grid-2">
+              <label>文章分類<input name="category" placeholder="例如 SEO 觀點" /></label>
+              <label>發布日期<input name="publishedAt" type="date" /></label>
+            </div>
+            <label>文章摘要<textarea name="excerpt"></textarea></label>
+            <label>封面圖片網址<input name="coverUrl" /></label>
+            <label>或上傳封面圖片<input name="coverFile" type="file" accept="image/*" data-upload-field="coverUrl" /></label>
+            <label>封面圖片 ALT 文字<input name="coverAlt" /></label>
+            <div class="field-group">
+              <h3>SEO 設定</h3>
+              <label>SEO Title<input name="seoTitle" placeholder="建議 25 到 35 個中文字內" /></label>
+              <label>Meta Description<textarea name="seoDescription" placeholder="建議 70 到 90 個中文字，清楚寫出文章主題與服務關聯"></textarea></label>
+            </div>
+            <div class="field-group">
+              <h3>文章內容</h3>
+              <p class="field-hint">用區塊新增內容，不需要碰程式碼。影片區塊支援 YouTube、Instagram、Facebook 連結嵌入。</p>
+              <textarea class="hidden" name="blocks"></textarea>
+              <div class="article-editor-actions">
+                <button class="btn ghost" type="button" data-add-article-block="paragraph">新增段落</button>
+                <button class="btn ghost" type="button" data-add-article-block="heading">新增小標</button>
+                <button class="btn ghost" type="button" data-add-article-block="image">新增圖片</button>
+                <button class="btn ghost" type="button" data-add-article-block="video">新增影片</button>
+                <button class="btn ghost" type="button" data-add-article-block="list">新增清單</button>
+                <button class="btn ghost" type="button" data-add-article-block="quote">新增引用</button>
+              </div>
+              <div class="article-editor" data-article-editor></div>
+            </div>
+            <div class="grid-2"><label>排序<input name="sort" type="number" /></label><label>上架狀態<select name="status"><option value="published">發布</option><option value="draft">草稿</option><option value="hidden">下架</option></select></label></div>
+            <div class="actions"><button class="btn primary" type="submit">儲存文章</button><button class="btn ghost" data-new="articles" type="button">新增文章</button></div>
+          </form>
+          <div class="table-list" data-list="articles"></div>
+        </section>
+
         <section class="panel hidden" data-panel="extendedServices">
           <p class="eyebrow">Extended Services</p><h2>網站製作與 SEO</h2><p class="panel-note">這些項目會獨立顯示在影音服務之後，維持影音製作為主要業務。</p>
           <form class="form" data-collection-form="extendedServices"><input name="id" type="hidden" /><label>服務名稱<input name="title" required /></label><label>服務簡介<textarea name="summary"></textarea></label><label>適合對象<textarea name="target"></textarea></label><label>交付內容<textarea name="deliverables"></textarea></label><div class="grid-2"><label>排序<input name="sort" type="number" /></label><label>上架狀態<select name="status"><option value="published">上架</option><option value="draft">草稿</option><option value="hidden">下架</option></select></label></div><div class="actions"><button class="btn primary" type="submit">儲存延伸服務</button><button class="btn ghost" data-new="extendedServices" type="button">新增延伸服務</button></div></form><div class="table-list" data-list="extendedServices"></div>
@@ -267,8 +312,9 @@
           </form>
         </section>
 
-        <section class="panel hidden" data-panel="pages"><p class="eyebrow">Page Headings</p><h2>各頁標題與說明</h2><p class="panel-note">集中管理作品、服務、流程、關於我們與詢價頁最上方的文字。</p><form class="form" data-form="pages">
+        <section class="panel hidden" data-panel="pages"><p class="eyebrow">Page Headings</p><h2>各頁標題與說明</h2><p class="panel-note">集中管理作品、最新消息、服務、流程、關於我們與詢價頁最上方的文字。</p><form class="form" data-form="pages">
           <div class="field-group"><h3>作品案例頁</h3><label>英文小標<input name="worksEyebrow" /></label><label>主標題<textarea name="worksTitle"></textarea></label><label>說明<textarea name="worksLead"></textarea></label></div>
+          <div class="field-group"><h3>最新消息頁</h3><label>英文小標<input name="newsEyebrow" /></label><label>主標題<textarea name="newsTitle"></textarea></label><label>說明<textarea name="newsLead"></textarea></label></div>
           <div class="field-group"><h3>服務項目頁</h3><label>英文小標<input name="servicesEyebrow" /></label><label>主標題<textarea name="servicesTitle"></textarea></label><label>說明<textarea name="servicesLead"></textarea></label></div>
           <div class="field-group"><h3>製作流程頁</h3><label>英文小標<input name="processEyebrow" /></label><label>主標題<textarea name="processTitle"></textarea></label><label>說明<textarea name="processLead"></textarea></label></div>
           <div class="field-group"><h3>關於我們頁</h3><label>英文小標<input name="aboutEyebrow" /></label><div class="grid-2"><label>觀點小標<input name="aboutPointLabel" /></label><label>觀點標題<input name="aboutPointTitle" /></label><label>團隊小標<input name="teamEyebrow" /></label><label>團隊標題<input name="teamTitle" /></label></div><label>團隊說明<textarea name="teamDescription"></textarea></label><div class="grid-2"><label>服務領域小標<input name="clientsEyebrow" /></label><label>服務領域標題<input name="clientsTitle" /></label></div></div>
@@ -309,8 +355,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-storage-compat.js"></script>
     <script src="firebase-config.js"></script>
-    <script src="data.js?v=20260903-1"></script>
-    <script src="firebase-client.js?v=20260903-1"></script>
-    <script src="admin.js?v=20260903-5"></script>
+    <script src="data.js?v=20260903-2"></script>
+    <script src="firebase-client.js?v=20260903-2"></script>
+    <script src="admin.js?v=20260903-6"></script>
   </body>
 </html>
