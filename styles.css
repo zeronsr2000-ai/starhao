@@ -34,6 +34,16 @@ body {
     var(--bg);
 }
 
+html,
+body {
+  max-width: 100%;
+}
+
+img,
+iframe {
+  max-width: 100%;
+}
+
 a {
   color: inherit;
   text-decoration: none;
@@ -1427,6 +1437,10 @@ footer p {
 }
 
 @media (max-width: 980px) {
+  .header {
+    min-height: 68px;
+  }
+
   .nav,
   .top-cta {
     display: none;
@@ -1461,6 +1475,17 @@ footer p {
   .case-card,
   .admin-layout {
     grid-template-columns: 1fr;
+  }
+
+  .hero {
+    min-height: auto;
+    padding-top: 118px;
+  }
+
+  .page-hero {
+    min-height: auto;
+    padding-top: 128px;
+    padding-bottom: 54px;
   }
 
   .showreel {
@@ -1515,32 +1540,95 @@ footer p {
   }
 }
 
+@media (max-width: 760px) {
+  .work-grid,
+  .featured-work-grid,
+  .work-showcase,
+  .work-library-grid,
+  .news-grid,
+  .service-list,
+  .team-grid,
+  .timeline,
+  .contact-strip,
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  [data-featured-works].featured-work-grid {
+    grid-template-columns: 1fr;
+  }
+
+  [data-featured-works] .featured-work-card,
+  [data-featured-works] .featured-work-card.is-large {
+    grid-column: auto;
+    grid-row: auto;
+  }
+}
+
 @media (max-width: 640px) {
   .header {
     top: 10px;
+    width: min(calc(100% - 24px), var(--max));
+    min-height: 58px;
+    padding: 8px 10px;
+  }
+
+  .logo {
+    gap: 8px;
+  }
+
+  .logo-mark {
+    width: 42px;
+    height: 42px;
+    font-size: 20px;
   }
 
   .logo div:last-child {
     display: none;
   }
 
+  .menu {
+    min-height: 42px;
+    padding: 8px 14px;
+    font-size: 14px;
+  }
+
+  .nav.is-open {
+    top: 64px;
+  }
+
   .section {
+    width: min(calc(100% - 28px), var(--max));
     padding: 76px 0;
   }
 
   .hero {
     min-height: auto;
-    padding-top: 120px;
-    padding-bottom: 80px;
+    padding: 104px 14px 66px;
+  }
+
+  .page-hero {
+    padding: 108px 14px 50px;
   }
 
   h1,
   .hero h1 {
-    font-size: clamp(28px, 8vw, 44px);
+    max-width: 100%;
+    font-size: clamp(30px, 9vw, 42px);
+    line-height: 1.04;
+  }
+
+  h2,
+  .section-head h2,
+  .quote h2,
+  .intro h2 {
+    font-size: clamp(26px, 8vw, 36px);
+    line-height: 1.08;
   }
 
   .hero-copy {
     font-size: 16px;
+    line-height: 1.75;
   }
 
   .actions,
@@ -1567,7 +1655,40 @@ footer p {
   .featured-work-card,
   .featured-work-card.is-large {
     grid-column: auto;
-    min-height: 360px;
+    min-height: auto;
+  }
+
+  .featured-work-card a,
+  .library-work-card a {
+    min-height: auto;
+  }
+
+  .featured-work-info,
+  .library-work-info,
+  [data-featured-works] .featured-work-info {
+    min-height: auto;
+    padding: 16px 16px 18px;
+  }
+
+  .featured-work-info h3,
+  .library-work-info h3,
+  [data-featured-works] .featured-work-info h3 {
+    font-size: clamp(20px, 6vw, 28px);
+    line-height: 1.22;
+  }
+
+  .work-platform-badge {
+    right: 10px;
+    bottom: 10px;
+    max-width: calc(100% - 20px);
+    padding: 6px 9px;
+    font-size: 12px;
+    line-height: 1.25;
+    white-space: normal;
+  }
+
+  .work-play-badge {
+    width: 54px;
   }
 
   [data-featured-works] .featured-work-card,
@@ -1578,7 +1699,7 @@ footer p {
 
   body[data-page="works"] .page-hero {
     min-height: auto;
-    padding-top: 118px;
+    padding-top: 108px;
   }
 
   .showreel {
@@ -1608,7 +1729,27 @@ footer p {
   }
 
   .quote-card {
+    width: 100%;
+    gap: 28px;
+    padding: 24px 18px;
     border-radius: 30px;
+  }
+
+  .quote-card .contact-strip {
+    width: 100%;
+  }
+
+  .contact-strip div {
+    min-width: 0;
+    padding: 18px;
+    overflow-wrap: anywhere;
+  }
+
+  .form input,
+  .form select,
+  .form textarea {
+    width: 100%;
+    min-width: 0;
   }
 
   footer {
