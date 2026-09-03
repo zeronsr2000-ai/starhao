@@ -272,29 +272,53 @@ p {
 
 .showreel::before {
   position: absolute;
+  z-index: 1;
   inset: 24px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 30px;
   content: "";
+  pointer-events: none;
 }
 
 .showreel::after,
 .thumb::after {
   position: absolute;
+  z-index: 1;
   inset: 0;
   background:
     linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.62)),
     repeating-linear-gradient(90deg, transparent 0 15px, rgba(255, 255, 255, 0.035) 15px 16px);
   content: "";
+  pointer-events: none;
 }
 
-.showreel-media,
+.showreel-media {
+  position: absolute;
+  z-index: 2;
+  top: 48%;
+  left: 50%;
+  width: min(78%, 620px);
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 18px;
+  background: rgba(0, 0, 0, 0.32);
+  transform: translate(-50%, -50%);
+}
+
 .showreel-media iframe,
-.showreel-media video {
+.showreel-media video,
+.showreel-media .embed,
+.showreel-media .showreel-embed {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+}
+
+.showreel-media .embed,
+.showreel-media .showreel-embed {
+  aspect-ratio: auto;
 }
 
 .showreel-media iframe,
@@ -310,7 +334,7 @@ p {
 .reel-tag,
 .thumb span {
   position: absolute;
-  z-index: 2;
+  z-index: 4;
   color: rgba(255, 255, 255, 0.88);
   font-size: 12px;
   font-weight: 900;
@@ -345,7 +369,7 @@ p {
 
 .reel-bottom {
   position: absolute;
-  z-index: 3;
+  z-index: 4;
   right: 36px;
   bottom: 36px;
   left: 36px;
@@ -1068,6 +1092,11 @@ footer p {
     min-height: 430px;
   }
 
+  .showreel-media {
+    top: 49%;
+    width: min(82%, 560px);
+  }
+
   .work-grid,
   .work-showcase,
   .service-list,
@@ -1146,6 +1175,26 @@ footer p {
   .work-card.wide {
     grid-column: auto;
     min-height: 360px;
+  }
+
+  .showreel {
+    min-height: 390px;
+  }
+
+  .showreel-media {
+    top: 50%;
+    width: calc(100% - 56px);
+  }
+
+  .reel-tag {
+    top: 28px;
+    left: 28px;
+  }
+
+  .reel-bottom {
+    right: 28px;
+    bottom: 28px;
+    left: 28px;
   }
 
   .service,
