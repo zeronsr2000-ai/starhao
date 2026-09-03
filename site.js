@@ -197,7 +197,7 @@ function renderHome(home, works, services, extendedServices, process, partners, 
   text("[data-cta-body]", home.ctaBody);
   text("[data-cta-text]", home.ctaText);
   attr("[data-cta-text]", "href", home.ctaLink);
-  renderWorks("[data-featured-works]", published(works).filter((item) => item.featured), published(categories).filter((item) => item.showOnHome !== false), workSettings);
+  renderWorks("[data-featured-works]", published(works), published(categories).filter((item) => item.showOnHome !== false), workSettings);
   renderServices("[data-service-preview]", published(services).slice(0, 6));
   renderServices("[data-extended-service-preview]", published(extendedServices));
   renderProcess("[data-process-preview]", process.slice(0, 4));
@@ -241,6 +241,10 @@ function renderWorks(selector, works, categories = [], settings = {}) {
   if (!root) return;
   const rows = fallbackShowcaseWorks(works, settings);
   root.classList.add("featured-work-grid");
+  if (!rows.length) {
+    root.innerHTML = `<p class="empty-note">目前尚未設定展示影片，請到後台「首頁／展示設定」選擇作品。</p>`;
+    return;
+  }
   root.innerHTML = rows
     .map(
       (work, index) => `

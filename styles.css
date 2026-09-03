@@ -934,6 +934,16 @@ p {
   background: var(--lime);
 }
 
+.empty-note {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 28px;
+  border: 1px dashed rgba(223, 255, 79, 0.36);
+  border-radius: var(--radius);
+  color: rgba(255, 255, 255, 0.72);
+  background: rgba(223, 255, 79, 0.05);
+}
+
 .work-category {
   display: grid;
   gap: 20px;
