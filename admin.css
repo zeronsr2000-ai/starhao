@@ -375,6 +375,27 @@ p {
   cursor: not-allowed;
 }
 
+.showcase-editor {
+  display: grid;
+  gap: 12px;
+}
+
+.showcase-editor-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.showcase-editor-row .btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;
@@ -510,6 +531,10 @@ p {
   }
 
   .row-card {
+    grid-template-columns: 1fr;
+  }
+
+  .showcase-editor-row {
     grid-template-columns: 1fr;
   }
 

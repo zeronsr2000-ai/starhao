@@ -190,6 +190,20 @@ footer {
   min-height: 58vh;
 }
 
+body[data-page="works"] .page-hero {
+  min-height: 360px;
+  padding-top: 150px;
+  padding-bottom: 46px;
+}
+
+body[data-page="works"] .page-hero h1 {
+  max-width: 740px;
+}
+
+body[data-page="works"] .page-hero .lead {
+  max-width: 620px;
+}
+
 .eyebrow {
   margin: 0 0 18px;
   color: var(--lime);
@@ -795,30 +809,129 @@ p {
   border-radius: 0;
 }
 
+.featured-work-grid,
 .work-showcase {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 18px;
 }
 
-.showcase-card {
-  display: grid;
-  gap: 14px;
-  align-content: start;
-  min-height: 260px;
-  padding: 14px;
+.featured-work-card,
+.library-work-card {
+  overflow: hidden;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--card);
+  transition: 0.25s ease;
 }
 
-.showcase-card h3 {
+.featured-work-card:hover,
+.library-work-card:hover {
+  background: var(--card2);
+  transform: translateY(-6px);
+}
+
+.featured-work-card {
+  grid-column: span 2;
+}
+
+.featured-work-card.is-large {
+  grid-column: span 3;
+  grid-row: span 2;
+}
+
+.featured-work-card a,
+.library-work-card a {
+  display: grid;
+  height: 100%;
+}
+
+.featured-work-media,
+.library-work-media {
+  position: relative;
+  min-height: 190px;
+  overflow: hidden;
+}
+
+.featured-work-card.is-large .featured-work-media {
+  min-height: 330px;
+}
+
+.featured-work-media .embed,
+.library-work-media .embed {
+  position: absolute;
+  inset: 0;
   margin: 0;
-  font-size: 18px;
+  border: 0;
+  border-radius: 0;
+  pointer-events: none;
 }
 
-.showcase-card.portrait {
-  max-width: 280px;
+.featured-work-card.portrait .featured-work-media,
+.library-work-card.portrait .library-work-media {
+  min-height: 300px;
+}
+
+.featured-work-info,
+.library-work-info {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  padding: 18px;
+}
+
+.featured-work-info p,
+.library-work-info p {
+  margin: 0;
+  color: var(--lime);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.featured-work-info h3,
+.library-work-info h3 {
+  margin: 0;
+  font-size: clamp(18px, 2vw, 25px);
+  line-height: 1.18;
+  letter-spacing: -0.03em;
+}
+
+.featured-work-info small,
+.library-work-info small {
+  color: rgba(255, 255, 255, 0.58);
+  line-height: 1.65;
+}
+
+.work-library-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 42px;
+}
+
+.pagination button {
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.78);
+  background: rgba(255, 255, 255, 0.06);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.pagination button.active {
+  color: #08080a;
+  border-color: var(--lime);
+  background: var(--lime);
 }
 
 .work-category {
@@ -1098,7 +1211,9 @@ footer p {
   }
 
   .work-grid,
+  .featured-work-grid,
   .work-showcase,
+  .work-library-grid,
   .service-list,
   .team-grid,
   .timeline,
@@ -1108,7 +1223,9 @@ footer p {
   }
 
   .work-card.big,
-  .work-card.wide {
+  .work-card.wide,
+  .featured-work-card,
+  .featured-work-card.is-large {
     grid-column: span 2;
   }
 
@@ -1161,7 +1278,9 @@ footer p {
   }
 
   .work-grid,
+  .featured-work-grid,
   .work-showcase,
+  .work-library-grid,
   .service-list,
   .team-grid,
   .timeline,
@@ -1172,9 +1291,16 @@ footer p {
 
   .work-card,
   .work-card.big,
-  .work-card.wide {
+  .work-card.wide,
+  .featured-work-card,
+  .featured-work-card.is-large {
     grid-column: auto;
     min-height: 360px;
+  }
+
+  body[data-page="works"] .page-hero {
+    min-height: auto;
+    padding-top: 118px;
   }
 
   .showreel {

@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex" />
     <title>後台管理｜星澔文創</title>
     <script src="canonical-redirect.js?v=20260902-2"></script>
-    <link rel="stylesheet" href="admin.css?v=20260903-1" />
+    <link rel="stylesheet" href="admin.css?v=20260903-3" />
   </head>
   <body class="admin-body">
     <div class="grain" aria-hidden="true"></div>
@@ -211,13 +211,10 @@
               <div class="choice-list" data-featured-category-options></div>
             </div>
             <div class="field-group">
-              <h3>作品案例頁上方四支展示影片</h3>
-              <div class="grid-2">
-                <label>展示影片 1<select name="showcaseWorkId1" data-work-select><option value="">自動選擇</option></select></label>
-                <label>展示影片 2<select name="showcaseWorkId2" data-work-select><option value="">自動選擇</option></select></label>
-                <label>展示影片 3<select name="showcaseWorkId3" data-work-select><option value="">自動選擇</option></select></label>
-                <label>展示影片 4<select name="showcaseWorkId4" data-work-select><option value="">自動選擇</option></select></label>
-              </div>
+              <h3>首頁與作品案例頁展示影片</h3>
+              <p>最多 6 支，前台有幾支就顯示幾支；第一支會是最大展示卡。</p>
+              <div class="showcase-editor" data-showcase-editor></div>
+              <div class="actions"><button class="btn ghost" type="button" data-add-showcase>新增展示影片</button></div>
             </div>
             <button class="btn primary" type="submit">儲存展示設定</button>
           </form>
@@ -313,6 +310,6 @@
     <script src="firebase-config.js"></script>
     <script src="data.js"></script>
     <script src="firebase-client.js?v=20260903-1"></script>
-    <script src="admin.js?v=20260903-1"></script>
+    <script src="admin.js?v=20260903-3"></script>
   </body>
 </html>

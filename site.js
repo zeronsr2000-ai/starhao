@@ -5,6 +5,10 @@ function $(selector, root = document) {
   return root.querySelector(selector);
 }
 
+function qsa(selector, root = document) {
+  return [...root.querySelectorAll(selector)];
+}
+
 function text(selector, value) {
   const node = $(selector);
   if (node) node.textContent = value || "";
@@ -50,7 +54,7 @@ function workVideoUrl(work) {
 function fallbackShowcaseWorks(works, settings) {
   const selected = (settings.showcaseWorkIds || []).map((id) => findWork(works, id)).filter(Boolean);
   const auto = works.filter((work) => work.showcase !== false && !selected.some((item) => item.id === work.id));
-  return [...selected, ...auto].slice(0, 4);
+  return [...selected, ...auto].slice(0, 6);
 }
 
 function resolveCategoryCover(category, works) {
@@ -235,17 +239,16 @@ function renderPartners(partners) {
 function renderWorks(selector, works, categories = [], settings = {}) {
   const root = $(selector);
   if (!root) return;
-  const allowed = new Set(settings.featuredCategoryIds?.length ? settings.featuredCategoryIds : categories.map((item) => item.id));
-  const rows = works.filter((work) => !allowed.size || allowed.has(categoryIdForWork(categories, work)));
-  const chips = categories.length ? `<div class="category-pills">${categories.map((item) => `<span>${moneySafe(item.title)}</span>`).join("")}</div>` : "";
-  root.innerHTML = chips + rows
+  const rows = fallbackShowcaseWorks(works, settings);
+  root.classList.add("featured-work-grid");
+  root.innerHTML = rows
     .map(
       (work, index) => `
-        <article class="work-card ${index === 0 ? "big" : index === 4 ? "wide" : ""} ${work.orientation === "portrait" ? "portrait" : ""}">
-          <a href="works.html#${moneySafe(work.id)}">
-            <div class="thumb ${moneySafe(work.coverClass || "g1")}"><span>${moneySafe(categoryLabel(categories, work))}</span>${renderEmbed(workVideoUrl(work), work, true)}</div>
-            <div class="work-info">
-              <p>${moneySafe(work.client || work.year || "案例")}</p>
+        <article class="featured-work-card ${index === 0 ? "is-large" : ""} ${work.orientation === "portrait" ? "portrait" : ""}">
+          <a href="${moneySafe(work.videoUrl || `works.html#${work.id}`)}" target="_blank" rel="noreferrer">
+            <div class="featured-work-media ${moneySafe(work.coverClass || "g1")}">${renderEmbed(workVideoUrl(work), work, true)}</div>
+            <div class="featured-work-info">
+              <p>${moneySafe(categoryLabel(categories, work))} /</p>
               <h3>${moneySafe(work.title)}</h3>
               <small>${moneySafe(work.summary)}</small>
             </div>
@@ -256,49 +259,61 @@ function renderWorks(selector, works, categories = [], settings = {}) {
     .join("");
 }
 
-function renderShowcaseWorks(works, settings) {
+function renderShowcaseWorks(works, categories, settings) {
   const root = $("[data-work-showcase]");
   if (!root) return;
   const rows = fallbackShowcaseWorks(published(works), settings);
-  root.innerHTML = rows.map((work) => `<article class="showcase-card ${work.orientation === "portrait" ? "portrait" : ""}">${renderEmbed(workVideoUrl(work), work, true)}<h3>${moneySafe(work.title)}</h3></article>`).join("");
+  root.innerHTML = rows.map((work, index) => renderFeaturedCard(work, categories, index)).join("");
+}
+
+function renderFeaturedCard(work, categories, index) {
+  return `
+    <article class="featured-work-card ${index === 0 ? "is-large" : ""} ${work.orientation === "portrait" ? "portrait" : ""}">
+      <a href="${moneySafe(work.videoUrl || "#")}" target="_blank" rel="noreferrer">
+        <div class="featured-work-media ${moneySafe(work.coverClass || "g1")}">${renderEmbed(workVideoUrl(work), work, true)}</div>
+        <div class="featured-work-info">
+          <p>${moneySafe(categoryLabel(categories, work))} /</p>
+          <h3>${moneySafe(work.title)}</h3>
+          <small>${moneySafe(work.summary)}</small>
+        </div>
+      </a>
+    </article>
+  `;
 }
 
 function renderWorkList(works, categories = [], settings = {}) {
   const root = $("[data-work-list]");
   if (!root) return;
   const rows = published(works);
-  renderShowcaseWorks(rows, settings);
-  const visibleCategories = published(categories).filter((category) => category.showOnWorks !== false);
-  root.innerHTML = visibleCategories
-    .map(
-      (category) => {
-        const items = rows.filter((work) => categoryIdForWork(categories, work) === category.id || work.category === category.title);
-        const cover = resolveCategoryCover(category, rows);
-        return `
-          <section class="work-category" id="${moneySafe(category.id)}">
-            <div class="case-card category-cover">
-              <div class="category-media ${cover?.orientation === "portrait" ? "portrait" : ""}">${cover ? renderEmbed(workVideoUrl(cover), cover, true) : ""}</div>
-              <div class="case-body">
-                <p class="eyebrow">${moneySafe(category.coverMode === "selected" ? "Selected Cover" : "Random Cover")}</p>
-                <h2>${moneySafe(category.title)}</h2>
-                <p>${moneySafe(category.description)}</p>
-              </div>
+  renderShowcaseWorks(rows, categories, settings);
+  renderPaginatedWorks(root, rows, categories, 1);
+}
+
+function renderPaginatedWorks(root, rows, categories, page = 1) {
+  const pageSize = 12;
+  const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+  const current = Math.min(Math.max(1, page), totalPages);
+  const pageRows = rows.slice((current - 1) * pageSize, current * pageSize);
+  root.innerHTML = `
+    <div class="work-library-grid">
+      ${pageRows.map((work) => `
+        <article class="library-work-card ${work.orientation === "portrait" ? "portrait" : ""}" id="${moneySafe(work.id)}">
+          <a href="${moneySafe(work.videoUrl || "#")}" target="_blank" rel="noreferrer">
+            <div class="library-work-media ${moneySafe(work.coverClass || "g1")}">${renderEmbed(workVideoUrl(work), work, true)}</div>
+            <div class="library-work-info">
+              <p>${moneySafe(categoryLabel(categories, work))} /</p>
+              <h3>${moneySafe(work.title)}</h3>
+              <small>${moneySafe(work.summary)}</small>
             </div>
-            <div class="work-grid category-work-grid">
-              ${items.map((work) => `
-                <article class="work-card ${work.orientation === "portrait" ? "portrait" : ""}" id="${moneySafe(work.id)}">
-                  <a href="${moneySafe(work.videoUrl || "#")}" target="_blank" rel="noreferrer">
-                    <div class="thumb ${moneySafe(work.coverClass || "g1")}"><span>${moneySafe(work.year || "作品")}</span>${renderEmbed(workVideoUrl(work), work, true)}</div>
-                    <div class="work-info"><p>${moneySafe(work.client || category.title)}</p><h3>${moneySafe(work.title)}</h3><small>${moneySafe(work.summary)}</small></div>
-                  </a>
-                </article>
-              `).join("")}
-            </div>
-          </section>
-        `;
-      }
-    )
-    .join("");
+          </a>
+        </article>
+      `).join("")}
+    </div>
+    ${totalPages > 1 ? `<nav class="pagination" aria-label="作品分頁">${Array.from({ length: totalPages }, (_, index) => `<button type="button" data-work-page="${index + 1}" class="${index + 1 === current ? "active" : ""}">${index + 1}</button>`).join("")}</nav>` : ""}
+  `;
+  qsa("[data-work-page]", root).forEach((button) => {
+    button.addEventListener("click", () => renderPaginatedWorks(root, rows, categories, Number(button.dataset.workPage)));
+  });
 }
 
 function renderServices(selector, services) {

@@ -148,7 +148,7 @@ function normalizeWorkSettings(settings = {}) {
   return {
     ...defaults.workSettings,
     ...settings,
-    showcaseWorkIds,
+    showcaseWorkIds: showcaseWorkIds.slice(0, 6),
   };
 }
 
@@ -179,7 +179,30 @@ function renderWorkControls() {
       .map((item) => `<label><input name="featuredCategoryIds" type="checkbox" value="${safe(item.id)}" ${selected.has(item.id) ? "checked" : ""} /> ${safe(item.title)}</label>`)
       .join("");
   }
+  renderShowcaseEditor();
   syncCoverModeFields();
+}
+
+function renderShowcaseEditor() {
+  const editor = qs("[data-showcase-editor]");
+  if (!editor) return;
+  const ids = (state.workSettings.showcaseWorkIds || []).slice(0, 6);
+  const rows = ids.length ? ids : [""];
+  editor.innerHTML = rows
+    .map(
+      (id, index) => `
+        <div class="showcase-editor-row">
+          <label>展示影片 ${index + 1}<select name="showcaseWorkIds" data-work-select>${workSelectOptions(id)}</select></label>
+          <button class="btn danger" type="button" data-remove-showcase="${index}" ${rows.length <= 1 ? "disabled" : ""}>刪除</button>
+        </div>
+      `,
+    )
+    .join("");
+}
+
+function workSelectOptions(current = "") {
+  const works = state.works.filter((item) => item.status !== "hidden").sort((a, b) => (a.sort || 0) - (b.sort || 0));
+  return `<option value="">自動選擇</option>${works.map((item) => `<option value="${safe(item.id)}" ${item.id === current ? "selected" : ""}>${safe(item.title)}｜${safe(categoryTitle(item.categoryId) || item.category)}</option>`).join("")}`;
 }
 
 function renderForms() {
@@ -204,10 +227,6 @@ function renderForms() {
   renderWorkControls();
   fillForm(qs('[data-form="workSettings"]'), {
     showreelWorkId: state.workSettings.showreelWorkId || state.home.showreelWorkId || "",
-    showcaseWorkId1: state.workSettings.showcaseWorkIds?.[0] || "",
-    showcaseWorkId2: state.workSettings.showcaseWorkIds?.[1] || "",
-    showcaseWorkId3: state.workSettings.showcaseWorkIds?.[2] || "",
-    showcaseWorkId4: state.workSettings.showcaseWorkIds?.[3] || "",
   });
 }
 
@@ -333,7 +352,7 @@ function parseWorkSettingsPayload(form, data) {
   return {
     showreelWorkId: data.showreelWorkId || "",
     featuredCategoryIds: qsa('input[name="featuredCategoryIds"]:checked', form).map((input) => input.value),
-    showcaseWorkIds: [data.showcaseWorkId1, data.showcaseWorkId2, data.showcaseWorkId3, data.showcaseWorkId4].filter(Boolean),
+    showcaseWorkIds: qsa('select[name="showcaseWorkIds"]', form).map((select) => select.value).filter(Boolean).slice(0, 6),
   };
 }
 
@@ -461,10 +480,28 @@ function setupEvents() {
   });
 
   document.addEventListener("click", async (event) => {
+    const addShowcase = event.target.closest("[data-add-showcase]");
+    const removeShowcase = event.target.closest("[data-remove-showcase]");
     const edit = event.target.closest("[data-edit]");
     const remove = event.target.closest("[data-delete]");
     const saveInquiry = event.target.closest("[data-save-inquiry]");
     try {
+      if (addShowcase) {
+        const values = qsa('select[name="showcaseWorkIds"]').map((select) => select.value);
+        if (values.length >= 6) {
+          setStatus("展示影片最多只能設定 6 支。");
+          return;
+        }
+        state.workSettings.showcaseWorkIds = [...values, ""];
+        renderShowcaseEditor();
+        return;
+      }
+      if (removeShowcase) {
+        const index = Number(removeShowcase.dataset.removeShowcase);
+        state.workSettings.showcaseWorkIds = qsa('select[name="showcaseWorkIds"]').map((select) => select.value).filter((_, itemIndex) => itemIndex !== index);
+        renderShowcaseEditor();
+        return;
+      }
       if (edit) {
         const row = state[edit.dataset.edit].find((item) => item.id === edit.dataset.id);
         fillForm(qs(`[data-collection-form="${edit.dataset.edit}"]`), row);
