@@ -816,6 +816,12 @@ p {
   gap: 18px;
 }
 
+[data-featured-works].featured-work-grid {
+  align-items: start;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-flow: dense;
+}
+
 .featured-work-card,
 .library-work-card {
   overflow: hidden;
@@ -840,6 +846,15 @@ p {
   grid-row: span 2;
 }
 
+[data-featured-works] .featured-work-card {
+  grid-column: span 1;
+}
+
+[data-featured-works] .featured-work-card.is-large {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
 .featured-work-card a,
 .library-work-card a {
   display: grid;
@@ -855,6 +870,14 @@ p {
 
 .featured-work-card.is-large .featured-work-media {
   min-height: 330px;
+}
+
+[data-featured-works] .featured-work-card.is-large .featured-work-media {
+  min-height: 290px;
+}
+
+[data-featured-works] .featured-work-card:not(.is-large) .featured-work-media {
+  min-height: 145px;
 }
 
 .featured-work-media .embed,
@@ -880,6 +903,10 @@ p {
   padding: 18px;
 }
 
+[data-featured-works] .featured-work-info {
+  padding: 14px;
+}
+
 .featured-work-info p,
 .library-work-info p {
   margin: 0;
@@ -895,6 +922,10 @@ p {
   font-size: clamp(18px, 2vw, 25px);
   line-height: 1.18;
   letter-spacing: -0.03em;
+}
+
+[data-featured-works] .featured-work-info h3 {
+  font-size: clamp(15px, 1.25vw, 19px);
 }
 
 .featured-work-info small,
@@ -1232,11 +1263,23 @@ footer p {
     grid-template-columns: 1fr 1fr;
   }
 
+  [data-featured-works].featured-work-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
   .work-card.big,
   .work-card.wide,
   .featured-work-card,
   .featured-work-card.is-large {
     grid-column: span 2;
+  }
+
+  [data-featured-works] .featured-work-card {
+    grid-column: span 1;
+  }
+
+  [data-featured-works] .featured-work-card.is-large .featured-work-media {
+    min-height: 240px;
   }
 
   .service:nth-child(3n) {
@@ -1306,6 +1349,16 @@ footer p {
   .featured-work-card.is-large {
     grid-column: auto;
     min-height: 360px;
+  }
+
+  [data-featured-works] .featured-work-card,
+  [data-featured-works] .featured-work-card.is-large {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  [data-featured-works] .featured-work-card.is-large .featured-work-media {
+    min-height: 220px;
   }
 
   body[data-page="works"] .page-hero {
