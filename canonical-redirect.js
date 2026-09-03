@@ -4,6 +4,7 @@
   const firebaseHost = "starhao-8f494.web.app";
 
   if (window.location.hostname !== firebaseHost) return;
+  if (window.location.pathname.endsWith("/admin.html")) return;
 
   const canonicalPath = window.location.pathname === "/" ? "/" : window.location.pathname;
   window.location.replace(`${canonicalOrigin}${canonicalBasePath}${canonicalPath}${window.location.search}${window.location.hash}`);
