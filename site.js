@@ -608,6 +608,10 @@ function setupInquiryForm(site) {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const formData = Object.fromEntries(new FormData(form).entries());
+    if (formData.website) {
+      form.reset();
+      return;
+    }
     status.textContent = "送出中...";
     try {
       await api.addDoc("inquiries", {

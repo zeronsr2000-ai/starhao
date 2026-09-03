@@ -6,6 +6,59 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function optionalString(field, maxLength) {
+      return !(field in request.resource.data)
+        || (request.resource.data[field] is string
+          && request.resource.data[field].size() <= maxLength);
+    }
+
+    function validInquiryCreate() {
+      return request.resource.data.keys().hasOnly([
+          "name",
+          "company",
+          "phone",
+          "email",
+          "lineId",
+          "videoType",
+          "videoCount",
+          "shooting",
+          "location",
+          "deadline",
+          "budget",
+          "message",
+          "website",
+          "status",
+          "source",
+          "createdAt",
+          "updatedAt"
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 1
+        && request.resource.data.name.size() <= 80
+        && request.resource.data.company is string
+        && request.resource.data.company.size() >= 1
+        && request.resource.data.company.size() <= 120
+        && request.resource.data.email is string
+        && request.resource.data.email.size() >= 5
+        && request.resource.data.email.size() <= 160
+        && request.resource.data.message is string
+        && request.resource.data.message.size() >= 1
+        && request.resource.data.message.size() <= 2000
+        && request.resource.data.status == "未處理"
+        && request.resource.data.website == ""
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && optionalString("phone", 40)
+        && optionalString("lineId", 80)
+        && optionalString("videoType", 120)
+        && optionalString("videoCount", 120)
+        && optionalString("shooting", 80)
+        && optionalString("location", 160)
+        && optionalString("deadline", 120)
+        && optionalString("budget", 120)
+        && optionalString("source", 160);
+    }
+
     match /siteContent/{docId} {
       allow read: if true;
       allow write: if signedIn();
@@ -52,7 +105,7 @@ service cloud.firestore {
     }
 
     match /inquiries/{docId} {
-      allow create: if true;
+      allow create: if validInquiryCreate();
       allow read, update, delete: if signedIn();
     }
   }
