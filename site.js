@@ -86,8 +86,7 @@ function setMeta(site) {
   text("[data-brand-footer]", site.brandName);
   text("[data-english]", site.englishName);
   text("[data-email]", site.email);
-  text("[data-logo-letter]", site.logoLetter || "S");
-  text(".logo-mark", site.logoLetter || "S");
+  renderBrandLogo(site);
   renderNav(site);
   text("[data-top-cta]", site.topCtaText);
   attr("[data-top-cta]", "href", site.topCtaLink);
@@ -100,6 +99,18 @@ function setMeta(site) {
   text("footer > a", site.footerCtaText);
   attr("footer > a", "href", site.footerCtaLink);
   renderContactInfo(site);
+}
+
+function renderBrandLogo(site) {
+  qsa(".logo-mark").forEach((node) => {
+    if (site.logoImageUrl) {
+      node.innerHTML = `<img src="${moneySafe(site.logoImageUrl)}" alt="${moneySafe(site.logoImageAlt || site.brandName || "Logo")}" loading="eager" />`;
+      node.classList.add("has-image");
+    } else {
+      node.textContent = site.logoLetter || "S";
+      node.classList.remove("has-image");
+    }
+  });
 }
 
 function renderNav(site) {

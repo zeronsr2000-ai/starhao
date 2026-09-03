@@ -575,7 +575,7 @@ function setupEvents() {
       setFormBusy(form, true);
       try {
         const id = form.dataset.form;
-        const data = formToObject(form);
+        const data = await uploadFormFiles(form, formToObject(form));
         const payload = id === "about" ? parseAboutPayload(data) : id === "inquiryForm" ? parseOptionsPayload(data) : id === "workSettings" ? parseWorkSettingsPayload(form, data) : id === "home" ? parseHomePayload(data) : data;
         await saveSiteContent(id, payload);
       } catch (error) {
