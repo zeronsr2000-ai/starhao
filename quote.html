@@ -9,7 +9,7 @@
     <title>詢價表單｜星澔文創</title>
     <link rel="canonical" href="https://zeronsr2000-ai.github.io/starhao/quote.html" />
     <script src="canonical-redirect.js?v=20260902-2"></script>
-    <link rel="stylesheet" href="styles.css?v=20260903-13" />
+    <link rel="stylesheet" href="styles.css?v=20260904-1" />
   </head>
   <body data-page="quote">
     <div class="grain" aria-hidden="true"></div>
@@ -33,28 +33,9 @@
           </div>
           <form class="form" data-inquiry-form>
             <label class="bot-field" aria-hidden="true">網站<input name="website" type="text" tabindex="-1" autocomplete="off" /></label>
-            <label>姓名 / 稱呼<input name="name" type="text" required /></label>
-            <label>公司 / 品牌名稱<input name="company" type="text" required /></label>
-            <div class="grid-2">
-              <label>電話<input name="phone" type="tel" /></label>
-              <label>Email<input name="email" type="email" required /></label>
-            </div>
-            <label>LINE ID<input name="lineId" type="text" /></label>
-            <label>影片類型
-              <select name="videoType" data-video-type-options required></select>
-            </label>
-            <div class="grid-2">
-              <label>預計影片支數<input name="videoCount" type="text" placeholder="例如：正片 1 支、短影音 6 支" /></label>
-              <label>是否需要拍攝<select name="shooting" data-shooting-options></select></label>
-            </div>
-            <div class="grid-2">
-              <label>拍攝地點<input name="location" type="text" placeholder="例如：台中、台北、公司辦公室" /></label>
-              <label>預計上片時間<input name="deadline" type="text" placeholder="例如：2026/08 前" /></label>
-            </div>
-            <label>預算區間
-              <select name="budget" data-budget-options required></select>
-            </label>
-            <label>補充需求<textarea name="message" required placeholder="請描述影片用途、參考風格、預計平台、目前素材狀況等。"></textarea></label>
+            <div class="dynamic-inquiry-fields" data-inquiry-fields></div>
+            <div class="captcha-box hidden" data-captcha-box></div>
+            <div class="turnstile-box hidden" data-turnstile-box></div>
             <button class="btn primary full" type="submit" data-page-quoteSubmitText>送出詢價</button>
             <div class="status" data-form-status></div>
           </form>
@@ -65,8 +46,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
     <script src="firebase-config.js"></script>
-    <script src="data.js?v=20260903-4"></script>
+    <script src="data.js?v=20260904-1"></script>
     <script src="firebase-client.js?v=20260903-2"></script>
-    <script src="site.js?v=20260903-10"></script>
+    <script src="site.js?v=20260904-1"></script>
   </body>
 </html>

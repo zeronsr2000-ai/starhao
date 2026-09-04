@@ -222,11 +222,8 @@ function renderForms() {
     showreelBottom: (state.home.showreelBottom || []).join("\n"),
     tickerItems: (state.home.tickerItems || []).join("\n"),
   });
-  fillForm(qs('[data-form="inquiryForm"]'), {
-    videoTypeOptions: (state.inquiryForm.videoTypeOptions || []).join("\n"),
-    shootingOptions: (state.inquiryForm.shootingOptions || []).join("\n"),
-    budgetOptions: (state.inquiryForm.budgetOptions || []).join("\n"),
-  });
+  fillForm(qs('[data-form="inquiryForm"]'), state.inquiryForm);
+  renderInquiryFieldEditor(qs('[data-form="inquiryForm"]'), state.inquiryForm.fields || defaults.inquiryForm.fields);
   fillForm(qs('[data-form="about"]'), {
     ...state.about,
     team: JSON.stringify(state.about.team || [], null, 2),
@@ -302,14 +299,18 @@ function renderCollection(collection, rows) {
 
 function renderInquiries() {
   const list = qs('[data-list="inquiries"]');
+  if (!state.inquiries.length) {
+    list.innerHTML = `<p class="panel-note">目前尚無詢價資料。</p>`;
+    return;
+  }
   list.innerHTML = state.inquiries
     .map(
       (item) => `
         <article class="row-card">
           <div>
-            <h3>${safe(item.name)} / ${safe(item.company)}</h3>
-            <p>${safe(item.videoType)}｜${safe(item.budget)}｜${safe(item.email)}｜${safe(item.phone)}</p>
-            <p>${safe(item.message)}</p>
+            <h3>${safe(inquiryFieldValue(item, "name") || item.name || "未填姓名")} / ${safe(inquiryFieldValue(item, "company") || item.company || "未填公司")}</h3>
+            <p>${safe(inquiryFieldValue(item, "email") || item.email || "")}｜${safe(inquiryFieldValue(item, "phone") || item.phone || "")}</p>
+            <dl class="inquiry-detail-list">${renderInquiryDetails(item)}</dl>
             <label>狀態
               <select data-inquiry-status="${safe(item.id)}">
                 ${["未處理", "已聯絡", "已報價", "已成交", "未成交", "暫緩"].map((status) => `<option ${item.status === status ? "selected" : ""}>${status}</option>`).join("")}
@@ -324,6 +325,49 @@ function renderInquiries() {
       `,
     )
     .join("");
+}
+
+function inquiryFieldValue(item, id) {
+  const value = inquiryValues(item)[id];
+  return Array.isArray(value) ? value.join("、") : value;
+}
+
+function inquiryFieldLabel(id) {
+  return (state.inquiryForm.fields || defaults.inquiryForm.fields).find((field) => field.id === id)?.label || id;
+}
+
+function renderInquiryDetails(item) {
+  const fields = inquiryValues(item);
+  return Object.entries(fields)
+    .filter(([, value]) => Array.isArray(value) ? value.length : value)
+    .map(([key, value]) => `<div><dt>${safe(inquiryFieldLabel(key))}</dt><dd>${safe(Array.isArray(value) ? value.join("、") : value)}</dd></div>`)
+    .join("");
+}
+
+function inquiryValues(item) {
+  if (item.fields && typeof item.fields === "object") return item.fields;
+  if (item.fieldsJson) {
+    try {
+      const parsed = JSON.parse(item.fieldsJson);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) return parsed;
+    } catch (error) {
+      return {};
+    }
+  }
+  return {
+    name: item.name,
+    company: item.company,
+    phone: item.phone,
+    email: item.email,
+    lineId: item.lineId,
+    videoType: item.videoType,
+    videoCount: item.videoCount,
+    shooting: item.shooting,
+    location: item.location,
+    deadline: item.deadline,
+    budget: item.budget,
+    message: item.message,
+  };
 }
 
 function render() {
@@ -361,9 +405,13 @@ function parseAboutPayload(data) {
 
 function parseOptionsPayload(data) {
   return {
-    videoTypeOptions: splitLines(data.videoTypeOptions),
-    shootingOptions: splitLines(data.shootingOptions),
-    budgetOptions: splitLines(data.budgetOptions),
+    turnstileEnabled: Boolean(data.turnstileEnabled),
+    turnstileSiteKey: data.turnstileSiteKey || "",
+    turnstileErrorMessage: data.turnstileErrorMessage || defaults.inquiryForm.turnstileErrorMessage,
+    captchaEnabled: Boolean(data.captchaEnabled),
+    captchaQuestion: data.captchaQuestion || defaults.inquiryForm.captchaQuestion,
+    captchaAnswer: data.captchaAnswer || defaults.inquiryForm.captchaAnswer,
+    fields: readInquiryFields(qs('[data-form="inquiryForm"]')),
   };
 }
 
@@ -506,6 +554,97 @@ async function saveSiteContent(id, data) {
   await loadAll();
 }
 
+function parseInquiryFields(value) {
+  if (Array.isArray(value)) return value;
+  try {
+    const parsed = JSON.parse(value || "[]");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function newInquiryField() {
+  return { id: `field-${Date.now().toString(36)}`, label: "新增欄位", type: "text", required: false, placeholder: "", options: [], sort: 99, status: "published" };
+}
+
+function renderInquiryFieldEditor(form, fields = []) {
+  if (!form) return;
+  const editor = qs("[data-inquiry-field-editor]", form);
+  if (!editor) return;
+  const rows = parseInquiryFields(fields).length ? parseInquiryFields(fields) : defaults.inquiryForm.fields;
+  editor.innerHTML = rows
+    .map(
+      (field, index) => `
+        <div class="inquiry-field-row" data-inquiry-field="${index}">
+          <div class="article-block-head">
+            <strong>${index + 1}. ${safe(field.label || field.id || "欄位")}</strong>
+            <div class="actions">
+              <button class="btn ghost" type="button" data-inquiry-field-move="${index}" data-dir="-1">上移</button>
+              <button class="btn ghost" type="button" data-inquiry-field-move="${index}" data-dir="1">下移</button>
+              <button class="btn danger" type="button" data-inquiry-field-remove="${index}">刪除</button>
+            </div>
+          </div>
+          <div class="grid-2">
+            <label>欄位名稱<input data-inquiry-field-prop="label" value="${safe(field.label)}" /></label>
+            <label>欄位代號<input data-inquiry-field-prop="id" value="${safe(field.id)}" /></label>
+          </div>
+          <div class="grid-2">
+            <label>欄位類型
+              <select data-inquiry-field-prop="type">
+                ${["text", "tel", "email", "number", "select", "radio", "checkbox", "textarea"].map((type) => `<option value="${type}" ${field.type === type ? "selected" : ""}>${inquiryFieldTypeLabel(type)}</option>`).join("")}
+              </select>
+            </label>
+            <label>排序<input data-inquiry-field-prop="sort" type="number" value="${Number(field.sort || index + 1)}" /></label>
+          </div>
+          <div class="grid-2">
+            <label><input data-inquiry-field-prop="required" type="checkbox" ${field.required ? "checked" : ""} /> 必填欄位</label>
+            <label>顯示狀態<select data-inquiry-field-prop="status"><option value="published" ${field.status !== "hidden" ? "selected" : ""}>顯示</option><option value="hidden" ${field.status === "hidden" ? "selected" : ""}>隱藏</option></select></label>
+          </div>
+          <label>提示文字<input data-inquiry-field-prop="placeholder" value="${safe(field.placeholder)}" /></label>
+          <label>選項內容（下拉、單選、多選使用；每行一個）<textarea data-inquiry-field-prop="options">${safe((field.options || []).join("\n"))}</textarea></label>
+        </div>
+      `,
+    )
+    .join("");
+  syncInquiryFieldStore(form);
+}
+
+function inquiryFieldTypeLabel(type) {
+  return { text: "文字", tel: "電話", email: "Email", number: "數字", select: "下拉選單", radio: "單選", checkbox: "多選", textarea: "多行文字" }[type] || "文字";
+}
+
+function readInquiryFields(form) {
+  if (!form) return defaults.inquiryForm.fields;
+  return qsa("[data-inquiry-field]", form)
+    .map((row, index) => {
+      const field = { options: [] };
+      qsa("[data-inquiry-field-prop]", row).forEach((input) => {
+        const key = input.dataset.inquiryFieldProp;
+        if (input.type === "checkbox") field[key] = input.checked;
+        else if (key === "options") field[key] = splitLines(input.value);
+        else if (key === "sort") field[key] = Number(input.value || index + 1);
+        else field[key] = input.value;
+      });
+      return {
+        id: slugify(field.id || field.label || `field-${index + 1}`),
+        label: field.label || `欄位 ${index + 1}`,
+        type: field.type || "text",
+        required: Boolean(field.required),
+        placeholder: field.placeholder || "",
+        options: field.options || [],
+        sort: field.sort || index + 1,
+        status: field.status || "published",
+      };
+    })
+    .sort((a, b) => (a.sort || 0) - (b.sort || 0));
+}
+
+function syncInquiryFieldStore(form) {
+  const store = qs('textarea[name="fields"]', form);
+  if (store) store.value = JSON.stringify(readInquiryFields(form), null, 2);
+}
+
 function clampNumber(value, fallback, min, max) {
   const number = Number(value);
   if (!Number.isFinite(number)) return fallback;
@@ -624,7 +763,35 @@ function setupEvents() {
     const addArticleBlock = event.target.closest("[data-add-article-block]");
     const removeArticleBlock = event.target.closest("[data-article-remove]");
     const moveArticleBlock = event.target.closest("[data-article-move]");
+    const addInquiryField = event.target.closest("[data-add-inquiry-field]");
+    const removeInquiryField = event.target.closest("[data-inquiry-field-remove]");
+    const moveInquiryField = event.target.closest("[data-inquiry-field-move]");
     try {
+      if (addInquiryField) {
+        const form = addInquiryField.closest("form");
+        const fields = readInquiryFields(form);
+        fields.push(newInquiryField());
+        renderInquiryFieldEditor(form, fields);
+        return;
+      }
+      if (removeInquiryField) {
+        const form = removeInquiryField.closest("form");
+        const index = Number(removeInquiryField.dataset.inquiryFieldRemove);
+        const fields = readInquiryFields(form).filter((_, itemIndex) => itemIndex !== index);
+        renderInquiryFieldEditor(form, fields);
+        return;
+      }
+      if (moveInquiryField) {
+        const form = moveInquiryField.closest("form");
+        const index = Number(moveInquiryField.dataset.inquiryFieldMove);
+        const nextIndex = index + Number(moveInquiryField.dataset.dir);
+        const fields = readInquiryFields(form);
+        if (nextIndex < 0 || nextIndex >= fields.length) return;
+        [fields[index], fields[nextIndex]] = [fields[nextIndex], fields[index]];
+        fields.forEach((field, itemIndex) => field.sort = itemIndex + 1);
+        renderInquiryFieldEditor(form, fields);
+        return;
+      }
       if (addArticleBlock) {
         const form = addArticleBlock.closest("form");
         const blocks = readArticleBlocks(form);
@@ -701,12 +868,16 @@ function setupEvents() {
   document.addEventListener("input", (event) => {
     const field = event.target.closest("[data-block-field]");
     if (field) syncArticleStore(field.closest("form"));
+    const inquiryField = event.target.closest("[data-inquiry-field-prop]");
+    if (inquiryField) syncInquiryFieldStore(inquiryField.closest("form"));
   });
 
   document.addEventListener("change", async (event) => {
     const upload = event.target.closest("[data-article-image-upload]");
     const field = event.target.closest("[data-block-field]");
     if (field) syncArticleStore(field.closest("form"));
+    const inquiryField = event.target.closest("[data-inquiry-field-prop]");
+    if (inquiryField) syncInquiryFieldStore(inquiryField.closest("form"));
     if (!upload || !upload.files || !upload.files[0]) return;
     const form = upload.closest("form");
     const row = upload.closest("[data-article-block]");
@@ -724,9 +895,13 @@ function setupEvents() {
 }
 
 function exportInquiries() {
-  const headers = ["name", "company", "phone", "email", "lineId", "videoType", "videoCount", "shooting", "location", "deadline", "budget", "message", "status", "internalNote"];
+  const dynamicFields = state.inquiryForm.fields || defaults.inquiryForm.fields;
+  const headers = dynamicFields.map((field) => field.id).concat(["status", "internalNote"]);
   const rows = [headers.join(",")].concat(
-    state.inquiries.map((item) => headers.map((key) => `"${String(item[key] || "").replaceAll('"', '""')}"`).join(",")),
+    state.inquiries.map((item) => headers.map((key) => {
+      const value = inquiryValues(item)[key] ?? item[key] ?? "";
+      return `"${String(Array.isArray(value) ? value.join("、") : value).replaceAll('"', '""')}"`;
+    }).join(",")),
   );
   const blob = new Blob([rows.join("\n")], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);

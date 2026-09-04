@@ -151,6 +151,119 @@ function renderOptions(selector, options) {
   select.innerHTML = (options || []).map((option) => `<option>${moneySafe(option)}</option>`).join("");
 }
 
+function normalizeInquiryFields(inquiryForm = {}) {
+  const fields = Array.isArray(inquiryForm.fields) && inquiryForm.fields.length
+    ? inquiryForm.fields
+    : defaults.inquiryForm.fields;
+  return [...fields]
+    .filter((field) => field.status !== "hidden")
+    .sort((a, b) => (a.sort || 0) - (b.sort || 0));
+}
+
+function renderInquiryRequired(required) {
+  return required ? '<span class="required-mark" aria-label="必填">*</span>' : "";
+}
+
+function renderInquiryField(field) {
+  const id = moneySafe(field.id);
+  const label = `${moneySafe(field.label)} ${renderInquiryRequired(field.required)}`;
+  const required = field.required ? "required" : "";
+  const placeholder = field.placeholder ? ` placeholder="${moneySafe(field.placeholder)}"` : "";
+  const options = Array.isArray(field.options) ? field.options : [];
+  if (field.type === "textarea") {
+    return `<label>${label}<textarea name="${id}" data-dynamic-field="${id}" ${required}${placeholder}></textarea></label>`;
+  }
+  if (field.type === "select") {
+    return `<label>${label}<select name="${id}" data-dynamic-field="${id}" ${required}>${options.map((option) => `<option>${moneySafe(option)}</option>`).join("")}</select></label>`;
+  }
+  if (field.type === "radio" || field.type === "checkbox") {
+    return `
+      <fieldset class="option-field" data-option-field="${id}">
+        <legend>${label}</legend>
+        <div class="option-grid">
+          ${options.map((option) => `<label><input type="${field.type}" name="${id}" value="${moneySafe(option)}" data-dynamic-field="${id}" /> ${moneySafe(option)}</label>`).join("")}
+        </div>
+      </fieldset>
+    `;
+  }
+  const type = ["email", "tel", "number"].includes(field.type) ? field.type : "text";
+  return `<label>${label}<input type="${type}" name="${id}" data-dynamic-field="${id}" ${required}${placeholder} /></label>`;
+}
+
+function renderInquiryFields(inquiryForm = defaults.inquiryForm) {
+  const root = $("[data-inquiry-fields]");
+  if (!root) return;
+  root.innerHTML = normalizeInquiryFields(inquiryForm).map(renderInquiryField).join("");
+}
+
+function loadTurnstileScript() {
+  if (window.turnstile || document.querySelector('script[data-turnstile-script]')) return;
+  const script = document.createElement("script");
+  script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+  script.async = true;
+  script.defer = true;
+  script.dataset.turnstileScript = "true";
+  document.head.appendChild(script);
+}
+
+function renderInquirySecurity(inquiryForm = defaults.inquiryForm) {
+  const captchaBox = $("[data-captcha-box]");
+  const turnstileBox = $("[data-turnstile-box]");
+  if (captchaBox) {
+    captchaBox.classList.toggle("hidden", inquiryForm.captchaEnabled === false);
+    captchaBox.innerHTML = inquiryForm.captchaEnabled === false
+      ? ""
+      : `<label>${moneySafe(inquiryForm.captchaQuestion || defaults.inquiryForm.captchaQuestion)} <span class="required-mark">*</span><input name="captchaAnswer" type="text" required autocomplete="off" /></label>`;
+  }
+  if (turnstileBox) {
+    const enabled = Boolean(inquiryForm.turnstileEnabled && inquiryForm.turnstileSiteKey);
+    turnstileBox.classList.toggle("hidden", !enabled);
+    turnstileBox.innerHTML = enabled ? `<div class="cf-turnstile" data-sitekey="${moneySafe(inquiryForm.turnstileSiteKey)}" data-theme="dark"></div>` : "";
+    if (enabled) loadTurnstileScript();
+  }
+}
+
+function collectInquiryFields(form, inquiryForm) {
+  const values = {};
+  normalizeInquiryFields(inquiryForm).forEach((field) => {
+    const inputs = qsa(`[name="${CSS.escape(field.id)}"]`, form);
+    if (field.type === "checkbox") {
+      values[field.id] = inputs.filter((input) => input.checked).map((input) => input.value);
+    } else if (field.type === "radio") {
+      values[field.id] = inputs.find((input) => input.checked)?.value || "";
+    } else {
+      values[field.id] = inputs[0]?.value || "";
+    }
+  });
+  return values;
+}
+
+function validateInquiryFields(form, inquiryForm) {
+  for (const field of normalizeInquiryFields(inquiryForm)) {
+    if (!field.required) continue;
+    const inputs = qsa(`[name="${CSS.escape(field.id)}"]`, form);
+    const value = field.type === "checkbox" || field.type === "radio"
+      ? inputs.some((input) => input.checked)
+      : String(inputs[0]?.value || "").trim();
+    if (!value) return `請填寫必填欄位：${field.label}`;
+  }
+  return "";
+}
+
+function validateInquirySecurity(form, inquiryForm) {
+  const formData = Object.fromEntries(new FormData(form).entries());
+  if (formData.website) return "blocked";
+  if (inquiryForm.captchaEnabled !== false) {
+    const expected = String(inquiryForm.captchaAnswer || defaults.inquiryForm.captchaAnswer).trim().toLowerCase();
+    const actual = String(formData.captchaAnswer || "").trim().toLowerCase();
+    if (actual !== expected) return "驗證碼不正確，請再確認一次。";
+  }
+  if (inquiryForm.turnstileEnabled && inquiryForm.turnstileSiteKey && !formData["cf-turnstile-response"]) {
+    return inquiryForm.turnstileErrorMessage || defaults.inquiryForm.turnstileErrorMessage;
+  }
+  return "";
+}
+
 function getYoutubeId(url) {
   const patterns = [/youtu\.be\/([^?&/]+)/, /youtube\.com\/watch\?v=([^?&]+)/, /youtube\.com\/shorts\/([^?&/]+)/, /youtube\.com\/embed\/([^?&/]+)/];
   for (const pattern of patterns) {
@@ -607,15 +720,27 @@ function setupInquiryForm(site) {
   form.dataset.inquiryBound = "true";
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const formData = Object.fromEntries(new FormData(form).entries());
-    if (formData.website) {
+    const inquiryForm = form._starhorizonInquiryForm || defaults.inquiryForm;
+    const fieldError = validateInquiryFields(form, inquiryForm);
+    if (fieldError) {
+      status.textContent = fieldError;
+      return;
+    }
+    const securityError = validateInquirySecurity(form, inquiryForm);
+    if (securityError === "blocked") {
       form.reset();
       return;
     }
+    if (securityError) {
+      status.textContent = securityError;
+      return;
+    }
+    const fields = collectInquiryFields(form, inquiryForm);
     status.textContent = "送出中...";
     try {
       await api.addDoc("inquiries", {
-        ...formData,
+        fieldsJson: JSON.stringify(fields),
+        website: "",
         status: "未處理",
         source: window.location.pathname,
       });
@@ -624,13 +749,17 @@ function setupInquiryForm(site) {
     } catch (error) {
       const currentSite = form._starhorizonSite || site;
       const subject = encodeURIComponent("星澔文創網站詢價");
-      const body = encodeURIComponent(Object.entries(formData).map(([key, value]) => `${key}: ${value}`).join("\n"));
+      const body = encodeURIComponent(Object.entries(fields).map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join("、") : value}`).join("\n"));
       status.innerHTML = `目前線上表單尚未啟用，請先用 Email 聯絡：<a href="mailto:${currentSite.email}?subject=${subject}&body=${body}">${currentSite.email}</a>`;
     }
   });
 }
 
 function renderInquiryFormOptions(inquiryForm) {
+  const form = $("[data-inquiry-form]");
+  if (form) form._starhorizonInquiryForm = inquiryForm;
+  renderInquiryFields(inquiryForm);
+  renderInquirySecurity(inquiryForm);
   renderOptions("[data-video-type-options]", inquiryForm.videoTypeOptions || defaults.inquiryForm.videoTypeOptions);
   renderOptions("[data-shooting-options]", inquiryForm.shootingOptions || defaults.inquiryForm.shootingOptions);
   renderOptions("[data-budget-options]", inquiryForm.budgetOptions || defaults.inquiryForm.budgetOptions);

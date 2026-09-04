@@ -461,6 +461,46 @@ p {
   background: rgba(255, 255, 255, 0.045);
 }
 
+.inquiry-field-editor {
+  display: grid;
+  gap: 14px;
+}
+
+.inquiry-field-row {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.inquiry-detail-list {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.inquiry-detail-list div {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.inquiry-detail-list dt {
+  color: var(--lime);
+  font-weight: 900;
+}
+
+.inquiry-detail-list dd {
+  min-width: 0;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+  overflow-wrap: anywhere;
+}
+
 .article-block-head {
   display: flex;
   align-items: center;

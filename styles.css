@@ -91,6 +91,56 @@ textarea {
   pointer-events: none;
 }
 
+.required-mark {
+  color: #ff5a5a;
+}
+
+.dynamic-inquiry-fields {
+  display: grid;
+  gap: 14px;
+}
+
+.option-field {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.option-field legend {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.option-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
+
+.option-grid label {
+  display: flex;
+  width: auto;
+  min-height: 0;
+  grid-template-columns: none;
+  align-items: center;
+  gap: 7px;
+}
+
+.option-grid input {
+  width: auto;
+  min-height: auto;
+}
+
+.captcha-box,
+.turnstile-box {
+  display: grid;
+  gap: 10px;
+}
+
 .header {
   position: fixed;
   z-index: 20;
