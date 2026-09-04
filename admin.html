@@ -383,15 +383,10 @@
           <form class="form" data-form="inquiryForm">
             <div class="field-group">
               <h3>免費防機器人設定</h3>
-              <div class="grid-2">
-                <label><input name="captchaEnabled" type="checkbox" /> 啟用簡單驗證題</label>
-                <label><input name="turnstileEnabled" type="checkbox" /> 啟用 Cloudflare Turnstile</label>
-              </div>
-              <label>驗證題題目<input name="captchaQuestion" /></label>
-              <label>驗證題答案<input name="captchaAnswer" /></label>
+              <label><input name="turnstileEnabled" type="checkbox" /> 啟用 Cloudflare Turnstile</label>
               <label>Turnstile Site Key<input name="turnstileSiteKey" placeholder="只貼 Site Key，不要貼 Secret Key" /></label>
               <label>Turnstile 驗證失敗提示<input name="turnstileErrorMessage" /></label>
-              <p class="field-hint">Turnstile 與隱藏蜜罐欄位可以同時存在。免費版這裡只做前端驗證；Secret Key 不會放進網站程式。</p>
+              <p class="field-hint">Turnstile 與隱藏蜜罐欄位可以同時存在。請只貼 Site Key；Secret Key 不會放進網站程式。</p>
             </div>
             <div class="field-group">
               <h3>前台欄位</h3>
@@ -419,8 +414,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-storage-compat.js"></script>
     <script src="firebase-config.js"></script>
-    <script src="data.js?v=20260904-1"></script>
+    <script src="data.js?v=20260904-2"></script>
     <script src="firebase-client.js?v=20260903-2"></script>
-    <script src="admin.js?v=20260904-1"></script>
+    <script src="admin.js?v=20260904-2"></script>
   </body>
 </html>

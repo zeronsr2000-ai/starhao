@@ -242,14 +242,7 @@ async function renderTurnstileWidget(container, siteKey) {
 }
 
 function renderInquirySecurity(inquiryForm = defaults.inquiryForm) {
-  const captchaBox = $("[data-captcha-box]");
   const turnstileBox = $("[data-turnstile-box]");
-  if (captchaBox) {
-    captchaBox.classList.toggle("hidden", inquiryForm.captchaEnabled === false);
-    captchaBox.innerHTML = inquiryForm.captchaEnabled === false
-      ? ""
-      : `<label>${moneySafe(inquiryForm.captchaQuestion || defaults.inquiryForm.captchaQuestion)} <span class="required-mark">*</span><input name="captchaAnswer" type="text" required autocomplete="off" /></label>`;
-  }
   if (turnstileBox) {
     const enabled = Boolean(inquiryForm.turnstileEnabled && inquiryForm.turnstileSiteKey);
     turnstileBox.classList.toggle("hidden", !enabled);
@@ -290,11 +283,6 @@ function validateInquiryFields(form, inquiryForm) {
 function validateInquirySecurity(form, inquiryForm) {
   const formData = Object.fromEntries(new FormData(form).entries());
   if (formData.website) return "blocked";
-  if (inquiryForm.captchaEnabled !== false) {
-    const expected = String(inquiryForm.captchaAnswer || defaults.inquiryForm.captchaAnswer).trim().toLowerCase();
-    const actual = String(formData.captchaAnswer || "").trim().toLowerCase();
-    if (actual !== expected) return "驗證碼不正確，請再確認一次。";
-  }
   if (inquiryForm.turnstileEnabled && inquiryForm.turnstileSiteKey && !formData["cf-turnstile-response"]) {
     return inquiryForm.turnstileErrorMessage || defaults.inquiryForm.turnstileErrorMessage;
   }

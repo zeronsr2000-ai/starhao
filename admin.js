@@ -408,9 +408,6 @@ function parseOptionsPayload(data) {
     turnstileEnabled: Boolean(data.turnstileEnabled),
     turnstileSiteKey: data.turnstileSiteKey || "",
     turnstileErrorMessage: data.turnstileErrorMessage || defaults.inquiryForm.turnstileErrorMessage,
-    captchaEnabled: Boolean(data.captchaEnabled),
-    captchaQuestion: data.captchaQuestion || defaults.inquiryForm.captchaQuestion,
-    captchaAnswer: data.captchaAnswer || defaults.inquiryForm.captchaAnswer,
     fields: readInquiryFields(qs('[data-form="inquiryForm"]')),
   };
 }

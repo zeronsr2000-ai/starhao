@@ -34,9 +34,6 @@ window.STARHORIZON_DEFAULTS = {
     turnstileEnabled: false,
     turnstileSiteKey: "",
     turnstileErrorMessage: "請先完成真人驗證。",
-    captchaEnabled: true,
-    captchaQuestion: "請輸入 6 + 3 的答案",
-    captchaAnswer: "9",
     fields: [
       { id: "name", label: "姓名", type: "text", required: true, placeholder: "", options: [], sort: 1, status: "published" },
       { id: "phone", label: "聯絡電話", type: "tel", required: true, placeholder: "", options: [], sort: 2, status: "published" },
