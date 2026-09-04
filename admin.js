@@ -320,6 +320,7 @@ function renderInquiries() {
           </div>
           <div class="actions">
             <button class="btn primary" type="button" data-save-inquiry="${safe(item.id)}">更新</button>
+            <button class="btn danger" type="button" data-delete="inquiries" data-id="${safe(item.id)}">刪除</button>
           </div>
         </article>
       `,
