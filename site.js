@@ -196,14 +196,49 @@ function renderInquiryFields(inquiryForm = defaults.inquiryForm) {
   root.innerHTML = normalizeInquiryFields(inquiryForm).map(renderInquiryField).join("");
 }
 
+let turnstileScriptPromise = null;
+
 function loadTurnstileScript() {
-  if (window.turnstile || document.querySelector('script[data-turnstile-script]')) return;
+  if (window.turnstile) return Promise.resolve(window.turnstile);
+  if (turnstileScriptPromise) return turnstileScriptPromise;
+  const existing = document.querySelector('script[data-turnstile-script]');
+  if (existing) {
+    turnstileScriptPromise = new Promise((resolve, reject) => {
+      existing.addEventListener("load", () => resolve(window.turnstile), { once: true });
+      existing.addEventListener("error", reject, { once: true });
+    });
+    return turnstileScriptPromise;
+  }
   const script = document.createElement("script");
-  script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+  script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
   script.async = true;
   script.defer = true;
   script.dataset.turnstileScript = "true";
+  turnstileScriptPromise = new Promise((resolve, reject) => {
+    script.addEventListener("load", () => resolve(window.turnstile), { once: true });
+    script.addEventListener("error", reject, { once: true });
+  });
   document.head.appendChild(script);
+  return turnstileScriptPromise;
+}
+
+async function renderTurnstileWidget(container, siteKey) {
+  if (!container || !siteKey) return;
+  const target = container.querySelector("[data-turnstile-widget]");
+  const message = container.querySelector("[data-turnstile-message]");
+  if (!target || target.dataset.rendered === "true") return;
+  try {
+    const turnstileApi = await loadTurnstileScript();
+    if (!turnstileApi?.render) throw new Error("Turnstile API is unavailable");
+    turnstileApi.render(target, {
+      sitekey: siteKey,
+      theme: "dark",
+    });
+    target.dataset.rendered = "true";
+    if (message) message.textContent = "請完成上方 Cloudflare 驗證後再送出。";
+  } catch (error) {
+    if (message) message.textContent = "Cloudflare 真人驗證載入失敗，請重新整理頁面後再試。";
+  }
 }
 
 function renderInquirySecurity(inquiryForm = defaults.inquiryForm) {
@@ -218,8 +253,10 @@ function renderInquirySecurity(inquiryForm = defaults.inquiryForm) {
   if (turnstileBox) {
     const enabled = Boolean(inquiryForm.turnstileEnabled && inquiryForm.turnstileSiteKey);
     turnstileBox.classList.toggle("hidden", !enabled);
-    turnstileBox.innerHTML = enabled ? `<div class="cf-turnstile" data-sitekey="${moneySafe(inquiryForm.turnstileSiteKey)}" data-theme="dark"></div>` : "";
-    if (enabled) loadTurnstileScript();
+    turnstileBox.innerHTML = enabled
+      ? `<div data-turnstile-widget></div><p class="field-hint" data-turnstile-message>正在載入 Cloudflare 真人驗證...</p>`
+      : "";
+    if (enabled) renderTurnstileWidget(turnstileBox, inquiryForm.turnstileSiteKey);
   }
 }
 
