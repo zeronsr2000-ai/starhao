@@ -11,6 +11,7 @@ window.STARHORIZON_DEFAULTS = {
     gaId: "",
     googleSiteVerification: "",
     metaPixelId: "",
+    baseUrl: "https://zeronsr2000-ai.github.io/starhao/",
     seoTitle: "星澔文創｜品牌影片、訪談、Podcast 與社群短影音製作",
     seoDescription:
       "星澔文創提供品牌形象影片、人物訪談、Podcast 影像、短影音切片、活動紀錄與後期剪輯包裝，協助品牌用影像建立信任並促成詢價。",

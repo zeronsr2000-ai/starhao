@@ -37,6 +37,114 @@ function ensureMeta(name, content) {
   node.setAttribute("content", content);
 }
 
+function ensureMetaProperty(property, content) {
+  if (!content) return;
+  let node = $(`meta[property="${property}"]`);
+  if (!node) {
+    node = document.createElement("meta");
+    node.setAttribute("property", property);
+    document.head.appendChild(node);
+  }
+  node.setAttribute("content", content);
+}
+
+function ensureCanonical(url) {
+  if (!url) return;
+  let node = $('link[rel="canonical"]');
+  if (!node) {
+    node = document.createElement("link");
+    node.setAttribute("rel", "canonical");
+    document.head.appendChild(node);
+  }
+  node.setAttribute("href", url);
+}
+
+function ensureJsonLd(id, payload) {
+  if (!payload) return;
+  let node = $(`#${id}`);
+  if (!node) {
+    node = document.createElement("script");
+    node.id = id;
+    node.type = "application/ld+json";
+    document.head.appendChild(node);
+  }
+  node.textContent = JSON.stringify(payload);
+}
+
+function siteBaseUrl(site = defaults.site) {
+  return String(site.baseUrl || defaults.site.baseUrl || "https://zeronsr2000-ai.github.io/starhao/").replace(/\/?$/, "/");
+}
+
+function pagePath() {
+  const path = window.location.pathname.split("/").pop() || "index.html";
+  return path === "index.html" ? "" : path;
+}
+
+function absoluteUrl(path = "", site = defaults.site) {
+  if (/^https?:\/\//.test(String(path))) return path;
+  return new URL(path, siteBaseUrl(site)).href;
+}
+
+function setPageSeo(site, overrides = {}) {
+  const title = overrides.title || site.seoTitle || document.title;
+  const description = overrides.description || site.seoDescription || "";
+  const url = overrides.url || absoluteUrl(pagePath(), site);
+  const image = overrides.image || absoluteUrl("og.png", site);
+  document.title = title;
+  ensureMeta("description", description);
+  ensureCanonical(url);
+  ensureMetaProperty("og:type", overrides.type || "website");
+  ensureMetaProperty("og:site_name", site.brandName || defaults.site.brandName);
+  ensureMetaProperty("og:title", title);
+  ensureMetaProperty("og:description", description);
+  ensureMetaProperty("og:url", url);
+  ensureMetaProperty("og:image", image);
+  ensureMeta("twitter:card", "summary_large_image");
+  ensureMeta("twitter:title", title);
+  ensureMeta("twitter:description", description);
+  ensureMeta("twitter:image", image);
+}
+
+function setSiteJsonLd(site) {
+  const url = siteBaseUrl(site);
+  const logo = site.logoImageUrl ? absoluteUrl(site.logoImageUrl, site) : absoluteUrl("og.png", site);
+  ensureJsonLd("site-json-ld", {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${url}#organization`,
+        name: site.brandName || defaults.site.brandName,
+        alternateName: site.englishName || defaults.site.englishName,
+        url,
+        logo,
+        email: site.email || undefined,
+        telephone: site.phone || undefined,
+        sameAs: [site.youtube, site.instagram].filter(Boolean),
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${url}#website`,
+        url,
+        name: site.brandName || defaults.site.brandName,
+        publisher: { "@id": `${url}#organization` },
+        inLanguage: "zh-Hant-TW",
+      },
+      {
+        "@type": "ProfessionalService",
+        "@id": `${url}#service`,
+        name: site.brandName || defaults.site.brandName,
+        url,
+        image: logo,
+        email: site.email || undefined,
+        telephone: site.phone || undefined,
+        areaServed: "Taiwan",
+        serviceType: ["品牌影片製作", "人物訪談影片", "Podcast 影像", "社群短影音", "活動紀錄", "後期剪輯"],
+      },
+    ],
+  });
+}
+
 function moneySafe(value) {
   return String(value || "").replace(/[<>"']/g, "");
 }
@@ -79,8 +187,8 @@ function resolveCategoryCover(category, works) {
 }
 
 function setMeta(site) {
-  document.title = site.seoTitle || document.title;
-  attr('meta[name="description"]', "content", site.seoDescription);
+  setPageSeo(site);
+  setSiteJsonLd(site);
   ensureMeta("google-site-verification", site.googleSiteVerification);
   text("[data-brand]", site.brandName);
   text("[data-brand-footer]", site.brandName);
@@ -672,26 +780,42 @@ function renderArticleBlocks(blocks) {
 }
 
 function setArticleSeo(article) {
+  const site = api.getCachedDoc?.("siteContent", "site", defaults.site) || defaults.site;
   const title = article.seoTitle || `${article.title || "最新消息"}｜星澔文創`;
   const description = article.seoDescription || article.excerpt || "";
-  document.title = title;
-  attr('meta[name="description"]', "content", description);
-  attr('meta[property="og:title"]', "content", title);
-  attr('meta[property="og:description"]', "content", description);
-  attr('meta[property="og:image"]', "content", article.coverUrl);
-  const jsonLd = $("#article-json-ld");
-  if (jsonLd) {
-    jsonLd.textContent = JSON.stringify({
+  const slug = article.staticPath || `${articleSlug(article)}.html`;
+  const url = absoluteUrl(slug, site);
+  const image = article.coverUrl ? absoluteUrl(article.coverUrl, site) : absoluteUrl("og.png", site);
+  setPageSeo(site, { title, description, url, image, type: "article" });
+  ensureJsonLd("article-json-ld", {
       "@context": "https://schema.org",
       "@type": "Article",
       headline: article.title,
       description,
-      image: article.coverUrl || undefined,
+      image,
+      mainEntityOfPage: url,
       datePublished: article.publishedAt || undefined,
-      author: { "@type": "Organization", name: defaults.site.brandName },
-      publisher: { "@type": "Organization", name: defaults.site.brandName },
+      dateModified: article.updatedAt || article.publishedAt || undefined,
+      author: { "@type": "Organization", name: site.brandName || defaults.site.brandName },
+      publisher: {
+        "@type": "Organization",
+        name: site.brandName || defaults.site.brandName,
+        logo: {
+          "@type": "ImageObject",
+          url: site.logoImageUrl ? absoluteUrl(site.logoImageUrl, site) : absoluteUrl("og.png", site),
+        },
+      },
+      inLanguage: "zh-Hant-TW",
     });
-  }
+  ensureJsonLd("breadcrumb-json-ld", {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "首頁", item: siteBaseUrl(site) },
+      { "@type": "ListItem", position: 2, name: "最新消息", item: absoluteUrl("news.html", site) },
+      { "@type": "ListItem", position: 3, name: article.title, item: url },
+    ],
+  });
 }
 
 function renderArticle(articles) {
