@@ -435,14 +435,57 @@ function workCoverUrl(work) {
   return work?.coverUrl || youtubeThumbnailUrl(work?.videoUrl) || "";
 }
 
-function renderWorkCover(work) {
+function workImageAlt(work, categories = []) {
+  return [categoryLabel(categories, work), work?.title, work?.client, "作品封面"].filter(Boolean).join("｜");
+}
+
+function renderWorkCover(work, categories = []) {
   const cover = workCoverUrl(work);
   const label = platformLabel(work?.videoUrl);
   const title = moneySafe(work?.title || "作品封面");
   const media = cover
-    ? `<img class="work-cover-image" src="${moneySafe(cover)}" alt="${title}" loading="lazy" />`
+    ? `<img class="work-cover-image" src="${moneySafe(cover)}" alt="${moneySafe(work.coverAlt || workImageAlt(work, categories) || title)}" loading="lazy" />`
     : `<div class="work-cover-fallback"><span>${title}</span></div>`;
   return `${media}<span class="work-play-badge" aria-hidden="true">▶</span><span class="work-platform-badge">觀看平台：${moneySafe(label)}</span>`;
+}
+
+function videoEmbedUrl(work) {
+  const value = String(work?.videoUrl || "").trim();
+  const youtubeId = getYoutubeId(value);
+  if (youtubeId) return `https://www.youtube.com/embed/${moneySafe(youtubeId)}`;
+  return value || undefined;
+}
+
+function setWorksJsonLd(works, categories) {
+  const site = api.getCachedDoc?.("siteContent", "site", defaults.site) || defaults.site;
+  const rows = published(works).filter((work) => work.videoUrl);
+  if (!rows.length) return;
+  ensureJsonLd("works-video-json-ld", {
+    "@context": "https://schema.org",
+    "@graph": rows.map((work) => {
+      const category = categoryLabel(categories, work);
+      const thumbnail = workCoverUrl(work) || "og.png";
+      return {
+        "@type": "VideoObject",
+        name: work.title,
+        description: work.summary || `${site.brandName || defaults.site.brandName} ${category}作品案例`,
+        thumbnailUrl: [absoluteUrl(thumbnail, site)],
+        uploadDate: work.year ? `${work.year}-01-01` : undefined,
+        embedUrl: videoEmbedUrl(work),
+        contentUrl: work.videoUrl || undefined,
+        publisher: {
+          "@type": "Organization",
+          name: site.brandName || defaults.site.brandName,
+          logo: {
+            "@type": "ImageObject",
+            url: site.logoImageUrl ? absoluteUrl(site.logoImageUrl, site) : absoluteUrl("og.png", site),
+          },
+        },
+        genre: category,
+        inLanguage: "zh-Hant-TW",
+      };
+    }),
+  });
 }
 
 function renderEmbed(url, work = {}, compact = false) {
@@ -566,7 +609,7 @@ function renderWorks(selector, works, categories = [], settings = {}) {
       (work, index) => `
         <article class="featured-work-card ${index === 0 ? "is-large" : ""} ${work.orientation === "portrait" ? "portrait" : ""}">
           <a href="${moneySafe(work.videoUrl || `works.html#${work.id}`)}" target="_blank" rel="noreferrer">
-            <div class="featured-work-media ${moneySafe(work.coverClass || "g1")}">${renderWorkCover(work)}</div>
+            <div class="featured-work-media ${moneySafe(work.coverClass || "g1")}">${renderWorkCover(work, categories)}</div>
             <div class="featured-work-info">
               <p>${moneySafe(categoryLabel(categories, work))} /</p>
               <h3>${moneySafe(work.title)}</h3>
@@ -590,7 +633,7 @@ function renderFeaturedCard(work, categories, index) {
   return `
     <article class="featured-work-card ${index === 0 ? "is-large" : ""} ${work.orientation === "portrait" ? "portrait" : ""}">
       <a href="${moneySafe(work.videoUrl || "#")}" target="_blank" rel="noreferrer">
-        <div class="featured-work-media ${moneySafe(work.coverClass || "g1")}">${renderWorkCover(work)}</div>
+        <div class="featured-work-media ${moneySafe(work.coverClass || "g1")}">${renderWorkCover(work, categories)}</div>
         <div class="featured-work-info">
           <p>${moneySafe(categoryLabel(categories, work))} /</p>
           <h3>${moneySafe(work.title)}</h3>
@@ -605,6 +648,7 @@ function renderWorkList(works, categories = [], settings = {}) {
   const root = $("[data-work-list]");
   if (!root) return;
   const rows = published(works);
+  setWorksJsonLd(rows, categories);
   renderShowcaseWorks(rows, categories, settings);
   renderPaginatedWorks(root, rows, categories, 1);
 }
@@ -619,7 +663,7 @@ function renderPaginatedWorks(root, rows, categories, page = 1) {
       ${pageRows.map((work) => `
         <article class="library-work-card ${work.orientation === "portrait" ? "portrait" : ""}" id="${moneySafe(work.id)}">
           <a href="${moneySafe(work.videoUrl || "#")}" target="_blank" rel="noreferrer">
-            <div class="library-work-media ${moneySafe(work.coverClass || "g1")}">${renderWorkCover(work)}</div>
+            <div class="library-work-media ${moneySafe(work.coverClass || "g1")}">${renderWorkCover(work, categories)}</div>
             <div class="library-work-info">
               <p>${moneySafe(categoryLabel(categories, work))} /</p>
               <h3>${moneySafe(work.title)}</h3>
@@ -760,13 +804,14 @@ function renderNewsList(articles) {
     .join("");
 }
 
-function renderArticleBlocks(blocks) {
+function renderArticleBlocks(blocks, article = {}) {
   return parseArticleBlocks(blocks)
     .map((block) => {
       const type = block.type || "paragraph";
       if (type === "heading") return `<h2>${moneySafe(block.text)}</h2>`;
       if (type === "image") {
-        return `<figure>${block.url ? `<img src="${moneySafe(block.url)}" alt="${moneySafe(block.alt || block.caption || "")}" loading="lazy" />` : ""}${block.caption ? `<figcaption>${moneySafe(block.caption)}</figcaption>` : ""}</figure>`;
+        const alt = block.alt || block.caption || article.title || "文章圖片";
+        return `<figure>${block.url ? `<img src="${moneySafe(block.url)}" alt="${moneySafe(alt)}" loading="lazy" />` : ""}${block.caption ? `<figcaption>${moneySafe(block.caption)}</figcaption>` : ""}</figure>`;
       }
       if (type === "video") return `<div class="article-video">${renderEmbed(block.url, { orientation: block.orientation || "landscape" }, true)}${block.caption ? `<p>${moneySafe(block.caption)}</p>` : ""}</div>`;
       if (type === "quote") return `<blockquote>${moneySafe(block.text)}</blockquote>`;
@@ -837,7 +882,7 @@ function renderArticle(articles) {
       <p>${moneySafe(article.excerpt || "")}</p>
     </header>
     ${cover}
-    <div class="article-content">${renderArticleBlocks(article.blocks)}</div>
+    <div class="article-content">${renderArticleBlocks(article.blocks, article)}</div>
   `;
 }
 
