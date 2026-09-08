@@ -27,6 +27,46 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://zeronsr2000-ai.github.io/starhao/service.html?type=services&amp;id=brand-film</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://zeronsr2000-ai.github.io/starhao/service.html?type=services&amp;id=interview</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://zeronsr2000-ai.github.io/starhao/service.html?type=services&amp;id=podcast</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://zeronsr2000-ai.github.io/starhao/service.html?type=services&amp;id=social-cuts</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://zeronsr2000-ai.github.io/starhao/service.html?type=services&amp;id=event</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://zeronsr2000-ai.github.io/starhao/service.html?type=services&amp;id=post-production</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://zeronsr2000-ai.github.io/starhao/service.html?type=extendedServices&amp;id=website</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.72</priority>
+  </url>
+  <url>
+    <loc>https://zeronsr2000-ai.github.io/starhao/service.html?type=extendedServices&amp;id=seo</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.72</priority>
+  </url>
+  <url>
     <loc>https://zeronsr2000-ai.github.io/starhao/process.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

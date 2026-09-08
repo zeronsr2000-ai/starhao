@@ -750,14 +750,32 @@ p {
 
 .extended-service-list {
   grid-template-columns: repeat(2, 1fr);
-  border: 1px solid rgba(223, 255, 79, 0.2);
-  border-radius: var(--radius);
-  overflow: hidden;
-  background: rgba(223, 255, 79, 0.035);
+  gap: 0;
+  border-top: 0;
+  background: transparent;
 }
 
 .extended-service-list .service {
   min-height: 220px;
+  border: 1px solid rgba(223, 255, 79, 0.2);
+  background: rgba(223, 255, 79, 0.035);
+}
+
+.extended-service-list .service:nth-child(odd) {
+  border-radius: var(--radius) 0 0 var(--radius);
+}
+
+.extended-service-list .service:last-child:nth-child(odd) {
+  border-radius: var(--radius);
+}
+
+.extended-service-list .service:nth-child(even) {
+  border-left: 0;
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.extended-service-list .service:nth-child(n + 3) {
+  border-top: 0;
 }
 
 .service {
@@ -787,6 +805,99 @@ p {
 .service p,
 .step p {
   margin: 0 0 12px;
+}
+
+.service-more {
+  display: inline-flex;
+  margin-top: 18px;
+  color: var(--lime);
+  font-weight: 900;
+}
+
+.service-detail-shell {
+  width: min(calc(100% - 36px), var(--max));
+  margin: 0 auto;
+  padding: 160px 0 90px;
+}
+
+.service-detail-head {
+  display: grid;
+  gap: 18px;
+  max-width: 860px;
+  margin-bottom: 44px;
+}
+
+.service-detail-head h1 {
+  margin: 0;
+  font-size: clamp(42px, 6vw, 76px);
+  line-height: 0.95;
+}
+
+.service-detail-head p:not(.eyebrow) {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 19px;
+  line-height: 1.8;
+}
+
+.service-detail-grid,
+.service-detail-media-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
+  gap: 18px;
+}
+
+.service-detail-card {
+  display: grid;
+  gap: 14px;
+  padding: clamp(24px, 4vw, 42px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.service-detail-card h2 {
+  margin: 0;
+  font-size: clamp(22px, 2.5vw, 34px);
+}
+
+.service-detail-card p {
+  margin: 0;
+}
+
+.service-detail-gallery {
+  margin-top: 72px;
+}
+
+.service-detail-media-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.service-detail-media-item {
+  overflow: hidden;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.service-detail-media-item .embed {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+.service-detail-media-item img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.service-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 42px;
 }
 
 .timeline {
@@ -1562,6 +1673,7 @@ footer p {
   .intro,
   .section-head,
   .quote-card,
+  .service-detail-grid,
   .case-card,
   .admin-layout {
     grid-template-columns: 1fr;
@@ -1636,6 +1748,7 @@ footer p {
   .work-showcase,
   .work-library-grid,
   .news-grid,
+  .service-detail-media-grid,
   .service-list,
   .team-grid,
   .timeline,
@@ -1735,6 +1848,7 @@ footer p {
   .work-showcase,
   .work-library-grid,
   .news-grid,
+  .service-detail-media-grid,
   .service-list,
   .team-grid,
   .timeline,
@@ -1854,9 +1968,30 @@ footer p {
     grid-template-columns: 1fr;
   }
 
+  .extended-service-list .service,
+  .extended-service-list .service:nth-child(odd),
+  .extended-service-list .service:nth-child(even),
+  .extended-service-list .service:last-child:nth-child(odd) {
+    border: 1px solid rgba(223, 255, 79, 0.2);
+    border-radius: var(--radius);
+  }
+
+  .extended-service-list .service + .service {
+    border-top: 0;
+  }
+
   .article-shell {
     width: min(calc(100% - 28px), 920px);
     padding-top: 126px;
+  }
+
+  .service-detail-shell {
+    width: min(calc(100% - 28px), var(--max));
+    padding-top: 126px;
+  }
+
+  .service-detail-head h1 {
+    font-size: clamp(32px, 10vw, 48px);
   }
 
   .article-head h1 {

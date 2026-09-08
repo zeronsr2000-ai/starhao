@@ -93,10 +93,10 @@ function collectionDefaults(collection) {
     return { id: "", slug: "", title: "", category: "最新消息", publishedAt: new Date().toISOString().slice(0, 10), coverUrl: "", coverAlt: "", excerpt: "", seoTitle: "", seoDescription: "", blocks: [{ type: "paragraph", text: "" }], sort: state.articles.length + 1, status: "published" };
   }
   if (collection === "services") {
-    return { id: "", title: "", summary: "", target: "", deliverables: "", sort: state.services.length + 1, status: "published" };
+    return { id: "", slug: "", title: "", summary: "", target: "", deliverables: "", detailTitle: "", detailIntro: "", detailBody: "", detailVideoUrls: "", detailImageUrls: "", detailImageAlt: "", seoTitle: "", seoDescription: "", sort: state.services.length + 1, status: "published" };
   }
   if (collection === "extendedServices") {
-    return { id: "", title: "", summary: "", target: "", deliverables: "", sort: state.extendedServices.length + 1, status: "published" };
+    return { id: "", slug: "", title: "", summary: "", target: "", deliverables: "", detailTitle: "", detailIntro: "", detailBody: "", detailVideoUrls: "", detailImageUrls: "", detailImageAlt: "", seoTitle: "", seoDescription: "", sort: state.extendedServices.length + 1, status: "published" };
   }
   if (collection === "partners") {
     return { id: "", title: "", imageUrl: "", alt: "", sort: state.partners.length + 1, status: "published" };
@@ -272,6 +272,9 @@ function rowMeta(collection, item) {
   }
   if (collection === "workCategories") {
     return `${item.showOnHome ? "首頁顯示" : "首頁隱藏"}｜${item.showOnWorks ? "作品頁顯示" : "作品頁隱藏"}｜${item.coverMode === "selected" ? "指定封面" : "隨機封面"}`;
+  }
+  if (collection === "services" || collection === "extendedServices") {
+    return `${item.summary || ""}${item.slug ? "｜詳細頁已設定" : ""}`;
   }
   return item.summary || item.body || item.url || item.status || item.category || "";
 }
@@ -453,6 +456,15 @@ function normalizeArticlePayload(data, form) {
     slug,
     publishedAt: data.publishedAt || new Date().toISOString().slice(0, 10),
     blocks: readArticleBlocks(form),
+  };
+}
+
+function normalizeServicePayload(data) {
+  return {
+    ...data,
+    slug: slugify(data.slug || data.title || data.id),
+    detailTitle: data.detailTitle || data.title || "",
+    detailIntro: data.detailIntro || data.summary || "",
   };
 }
 
@@ -655,6 +667,7 @@ async function saveCollection(collection, data, form) {
   if (collection === "works") data = normalizeWorkPayload(data);
   if (collection === "workCategories") data = normalizeCategoryPayload(data);
   if (collection === "articles") data = normalizeArticlePayload(data, form);
+  if (collection === "services" || collection === "extendedServices") data = normalizeServicePayload(data);
   await api.setDoc(collection, id, data);
   api.clearCache?.();
   setStatus("已儲存，前台會自動同步。");
