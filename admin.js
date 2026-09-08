@@ -776,7 +776,7 @@ function renderQuickLinkEditor(form, items = []) {
           </div>
           <label>ICON 圖片網址<input data-quick-link-prop="iconUrl" value="${safe(item.iconUrl)}" placeholder="可貼圖片網址，或使用下方上傳" /></label>
           <label>或上傳 ICON 圖片<input type="file" accept="image/png,image/svg+xml,image/webp,image/jpeg" data-quick-link-icon-upload="${index}" /></label>
-          <p class="field-hint">建議尺寸 96 x 96 px；PNG / SVG / WebP；正方形透明背景最佳，檔案建議小於 200KB。前台會自動縮放顯示。</p>
+          <p class="field-hint">建議尺寸 96 x 96 px；PNG / SVG / WebP；正方形透明背景最佳，檔案建議小於 200KB。前台會自動縮放顯示。要出現在前台，顯示狀態需選「顯示」，且「內容 / 帳號」或「自訂連結」至少填一個。</p>
           ${item.iconUrl ? `<div class="quick-icon-preview"><img src="${safe(item.iconUrl)}" alt="${safe(item.label || "快捷按鈕")} ICON 預覽" /></div>` : ""}
           <div class="grid-2">
             <label>排序<input data-quick-link-prop="sort" type="number" value="${Number(item.sort || index + 1)}" /></label>

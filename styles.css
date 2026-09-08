@@ -1016,8 +1016,8 @@ p {
 
 .quick-contact-icon {
   display: block;
-  width: 24px;
-  height: 24px;
+  width: 30px;
+  height: 30px;
   object-fit: contain;
 }
 
@@ -2170,8 +2170,8 @@ footer p {
   }
 
   .quick-contact-icon {
-    width: 22px;
-    height: 22px;
+    width: 28px;
+    height: 28px;
   }
 
   .service-detail-head h1 {
