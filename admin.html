@@ -124,7 +124,7 @@
               <p class="field-hint">建議尺寸：正方形 512 × 512 px，最低 256 × 256 px；PNG 透明背景最佳，JPG 也可以。上傳後前台會優先顯示圖片，未上傳時顯示 Logo 圓圈字樣。</p>
               <label>品牌 Logo 替代文字<input name="logoImageAlt" placeholder="例如：星澔文創 Logo" /></label>
               <label>右上按鈕連結<input name="topCtaLink" /></label>
-              <div class="grid-2"><label>首頁選單<input name="navHome" /></label><label>作品選單<input name="navWorks" /></label><label>最新消息選單<input name="navNews" /></label><label>服務選單<input name="navServices" /></label><label>流程選單<input name="navProcess" /></label><label>關於選單<input name="navAbout" /></label><label>詢價選單<input name="navQuote" /></label></div>
+              <div class="grid-2"><label>首頁選單<input name="navHome" /></label><label>作品選單<input name="navWorks" /></label><label>服務選單<input name="navServices" /></label><label>流程選單<input name="navProcess" /></label><label>服務地區選單<input name="navServiceArea" /></label><label>關於選單<input name="navAbout" /></label><label>最新消息選單<input name="navNews" /></label><label>詢價選單<input name="navQuote" /></label></div>
             </div>
             <div class="grid-2">
               <label>Email<input name="email" type="email" /></label>
@@ -138,6 +138,7 @@
             </div>
             <div class="grid-2">
               <label>Instagram<input name="instagram" /></label>
+              <label>Facebook<input name="facebook" placeholder="Facebook 粉絲專頁網址" /></label>
               <label>GA ID<input name="gaId" /></label>
             </div>
             <label>Google Search Console 驗證碼<input name="googleSiteVerification" placeholder="貼上 content 裡面的驗證碼即可" /></label>
@@ -321,7 +322,7 @@
               <h3>詳細頁內容</h3>
               <label>詳細頁主標題<input name="detailTitle" /></label>
               <label>詳細頁開場說明<textarea name="detailIntro"></textarea></label>
-              <label>詳細服務說明（可換行）<textarea name="detailBody"></textarea></label>
+              <label>SEO 介紹文章（可換行，會顯示在展示影片與按鈕中間）<textarea name="detailBody"></textarea></label>
               <label>展示影片連結（每行一個，支援 YouTube／IG／FB）<textarea name="detailVideoUrls"></textarea></label>
               <label>展示圖片網址（每行一個）<textarea name="detailImageUrls"></textarea></label>
               <label>或上傳展示圖片<input name="detailImageFile" type="file" accept="image/*" data-upload-field="detailImageUrls" /></label>
@@ -351,7 +352,7 @@
               <h3>詳細頁內容</h3>
               <label>詳細頁主標題<input name="detailTitle" /></label>
               <label>詳細頁開場說明<textarea name="detailIntro"></textarea></label>
-              <label>詳細服務說明（可換行）<textarea name="detailBody"></textarea></label>
+              <label>SEO 介紹文章（可換行，會顯示在展示影片與按鈕中間）<textarea name="detailBody"></textarea></label>
               <label>展示影片連結（每行一個，支援 YouTube／IG／FB）<textarea name="detailVideoUrls"></textarea></label>
               <label>展示圖片網址（每行一個）<textarea name="detailImageUrls"></textarea></label>
               <label>或上傳展示圖片<input name="detailImageFile" type="file" accept="image/*" data-upload-field="detailImageUrls" /></label>
@@ -398,6 +399,7 @@
           <div class="field-group"><h3>作品案例頁</h3><label>英文小標<input name="worksEyebrow" /></label><label>主標題<textarea name="worksTitle"></textarea></label><label>說明<textarea name="worksLead"></textarea></label></div>
           <div class="field-group"><h3>最新消息頁</h3><label>英文小標<input name="newsEyebrow" /></label><label>主標題<textarea name="newsTitle"></textarea></label><label>說明<textarea name="newsLead"></textarea></label></div>
           <div class="field-group"><h3>服務項目頁</h3><label>英文小標<input name="servicesEyebrow" /></label><label>主標題<textarea name="servicesTitle"></textarea></label><label>說明<textarea name="servicesLead"></textarea></label></div>
+          <div class="field-group"><h3>服務地區頁</h3><label>英文小標<input name="serviceAreaEyebrow" /></label><label>主標題<textarea name="serviceAreaTitle"></textarea></label><label>說明<textarea name="serviceAreaLead"></textarea></label><p class="field-hint">服務地區詳細內容沿用「服務內容 → 關於我們」裡的服務地區欄位。</p></div>
           <div class="field-group"><h3>製作流程頁</h3><label>英文小標<input name="processEyebrow" /></label><label>主標題<textarea name="processTitle"></textarea></label><label>說明<textarea name="processLead"></textarea></label></div>
           <div class="field-group"><h3>關於我們頁</h3><label>英文小標<input name="aboutEyebrow" /></label><div class="grid-2"><label>觀點小標<input name="aboutPointLabel" /></label><label>觀點標題<input name="aboutPointTitle" /></label><label>團隊小標<input name="teamEyebrow" /></label><label>團隊標題<input name="teamTitle" /></label></div><label>團隊說明<textarea name="teamDescription"></textarea></label><div class="grid-2"><label>服務領域小標<input name="clientsEyebrow" /></label><label>服務領域標題<input name="clientsTitle" /></label></div></div>
           <div class="field-group"><h3>詢價頁</h3><label>英文小標<input name="quoteEyebrow" /></label><label>主標題<textarea name="quoteTitle"></textarea></label><label>說明<textarea name="quoteLead"></textarea></label><label>送出按鈕文字<input name="quoteSubmitText" /></label></div><button class="btn primary" type="submit">儲存各頁文字</button></form></section>
@@ -455,8 +457,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-storage-compat.js"></script>
     <script src="firebase-config.js"></script>
-    <script src="data.js?v=20260908-1"></script>
+    <script src="data.js?v=20260908-2"></script>
     <script src="firebase-client.js?v=20260903-2"></script>
-    <script src="admin.js?v=20260908-1"></script>
+    <script src="admin.js?v=20260908-2"></script>
   </body>
 </html>

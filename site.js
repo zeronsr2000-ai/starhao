@@ -1,5 +1,7 @@
 const defaults = window.STARHORIZON_DEFAULTS;
 const api = window.StarhorizonFirebase;
+let currentSite = defaults.site;
+let navServiceItems = [];
 
 function $(selector, root = document) {
   return root.querySelector(selector);
@@ -120,7 +122,7 @@ function setSiteJsonLd(site) {
         logo,
         email: site.email || undefined,
         telephone: site.phone || undefined,
-        sameAs: [site.youtube, site.instagram].filter(Boolean),
+        sameAs: [site.youtube, site.instagram, site.facebook].filter(Boolean),
       },
       {
         "@type": "WebSite",
@@ -187,6 +189,7 @@ function resolveCategoryCover(category, works) {
 }
 
 function setMeta(site) {
+  currentSite = site;
   setPageSeo(site);
   setSiteJsonLd(site);
   ensureMeta("google-site-verification", site.googleSiteVerification);
@@ -207,6 +210,7 @@ function setMeta(site) {
   text("footer > a", site.footerCtaText);
   attr("footer > a", "href", site.footerCtaLink);
   renderContactInfo(site);
+  renderQuickContact(site);
 }
 
 function renderBrandLogo(site) {
@@ -228,13 +232,29 @@ function renderNav(site) {
   const items = [
     ["home", "index.html", site.navHome || "首頁"],
     ["works", "works.html", site.navWorks || "作品案例"],
-    ["news", "news.html", site.navNews || "最新消息"],
     ["services", "services.html", site.navServices || "服務項目"],
     ["process", "process.html", site.navProcess || "製作流程"],
+    ["serviceArea", "service-area.html", site.navServiceArea || "服務地區"],
     ["about", "about.html", site.navAbout || "關於我們"],
+    ["news", "news.html", site.navNews || "最新消息"],
     ["quote", "quote.html", site.navQuote || "詢價"],
   ];
-  nav.innerHTML = items.map(([key, href, label]) => `<a class="${page === key || (page === "article" && key === "news") || (page === "service" && key === "services") ? "active" : ""}" href="${href}">${moneySafe(label)}</a>`).join("");
+  nav.innerHTML = items.map(([key, href, label]) => {
+    const active = page === key || (page === "article" && key === "news") || (page === "service" && key === "services");
+    if (key !== "services") return `<a class="${active ? "active" : ""}" href="${href}">${moneySafe(label)}</a>`;
+    const submenu = navServiceItems.length
+      ? `<div class="nav-dropdown" role="menu">${navServiceItems.map((item) => `<a href="${serviceHref(item.service, item.type)}" role="menuitem">${moneySafe(item.service.title)}</a>`).join("")}</div>`
+      : "";
+    return `<div class="nav-item has-dropdown"><a class="${active ? "active" : ""}" href="${href}">${moneySafe(label)}</a>${submenu}</div>`;
+  }).join("");
+}
+
+function setNavServiceItems(services = defaults.services, extendedServices = defaults.extendedServices) {
+  navServiceItems = [
+    ...published(services).map((service) => ({ service, type: "services" })),
+    ...published(extendedServices).map((service) => ({ service, type: "extendedServices" })),
+  ];
+  renderNav(currentSite);
 }
 
 function hasContactValue(value) {
@@ -257,6 +277,41 @@ function renderOptions(selector, options) {
   const select = $(selector);
   if (!select) return;
   select.innerHTML = (options || []).map((option) => `<option>${moneySafe(option)}</option>`).join("");
+}
+
+function contactHref(type, value) {
+  const clean = String(value || "").trim();
+  if (!clean) return "";
+  if (/^https?:\/\//i.test(clean)) return clean;
+  if (type === "phone") return `tel:${clean.replace(/[^\d+]/g, "")}`;
+  if (type === "email") return `mailto:${clean}`;
+  if (type === "line") return `https://line.me/ti/p/${encodeURIComponent(clean.replace(/^@/, ""))}`;
+  return clean;
+}
+
+function renderQuickContact(site) {
+  let root = $("[data-quick-contact]");
+  const links = [
+    { type: "line", label: "LINE", value: site.line },
+    { type: "phone", label: "TEL", value: site.phone },
+    { type: "facebook", label: "FB", value: site.facebook },
+    { type: "email", label: "MAIL", value: site.email },
+  ]
+    .map((item) => ({ ...item, href: contactHref(item.type, item.value) }))
+    .filter((item) => hasContactValue(item.value) && item.href);
+
+  if (!links.length) {
+    if (root) root.remove();
+    return;
+  }
+  if (!root) {
+    root = document.createElement("aside");
+    root.dataset.quickContact = "";
+    root.className = "quick-contact";
+    root.setAttribute("aria-label", "快速聯絡");
+    document.body.appendChild(root);
+  }
+  root.innerHTML = links.map((item) => `<a class="quick-contact-link quick-${item.type}" href="${moneySafe(item.href)}" aria-label="${moneySafe(item.label)}">${moneySafe(item.label)}</a>`).join("");
 }
 
 function normalizeInquiryFields(inquiryForm = {}) {
@@ -702,6 +757,10 @@ function serviceHref(service, type = "services") {
   return `service.html?type=${encodeURIComponent(type)}&id=${encodeURIComponent(slug)}`;
 }
 
+function stripLabelPrefix(value, label) {
+  return String(value || "").replace(new RegExp(`^${label}[：:]?\\s*`), "");
+}
+
 function renderServices(selector, services, type = "services") {
   const root = $(selector);
   if (!root) return;
@@ -712,7 +771,7 @@ function renderServices(selector, services, type = "services") {
           <span class="num">${String(index + 1).padStart(2, "0")}</span>
           <h3>${moneySafe(service.title)}</h3>
           <p>${moneySafe(service.summary)}</p>
-          ${service.target ? `<small>適合對象：${moneySafe(service.target)}</small>` : ""}
+          ${service.target ? `<small>適合對象：${moneySafe(stripLabelPrefix(service.target, "適合對象"))}</small>` : ""}
           <a class="service-more" href="${serviceHref(service, type)}">觀看更多</a>
         </article>
       `,
@@ -729,7 +788,7 @@ function splitTextLines(value) {
 }
 
 function serviceDetailText(service) {
-  return service.detailBody || service.deliverables || service.summary || "";
+  return service.detailBody || "";
 }
 
 function renderServiceMediaList(service) {
@@ -743,7 +802,7 @@ function renderServiceMediaList(service) {
 function setServiceSeo(service, type) {
   const site = api.getCachedDoc?.("siteContent", "site", defaults.site) || defaults.site;
   const title = service.seoTitle || `${service.title || "服務項目"}｜星澔文創`;
-  const description = service.seoDescription || service.summary || service.target || "";
+  const description = service.seoDescription || service.detailIntro || service.summary || service.target || service.detailBody || "";
   const url = absoluteUrl(`service.html?type=${encodeURIComponent(type)}&id=${encodeURIComponent(serviceSlug(service))}`, site);
   setPageSeo(site, { title, description, url });
   ensureJsonLd("service-detail-json-ld", {
@@ -784,7 +843,7 @@ function renderServiceDetail(services, extendedServices) {
     return;
   }
   setServiceSeo(service, type);
-  const detailLines = splitTextLines(serviceDetailText(service));
+  const articleLines = splitTextLines(serviceDetailText(service));
   const media = renderServiceMediaList(service);
   root.innerHTML = `
     <header class="service-detail-head">
@@ -795,16 +854,58 @@ function renderServiceDetail(services, extendedServices) {
     <div class="service-detail-grid">
       <section class="service-detail-card">
         <h2>服務說明</h2>
-        ${detailLines.length ? detailLines.map((line) => `<p>${moneySafe(line)}</p>`).join("") : `<p>${moneySafe(service.summary || "")}</p>`}
+        <p>${moneySafe(service.summary || "可依品牌需求規劃服務內容與影像形式。")}</p>
       </section>
       <aside class="service-detail-card">
         <h2>適合對象</h2>
         <p>${moneySafe(service.target || "可依品牌目前階段與內容需求規劃。")}</p>
-        ${service.deliverables ? `<h2>製作內容</h2><p>${moneySafe(service.deliverables)}</p>` : ""}
       </aside>
     </div>
     ${media ? `<section class="service-detail-gallery"><div class="section-head"><div><p class="eyebrow">Gallery</p><h2>影片與照片展示</h2></div></div><div class="service-detail-media-grid">${media}</div></section>` : ""}
+    <section class="service-seo-article">
+      <p class="eyebrow">Service Notes</p>
+      <h2>${moneySafe(service.detailTitle || service.title)}介紹</h2>
+      ${(articleLines.length ? articleLines : splitTextLines(service.deliverables || service.summary)).map((line) => `<p>${moneySafe(line)}</p>`).join("")}
+    </section>
     <div class="service-detail-actions"><a class="btn primary" href="quote.html">詢問這項服務</a><a class="btn ghost" href="services.html">回服務項目</a></div>
+  `;
+}
+
+function renderServiceAreaPage(pages, about, site) {
+  const root = $("[data-service-area-page]");
+  if (!root) return;
+  const title = pages.serviceAreaTitle || "台灣全區影像製作服務。";
+  const description = pages.serviceAreaLead || about.serviceArea || "";
+  setPageSeo(site, {
+    title: `${title.replace(/\s+/g, "")}｜星澔文創`,
+    description,
+    url: absoluteUrl("service-area.html", site),
+  });
+  ensureJsonLd("service-area-json-ld", {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name: site.brandName || defaults.site.brandName,
+    url: siteBaseUrl(site),
+    areaServed: "Taiwan",
+    description,
+  });
+  const areaLines = splitTextLines(about.serviceArea || description);
+  root.innerHTML = `
+    <section class="page-hero">
+      <p class="eyebrow">${moneySafe(pages.serviceAreaEyebrow || "Service Area")}</p>
+      <h1>${moneySafe(title)}</h1>
+      <p>${moneySafe(description)}</p>
+    </section>
+    <section class="service-area-content">
+      <div>
+        <p class="eyebrow">Coverage</p>
+        <h2>服務地區說明</h2>
+      </div>
+      <div class="service-seo-article service-area-article">
+        ${(areaLines.length ? areaLines : ["台灣全區，可依專案需求安排外縣市拍攝。"]).map((line) => `<p>${moneySafe(line)}</p>`).join("")}
+      </div>
+      <div class="service-detail-actions"><a class="btn primary" href="quote.html">詢問拍攝服務</a><a class="btn ghost" href="services.html">查看服務項目</a></div>
+    </section>
   `;
 }
 
@@ -1073,6 +1174,14 @@ async function initPage() {
   renderDefaultsForPage(page);
   renderCachedForPage(page);
 
+  const serviceCollectionsPromise = Promise.all([
+    api.getCollection("services", defaults.services),
+    api.getCollection("extendedServices", defaults.extendedServices),
+  ]).then(([services, extendedServices]) => {
+    setNavServiceItems(services, extendedServices);
+    return [services, extendedServices];
+  });
+
   const sitePromise = api.getDoc("siteContent", "site", defaults.site).then((site) => {
     setMeta(site);
     setupInquiryForm(site);
@@ -1080,18 +1189,18 @@ async function initPage() {
   });
 
   if (page === "home") {
-    const [site, home, pages, workSettings, workCategories, works, services, extendedServices, process, partners] = await Promise.all([
+    const [site, home, pages, workSettings, workCategories, works, serviceRows, process, partners] = await Promise.all([
       sitePromise,
       api.getDoc("siteContent", "home", defaults.home),
       api.getDoc("siteContent", "pages", defaults.pages),
       api.getDoc("siteContent", "workSettings", defaults.workSettings),
       api.getCollection("workCategories", defaults.workCategories),
       api.getCollection("works", defaults.works),
-      api.getCollection("services", defaults.services),
-      api.getCollection("extendedServices", defaults.extendedServices),
+      serviceCollectionsPromise,
       api.getCollection("process", defaults.process),
       api.getCollection("partners", defaults.partners),
     ]);
+    const [services, extendedServices] = serviceRows;
     renderPages(pages);
     renderHome(home, works, services, extendedServices, process, partners, workCategories, workSettings);
     setupInquiryForm(site);
@@ -1119,7 +1228,8 @@ async function initPage() {
   }
 
   if (page === "services") {
-    const [, pages, home, services, extendedServices] = await Promise.all([sitePromise, api.getDoc("siteContent", "pages", defaults.pages), api.getDoc("siteContent", "home", defaults.home), api.getCollection("services", defaults.services), api.getCollection("extendedServices", defaults.extendedServices)]);
+    const [, pages, home, serviceRows] = await Promise.all([sitePromise, api.getDoc("siteContent", "pages", defaults.pages), api.getDoc("siteContent", "home", defaults.home), serviceCollectionsPromise]);
+    const [services, extendedServices] = serviceRows;
     renderPages(pages);
     text("[data-extended-eyebrow]", home.extendedEyebrow);
     lines("[data-extended-title]", home.extendedTitle);
@@ -1130,8 +1240,16 @@ async function initPage() {
   }
 
   if (page === "service") {
-    const [, services, extendedServices] = await Promise.all([sitePromise, api.getCollection("services", defaults.services), api.getCollection("extendedServices", defaults.extendedServices)]);
+    const [, serviceRows] = await Promise.all([sitePromise, serviceCollectionsPromise]);
+    const [services, extendedServices] = serviceRows;
     renderServiceDetail(services, extendedServices);
+    return;
+  }
+
+  if (page === "serviceArea") {
+    const [site, pages, about] = await Promise.all([sitePromise, api.getDoc("siteContent", "pages", defaults.pages), api.getDoc("siteContent", "about", defaults.about)]);
+    renderPages(pages);
+    renderServiceAreaPage(pages, about, site);
     return;
   }
 
@@ -1176,6 +1294,9 @@ function renderDefaultsForPage(page) {
     renderServices("[data-extended-service-list]", defaults.extendedServices, "extendedServices");
   } else if (page === "service") {
     renderServiceDetail(defaults.services, defaults.extendedServices);
+  } else if (page === "serviceArea") {
+    renderPages(defaults.pages);
+    renderServiceAreaPage(defaults.pages, defaults.about, defaults.site);
   } else if (page === "process") {
     renderPages(defaults.pages);
     renderProcess("[data-process-list]", defaults.process);
@@ -1193,6 +1314,7 @@ function renderCachedForPage(page) {
   if (!api.getCachedDoc || !api.getCachedCollection) return;
   const site = api.getCachedDoc("siteContent", "site", defaults.site);
   const pages = api.getCachedDoc("siteContent", "pages", defaults.pages);
+  setNavServiceItems(api.getCachedCollection("services", defaults.services), api.getCachedCollection("extendedServices", defaults.extendedServices));
   setMeta(site);
   renderPages(pages);
   if (page === "home") {
@@ -1221,6 +1343,8 @@ function renderCachedForPage(page) {
     renderServices("[data-extended-service-list]", published(api.getCachedCollection("extendedServices", defaults.extendedServices)), "extendedServices");
   } else if (page === "service") {
     renderServiceDetail(api.getCachedCollection("services", defaults.services), api.getCachedCollection("extendedServices", defaults.extendedServices));
+  } else if (page === "serviceArea") {
+    renderServiceAreaPage(pages, api.getCachedDoc("siteContent", "about", defaults.about), site);
   } else if (page === "process") {
     renderProcess("[data-process-list]", api.getCachedCollection("process", defaults.process));
   } else if (page === "about") {
