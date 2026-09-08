@@ -803,33 +803,16 @@ p {
 
 .extended-service-list {
   grid-template-columns: repeat(2, 1fr);
-  gap: 0;
+  gap: 18px;
   border-top: 0;
   background: transparent;
 }
 
 .extended-service-list .service {
-  min-height: 220px;
+  min-height: 190px;
   border: 1px solid rgba(223, 255, 79, 0.2);
-  background: rgba(223, 255, 79, 0.035);
-}
-
-.extended-service-list .service:nth-child(odd) {
-  border-radius: var(--radius) 0 0 var(--radius);
-}
-
-.extended-service-list .service:last-child:nth-child(odd) {
   border-radius: var(--radius);
-  max-width: calc(50% - 9px);
-}
-
-.extended-service-list .service:nth-child(even) {
-  border-left: 0;
-  border-radius: 0 var(--radius) var(--radius) 0;
-}
-
-.extended-service-list .service:nth-child(n + 3) {
-  border-top: 0;
+  background: rgba(223, 255, 79, 0.035);
 }
 
 .service {
@@ -905,7 +888,8 @@ p {
   display: grid;
   align-content: start;
   gap: 10px;
-  padding: clamp(18px, 2.8vw, 28px);
+  min-height: 0;
+  padding: clamp(16px, 2vw, 22px);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--card);
@@ -913,11 +897,13 @@ p {
 
 .service-detail-card h2 {
   margin: 0;
-  font-size: clamp(22px, 2.5vw, 34px);
+  font-size: clamp(22px, 2.2vw, 30px);
 }
 
 .service-detail-card p {
   margin: 0;
+  font-size: 16px;
+  line-height: 1.75;
 }
 
 .service-detail-gallery {

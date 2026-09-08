@@ -235,7 +235,8 @@ function renderNav(site) {
     const href = item.href || "#";
     const label = item.label || item.title || "選單";
     const active = page === key || (page === "article" && key === "news") || (page === "service" && key === "services");
-    if (!item.serviceDropdown) return `<a class="${active ? "active" : ""}" href="${moneySafe(href)}">${moneySafe(label)}</a>`;
+    const useServiceDropdown = item.serviceDropdown || key === "services" || String(href).split("?")[0] === "services.html";
+    if (!useServiceDropdown) return `<a class="${active ? "active" : ""}" href="${moneySafe(href)}">${moneySafe(label)}</a>`;
     const submenu = navServiceItems.length
       ? `<div class="nav-dropdown" role="menu">${navServiceItems.map((item) => `<a href="${serviceHref(item.service, item.type)}" role="menuitem">${moneySafe(item.service.title)}</a>`).join("")}</div>`
       : "";
@@ -826,7 +827,12 @@ function splitTextLines(value) {
 }
 
 function serviceDetailText(service) {
-  return service.detailBody || "";
+  if (service.detailBody) return service.detailBody;
+  return [
+    service.summary ? `服務說明：${service.summary}` : "",
+    service.target ? `適合對象：${stripLabelPrefix(service.target, "適合對象")}` : "",
+    service.deliverables ? `製作項目：${service.deliverables}` : "",
+  ].filter(Boolean).join("\n");
 }
 
 function renderServiceMediaList(service) {
