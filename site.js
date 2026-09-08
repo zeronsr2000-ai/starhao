@@ -229,24 +229,46 @@ function renderNav(site) {
   const nav = $("[data-nav]");
   if (!nav) return;
   const page = document.body.dataset.page || "home";
-  const items = [
-    ["home", "index.html", site.navHome || "首頁"],
-    ["works", "works.html", site.navWorks || "作品案例"],
-    ["services", "services.html", site.navServices || "服務項目"],
-    ["process", "process.html", site.navProcess || "製作流程"],
-    ["serviceArea", "service-area.html", site.navServiceArea || "服務地區"],
-    ["about", "about.html", site.navAbout || "關於我們"],
-    ["news", "news.html", site.navNews || "最新消息"],
-    ["quote", "quote.html", site.navQuote || "詢價"],
-  ];
-  nav.innerHTML = items.map(([key, href, label]) => {
+  const items = normalizeNavItems(site);
+  nav.innerHTML = items.map((item) => {
+    const key = item.id || navKeyFromHref(item.href);
+    const href = item.href || "#";
+    const label = item.label || item.title || "選單";
     const active = page === key || (page === "article" && key === "news") || (page === "service" && key === "services");
-    if (key !== "services") return `<a class="${active ? "active" : ""}" href="${href}">${moneySafe(label)}</a>`;
+    if (!item.serviceDropdown) return `<a class="${active ? "active" : ""}" href="${moneySafe(href)}">${moneySafe(label)}</a>`;
     const submenu = navServiceItems.length
       ? `<div class="nav-dropdown" role="menu">${navServiceItems.map((item) => `<a href="${serviceHref(item.service, item.type)}" role="menuitem">${moneySafe(item.service.title)}</a>`).join("")}</div>`
       : "";
-    return `<div class="nav-item has-dropdown"><a class="${active ? "active" : ""}" href="${href}">${moneySafe(label)}</a>${submenu}</div>`;
+    return `<div class="nav-item has-dropdown"><a class="${active ? "active" : ""}" href="${moneySafe(href)}">${moneySafe(label)}</a>${submenu}</div>`;
   }).join("");
+}
+
+function legacyNavItems(site) {
+  return [
+    { id: "home", label: site.navHome || "首頁", href: "index.html", sort: 1, status: "published" },
+    { id: "works", label: site.navWorks || "作品案例", href: "works.html", sort: 2, status: "published" },
+    { id: "services", label: site.navServices || "服務項目", href: "services.html", sort: 3, status: "published", serviceDropdown: true },
+    { id: "process", label: site.navProcess || "製作流程", href: "process.html", sort: 4, status: "published" },
+    { id: "about", label: site.navAbout || "關於我們", href: "about.html", sort: 5, status: "published" },
+    { id: "news", label: site.navNews || "最新消息", href: "news.html", sort: 6, status: "published" },
+    { id: "quote", label: site.navQuote || "詢價", href: "quote.html", sort: 7, status: "published" },
+  ];
+}
+
+function normalizeNavItems(site) {
+  const rows = Array.isArray(site.navItems) && site.navItems.length ? site.navItems : legacyNavItems(site);
+  return rows
+    .filter((item) => item && item.status !== "hidden")
+    .sort((a, b) => (Number(a.sort) || 0) - (Number(b.sort) || 0));
+}
+
+function navKeyFromHref(href = "") {
+  const clean = String(href).split("?")[0].replace(/^\.\//, "");
+  if (!clean || clean === "index.html") return "home";
+  if (clean === "article.html") return "news";
+  if (clean === "service.html") return "services";
+  if (clean === "service-area.html") return "serviceArea";
+  return clean.replace(/\.html$/, "");
 }
 
 function setNavServiceItems(services = defaults.services, extendedServices = defaults.extendedServices) {

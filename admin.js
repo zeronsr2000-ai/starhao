@@ -214,7 +214,11 @@ function workSelectOptions(current = "") {
 }
 
 function renderForms() {
-  fillForm(qs('[data-form="site"]'), state.site);
+  fillForm(qs('[data-form="site"]'), {
+    ...state.site,
+    navItems: JSON.stringify(normalizeNavItems(state.site), null, 2),
+  });
+  renderNavEditor(qs('[data-form="site"]'), normalizeNavItems(state.site));
   fillForm(qs('[data-form="home"]'), state.home);
   fillForm(qs('[data-form="pages"]'), state.pages);
   fillForm(qs('[data-form="home"]'), {
@@ -425,6 +429,25 @@ function parseHomePayload(data) {
   };
 }
 
+function parseSitePayload(form, data) {
+  const navItems = readNavItems(form);
+  const legacy = {};
+  navItems.forEach((item) => {
+    if (item.id === "home") legacy.navHome = item.label;
+    if (item.id === "works") legacy.navWorks = item.label;
+    if (item.id === "services") legacy.navServices = item.label;
+    if (item.id === "process") legacy.navProcess = item.label;
+    if (item.id === "about") legacy.navAbout = item.label;
+    if (item.id === "news") legacy.navNews = item.label;
+    if (item.id === "quote") legacy.navQuote = item.label;
+  });
+  return {
+    ...data,
+    ...legacy,
+    navItems,
+  };
+}
+
 function parseWorkSettingsPayload(form, data) {
   return {
     showreelWorkId: data.showreelWorkId || "",
@@ -572,6 +595,100 @@ function parseInquiryFields(value) {
   } catch (error) {
     return [];
   }
+}
+
+function legacyNavItems(site = defaults.site) {
+  return [
+    { id: "home", label: site.navHome || "首頁", href: "index.html", sort: 1, status: "published", serviceDropdown: false },
+    { id: "works", label: site.navWorks || "作品案例", href: "works.html", sort: 2, status: "published", serviceDropdown: false },
+    { id: "services", label: site.navServices || "服務項目", href: "services.html", sort: 3, status: "published", serviceDropdown: true },
+    { id: "process", label: site.navProcess || "製作流程", href: "process.html", sort: 4, status: "published", serviceDropdown: false },
+    { id: "about", label: site.navAbout || "關於我們", href: "about.html", sort: 5, status: "published", serviceDropdown: false },
+    { id: "news", label: site.navNews || "最新消息", href: "news.html", sort: 6, status: "published", serviceDropdown: false },
+    { id: "quote", label: site.navQuote || "詢價", href: "quote.html", sort: 7, status: "published", serviceDropdown: false },
+  ];
+}
+
+function normalizeNavItems(site = defaults.site) {
+  const rows = Array.isArray(site.navItems) && site.navItems.length ? site.navItems : legacyNavItems(site);
+  return rows
+    .map((item, index) => ({
+      id: slugify(item.id || item.label || `nav-${index + 1}`),
+      label: item.label || item.title || "選單",
+      href: item.href || "index.html",
+      sort: Number(item.sort || index + 1),
+      status: item.status === "hidden" ? "hidden" : "published",
+      serviceDropdown: Boolean(item.serviceDropdown),
+    }))
+    .sort((a, b) => (a.sort || 0) - (b.sort || 0));
+}
+
+function newNavItem() {
+  return { id: `nav-${Date.now().toString(36)}`, label: "新增選單", href: "index.html", sort: 99, status: "published", serviceDropdown: false };
+}
+
+function renderNavEditor(form, items = []) {
+  if (!form) return;
+  const editor = qs("[data-nav-editor]", form);
+  if (!editor) return;
+  const rows = Array.isArray(items) && items.length ? items : legacyNavItems(defaults.site);
+  editor.innerHTML = rows
+    .map(
+      (item, index) => `
+        <div class="inquiry-field-row" data-nav-item="${index}">
+          <div class="article-block-head">
+            <strong>${index + 1}. ${safe(item.label || item.id || "選單")}</strong>
+            <div class="actions">
+              <button class="btn ghost" type="button" data-nav-item-move="${index}" data-dir="-1">上移</button>
+              <button class="btn ghost" type="button" data-nav-item-move="${index}" data-dir="1">下移</button>
+              <button class="btn danger" type="button" data-nav-item-remove="${index}">刪除</button>
+            </div>
+          </div>
+          <div class="grid-2">
+            <label>顯示名稱<input data-nav-item-prop="label" value="${safe(item.label)}" /></label>
+            <label>連結網址<input data-nav-item-prop="href" value="${safe(item.href)}" placeholder="例如 works.html" /></label>
+          </div>
+          <div class="grid-2">
+            <label>代號<input data-nav-item-prop="id" value="${safe(item.id)}" placeholder="例如 works" /></label>
+            <label>排序<input data-nav-item-prop="sort" type="number" value="${Number(item.sort || index + 1)}" /></label>
+          </div>
+          <div class="grid-2">
+            <label><input data-nav-item-prop="serviceDropdown" type="checkbox" ${item.serviceDropdown ? "checked" : ""} /> 服務下拉</label>
+            <label>顯示狀態<select data-nav-item-prop="status"><option value="published" ${item.status !== "hidden" ? "selected" : ""}>顯示</option><option value="hidden" ${item.status === "hidden" ? "selected" : ""}>隱藏</option></select></label>
+          </div>
+        </div>
+      `,
+    )
+    .join("");
+  syncNavStore(form);
+}
+
+function readNavItems(form) {
+  if (!form) return legacyNavItems(defaults.site);
+  return qsa("[data-nav-item]", form)
+    .map((row, index) => {
+      const item = {};
+      qsa("[data-nav-item-prop]", row).forEach((input) => {
+        const key = input.dataset.navItemProp;
+        if (input.type === "checkbox") item[key] = input.checked;
+        else if (key === "sort") item[key] = Number(input.value || index + 1);
+        else item[key] = input.value;
+      });
+      return {
+        id: slugify(item.id || item.label || `nav-${index + 1}`),
+        label: item.label || `選單 ${index + 1}`,
+        href: item.href || "index.html",
+        sort: item.sort || index + 1,
+        status: item.status || "published",
+        serviceDropdown: Boolean(item.serviceDropdown),
+      };
+    })
+    .sort((a, b) => (a.sort || 0) - (b.sort || 0));
+}
+
+function syncNavStore(form) {
+  const store = qs('textarea[name="navItems"]', form);
+  if (store) store.value = JSON.stringify(readNavItems(form), null, 2);
 }
 
 function newInquiryField() {
@@ -726,7 +843,7 @@ function setupEvents() {
       try {
         const id = form.dataset.form;
         const data = await uploadFormFiles(form, formToObject(form));
-        const payload = id === "about" ? parseAboutPayload(data) : id === "inquiryForm" ? parseOptionsPayload(data) : id === "workSettings" ? parseWorkSettingsPayload(form, data) : id === "home" ? parseHomePayload(data) : data;
+        const payload = id === "site" ? parseSitePayload(form, data) : id === "about" ? parseAboutPayload(data) : id === "inquiryForm" ? parseOptionsPayload(data) : id === "workSettings" ? parseWorkSettingsPayload(form, data) : id === "home" ? parseHomePayload(data) : data;
         await saveSiteContent(id, payload);
       } catch (error) {
         setStatus(`儲存失敗：${errorMessage(error)}`);
@@ -777,7 +894,35 @@ function setupEvents() {
     const addInquiryField = event.target.closest("[data-add-inquiry-field]");
     const removeInquiryField = event.target.closest("[data-inquiry-field-remove]");
     const moveInquiryField = event.target.closest("[data-inquiry-field-move]");
+    const addNavItem = event.target.closest("[data-add-nav-item]");
+    const removeNavItem = event.target.closest("[data-nav-item-remove]");
+    const moveNavItem = event.target.closest("[data-nav-item-move]");
     try {
+      if (addNavItem) {
+        const form = addNavItem.closest("form");
+        const items = readNavItems(form);
+        items.push(newNavItem());
+        renderNavEditor(form, items);
+        return;
+      }
+      if (removeNavItem) {
+        const form = removeNavItem.closest("form");
+        const index = Number(removeNavItem.dataset.navItemRemove);
+        const items = readNavItems(form).filter((_, itemIndex) => itemIndex !== index);
+        renderNavEditor(form, items);
+        return;
+      }
+      if (moveNavItem) {
+        const form = moveNavItem.closest("form");
+        const index = Number(moveNavItem.dataset.navItemMove);
+        const nextIndex = index + Number(moveNavItem.dataset.dir);
+        const items = readNavItems(form);
+        if (nextIndex < 0 || nextIndex >= items.length) return;
+        [items[index], items[nextIndex]] = [items[nextIndex], items[index]];
+        items.forEach((item, itemIndex) => item.sort = itemIndex + 1);
+        renderNavEditor(form, items);
+        return;
+      }
       if (addInquiryField) {
         const form = addInquiryField.closest("form");
         const fields = readInquiryFields(form);
@@ -881,12 +1026,16 @@ function setupEvents() {
     if (field) syncArticleStore(field.closest("form"));
     const inquiryField = event.target.closest("[data-inquiry-field-prop]");
     if (inquiryField) syncInquiryFieldStore(inquiryField.closest("form"));
+    const navItem = event.target.closest("[data-nav-item-prop]");
+    if (navItem) syncNavStore(navItem.closest("form"));
   });
 
   document.addEventListener("change", async (event) => {
     const upload = event.target.closest("[data-article-image-upload]");
     const field = event.target.closest("[data-block-field]");
     if (field) syncArticleStore(field.closest("form"));
+    const navItem = event.target.closest("[data-nav-item-prop]");
+    if (navItem) syncNavStore(navItem.closest("form"));
     const inquiryField = event.target.closest("[data-inquiry-field-prop]");
     if (inquiryField) syncInquiryFieldStore(inquiryField.closest("form"));
     if (!upload || !upload.files || !upload.files[0]) return;

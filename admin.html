@@ -124,7 +124,13 @@
               <p class="field-hint">建議尺寸：正方形 512 × 512 px，最低 256 × 256 px；PNG 透明背景最佳，JPG 也可以。上傳後前台會優先顯示圖片，未上傳時顯示 Logo 圓圈字樣。</p>
               <label>品牌 Logo 替代文字<input name="logoImageAlt" placeholder="例如：星澔文創 Logo" /></label>
               <label>右上按鈕連結<input name="topCtaLink" /></label>
-              <div class="grid-2"><label>首頁選單<input name="navHome" /></label><label>作品選單<input name="navWorks" /></label><label>服務選單<input name="navServices" /></label><label>流程選單<input name="navProcess" /></label><label>服務地區選單<input name="navServiceArea" /></label><label>關於選單<input name="navAbout" /></label><label>最新消息選單<input name="navNews" /></label><label>詢價選單<input name="navQuote" /></label></div>
+              <div class="field-group">
+                <h3>上方選單管理</h3>
+                <p class="field-hint">可自行新增、刪除、排序選單。勾選「服務下拉」後，前台會自動帶出已上架的服務子頁。</p>
+                <div class="actions"><button class="btn ghost" type="button" data-add-nav-item>新增選單</button></div>
+                <textarea class="hidden" name="navItems"></textarea>
+                <div class="inquiry-field-editor" data-nav-editor></div>
+              </div>
             </div>
             <div class="grid-2">
               <label>Email<input name="email" type="email" /></label>
@@ -457,8 +463,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-storage-compat.js"></script>
     <script src="firebase-config.js"></script>
-    <script src="data.js?v=20260908-2"></script>
+    <script src="data.js?v=20260908-3"></script>
     <script src="firebase-client.js?v=20260903-2"></script>
-    <script src="admin.js?v=20260908-2"></script>
+    <script src="admin.js?v=20260908-3"></script>
   </body>
 </html>
