@@ -341,7 +341,15 @@ function renderQuickContact(site) {
     root.setAttribute("aria-label", "快速聯絡");
     document.body.appendChild(root);
   }
-  root.innerHTML = links.map((item) => `<a class="quick-contact-link quick-${moneySafe(item.type || "custom")}" href="${moneySafe(item.href)}" aria-label="${moneySafe(item.label || "快捷聯絡")}">${moneySafe(item.label || "LINK")}</a>`).join("");
+  root.innerHTML = links
+    .map((item) => {
+      const label = moneySafe(item.label || "快捷聯絡");
+      const icon = item.iconUrl
+        ? `<img class="quick-contact-icon" src="${moneySafe(item.iconUrl)}" alt="" loading="lazy" />`
+        : moneySafe(item.label || "LINK");
+      return `<a class="quick-contact-link quick-${moneySafe(item.type || "custom")}" href="${moneySafe(item.href)}" aria-label="${label}">${icon}</a>`;
+    })
+    .join("");
 }
 
 function normalizeInquiryFields(inquiryForm = {}) {

@@ -1014,6 +1014,13 @@ p {
   box-shadow: 0 12px 34px rgba(0, 0, 0, 0.35);
 }
 
+.quick-contact-icon {
+  display: block;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
 .quick-line {
   background: #06c755;
 }
@@ -2160,6 +2167,11 @@ footer p {
     height: 38px;
     border-radius: 11px;
     font-size: 9px;
+  }
+
+  .quick-contact-icon {
+    width: 22px;
+    height: 22px;
   }
 
   .service-detail-head h1 {

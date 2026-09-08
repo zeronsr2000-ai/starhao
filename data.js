@@ -42,10 +42,10 @@ window.STARHORIZON_DEFAULTS = {
     footerCtaText: "後台登入",
     footerCtaLink: "admin.html",
     quickLinks: [
-      { id: "line", label: "LINE", type: "line", value: "", href: "", sort: 1, status: "hidden" },
-      { id: "phone", label: "TEL", type: "phone", value: "", href: "", sort: 2, status: "hidden" },
-      { id: "facebook", label: "FB", type: "facebook", value: "", href: "", sort: 3, status: "hidden" },
-      { id: "email", label: "MAIL", type: "email", value: "hello@starhorizon.tw", href: "", sort: 4, status: "published" },
+      { id: "line", label: "LINE", type: "line", value: "", href: "", iconUrl: "", sort: 1, status: "hidden" },
+      { id: "phone", label: "TEL", type: "phone", value: "", href: "", iconUrl: "", sort: 2, status: "hidden" },
+      { id: "facebook", label: "FB", type: "facebook", value: "", href: "", iconUrl: "", sort: 3, status: "hidden" },
+      { id: "email", label: "MAIL", type: "email", value: "hello@starhorizon.tw", href: "", iconUrl: "", sort: 4, status: "published" },
     ],
   },
   inquiryForm: {

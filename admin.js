@@ -718,10 +718,10 @@ function normalizeQuickLinks(site = defaults.site) {
   const rows = Array.isArray(site.quickLinks) && site.quickLinks.length
     ? site.quickLinks
     : [
-        { id: "line", label: "LINE", type: "line", value: site.line || "", href: "", sort: 1, status: site.line ? "published" : "hidden" },
-        { id: "phone", label: "TEL", type: "phone", value: site.phone || "", href: "", sort: 2, status: site.phone ? "published" : "hidden" },
-        { id: "facebook", label: "FB", type: "facebook", value: site.facebook || "", href: "", sort: 3, status: site.facebook ? "published" : "hidden" },
-        { id: "email", label: "MAIL", type: "email", value: site.email || "", href: "", sort: 4, status: site.email ? "published" : "hidden" },
+        { id: "line", label: "LINE", type: "line", value: site.line || "", href: "", iconUrl: "", sort: 1, status: site.line ? "published" : "hidden" },
+        { id: "phone", label: "TEL", type: "phone", value: site.phone || "", href: "", iconUrl: "", sort: 2, status: site.phone ? "published" : "hidden" },
+        { id: "facebook", label: "FB", type: "facebook", value: site.facebook || "", href: "", iconUrl: "", sort: 3, status: site.facebook ? "published" : "hidden" },
+        { id: "email", label: "MAIL", type: "email", value: site.email || "", href: "", iconUrl: "", sort: 4, status: site.email ? "published" : "hidden" },
       ];
   return rows
     .map((item, index) => ({
@@ -730,6 +730,7 @@ function normalizeQuickLinks(site = defaults.site) {
       type: item.type || "custom",
       value: item.value || "",
       href: item.href || "",
+      iconUrl: item.iconUrl || "",
       sort: Number(item.sort || index + 1),
       status: item.status === "hidden" ? "hidden" : "published",
     }))
@@ -741,7 +742,7 @@ function quickTypeLabel(type) {
 }
 
 function newQuickLink() {
-  return { id: `quick-${Date.now().toString(36)}`, label: "LINK", type: "custom", value: "", href: "https://", sort: 99, status: "published" };
+  return { id: `quick-${Date.now().toString(36)}`, label: "LINK", type: "custom", value: "", href: "https://", iconUrl: "", sort: 99, status: "published" };
 }
 
 function renderQuickLinkEditor(form, items = []) {
@@ -773,6 +774,10 @@ function renderQuickLinkEditor(form, items = []) {
             <label>內容 / 帳號<input data-quick-link-prop="value" value="${safe(item.value)}" placeholder="可留空自動使用網站基本資料" /></label>
             <label>自訂連結<input data-quick-link-prop="href" value="${safe(item.href)}" placeholder="可留空自動產生" /></label>
           </div>
+          <label>ICON 圖片網址<input data-quick-link-prop="iconUrl" value="${safe(item.iconUrl)}" placeholder="可貼圖片網址，或使用下方上傳" /></label>
+          <label>或上傳 ICON 圖片<input type="file" accept="image/png,image/svg+xml,image/webp,image/jpeg" data-quick-link-icon-upload="${index}" /></label>
+          <p class="field-hint">建議尺寸 96 x 96 px；PNG / SVG / WebP；正方形透明背景最佳，檔案建議小於 200KB。前台會自動縮放顯示。</p>
+          ${item.iconUrl ? `<div class="quick-icon-preview"><img src="${safe(item.iconUrl)}" alt="${safe(item.label || "快捷按鈕")} ICON 預覽" /></div>` : ""}
           <div class="grid-2">
             <label>排序<input data-quick-link-prop="sort" type="number" value="${Number(item.sort || index + 1)}" /></label>
             <label>顯示狀態<select data-quick-link-prop="status"><option value="published" ${item.status !== "hidden" ? "selected" : ""}>顯示</option><option value="hidden" ${item.status === "hidden" ? "selected" : ""}>隱藏</option></select></label>
@@ -801,6 +806,7 @@ function readQuickLinks(form, siteData = {}) {
         type,
         value: item.value || siteData[type] || "",
         href: item.href || "",
+        iconUrl: item.iconUrl || "",
         sort: item.sort || index + 1,
         status: item.status || "published",
       };
@@ -1190,6 +1196,7 @@ function setupEvents() {
 
   document.addEventListener("change", async (event) => {
     const upload = event.target.closest("[data-article-image-upload]");
+    const quickIconUpload = event.target.closest("[data-quick-link-icon-upload]");
     const field = event.target.closest("[data-block-field]");
     if (field) syncArticleStore(field.closest("form"));
     const navItem = event.target.closest("[data-nav-item-prop]");
@@ -1198,6 +1205,21 @@ function setupEvents() {
     if (quickLink) syncQuickLinkStore(quickLink.closest("form"));
     const inquiryField = event.target.closest("[data-inquiry-field-prop]");
     if (inquiryField) syncInquiryFieldStore(inquiryField.closest("form"));
+    if (quickIconUpload && quickIconUpload.files && quickIconUpload.files[0]) {
+      const form = quickIconUpload.closest("form");
+      const row = quickIconUpload.closest("[data-quick-link]");
+      try {
+        setStatus(`正在上傳 ICON ${quickIconUpload.files[0].name}...`);
+        const url = await api.uploadFile(quickIconUpload.files[0], "quick-icons");
+        const input = qs('[data-quick-link-prop="iconUrl"]', row);
+        if (input) input.value = url;
+        syncQuickLinkStore(form);
+        setStatus("ICON 已上傳完成，記得按儲存網站設定。");
+      } catch (error) {
+        setStatus(`ICON 上傳失敗：${errorMessage(error)}`);
+      }
+      return;
+    }
     if (!upload || !upload.files || !upload.files[0]) return;
     const form = upload.closest("form");
     const row = upload.closest("[data-article-block]");

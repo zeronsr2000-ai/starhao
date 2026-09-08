@@ -475,6 +475,23 @@ p {
   background: rgba(255, 255, 255, 0.045);
 }
 
+.quick-icon-preview {
+  width: 54px;
+  height: 54px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.quick-icon-preview img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
 .inquiry-detail-list {
   display: grid;
   gap: 8px;
