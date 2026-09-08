@@ -147,6 +147,13 @@
               <label>Facebook<input name="facebook" placeholder="Facebook 粉絲專頁網址" /></label>
               <label>GA ID<input name="gaId" /></label>
             </div>
+            <div class="field-group">
+              <h3>左側快捷按鈕</h3>
+              <p class="field-hint">控制前台左側 LINE、電話、Facebook、Email 快捷按鈕。連結可留空，系統會依類型自動套用網站基本資料。</p>
+              <div class="actions"><button class="btn ghost" type="button" data-add-quick-link>新增快捷按鈕</button></div>
+              <textarea class="hidden" name="quickLinks"></textarea>
+              <div class="inquiry-field-editor" data-quick-link-editor></div>
+            </div>
             <label>Google Search Console 驗證碼<input name="googleSiteVerification" placeholder="貼上 content 裡面的驗證碼即可" /></label>
             <label>Meta Pixel ID<input name="metaPixelId" /></label>
             <label>SEO Title<input name="seoTitle" /></label>
@@ -394,7 +401,6 @@
             <label>主標題<textarea name="title"></textarea></label>
             <label>公司介紹<textarea name="body"></textarea></label>
             <label>製作觀點<textarea name="philosophy"></textarea></label>
-            <label>服務地區<input name="serviceArea" /></label>
             <label>團隊資料 JSON<textarea name="team"></textarea></label>
             <label>合作品牌 / 服務領域 JSON<textarea name="clients"></textarea></label>
             <button class="btn primary" type="submit">儲存關於我們</button>
@@ -405,7 +411,6 @@
           <div class="field-group"><h3>作品案例頁</h3><label>英文小標<input name="worksEyebrow" /></label><label>主標題<textarea name="worksTitle"></textarea></label><label>說明<textarea name="worksLead"></textarea></label></div>
           <div class="field-group"><h3>最新消息頁</h3><label>英文小標<input name="newsEyebrow" /></label><label>主標題<textarea name="newsTitle"></textarea></label><label>說明<textarea name="newsLead"></textarea></label></div>
           <div class="field-group"><h3>服務項目頁</h3><label>英文小標<input name="servicesEyebrow" /></label><label>主標題<textarea name="servicesTitle"></textarea></label><label>說明<textarea name="servicesLead"></textarea></label></div>
-          <div class="field-group"><h3>服務地區頁</h3><label>英文小標<input name="serviceAreaEyebrow" /></label><label>主標題<textarea name="serviceAreaTitle"></textarea></label><label>說明<textarea name="serviceAreaLead"></textarea></label><p class="field-hint">服務地區詳細內容沿用「服務內容 → 關於我們」裡的服務地區欄位。</p></div>
           <div class="field-group"><h3>製作流程頁</h3><label>英文小標<input name="processEyebrow" /></label><label>主標題<textarea name="processTitle"></textarea></label><label>說明<textarea name="processLead"></textarea></label></div>
           <div class="field-group"><h3>關於我們頁</h3><label>英文小標<input name="aboutEyebrow" /></label><div class="grid-2"><label>觀點小標<input name="aboutPointLabel" /></label><label>觀點標題<input name="aboutPointTitle" /></label><label>團隊小標<input name="teamEyebrow" /></label><label>團隊標題<input name="teamTitle" /></label></div><label>團隊說明<textarea name="teamDescription"></textarea></label><div class="grid-2"><label>服務領域小標<input name="clientsEyebrow" /></label><label>服務領域標題<input name="clientsTitle" /></label></div></div>
           <div class="field-group"><h3>詢價頁</h3><label>英文小標<input name="quoteEyebrow" /></label><label>主標題<textarea name="quoteTitle"></textarea></label><label>說明<textarea name="quoteLead"></textarea></label><label>送出按鈕文字<input name="quoteSubmitText" /></label></div><button class="btn primary" type="submit">儲存各頁文字</button></form></section>
@@ -463,8 +468,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-storage-compat.js"></script>
     <script src="firebase-config.js"></script>
-    <script src="data.js?v=20260908-3"></script>
-    <script src="firebase-client.js?v=20260903-2"></script>
-    <script src="admin.js?v=20260908-3"></script>
+    <script src="data.js?v=20260908-4"></script>
+    <script src="firebase-client.js?v=20260908-1"></script>
+    <script src="admin.js?v=20260908-4"></script>
   </body>
 </html>

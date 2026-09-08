@@ -51,13 +51,32 @@ function setFormBusy(form, isBusy) {
 function formToObject(form) {
   const data = Object.fromEntries(new FormData(form).entries());
   qsa('input[type="checkbox"]', form).forEach((input) => {
+    if (!input.name) return;
     data[input.name] = input.checked;
   });
   qsa('input[type="number"]', form).forEach((input) => {
+    if (!input.name) return;
     data[input.name] = Number(input.value || 0);
   });
-  qsa('input[type="file"]', form).forEach((input) => delete data[input.name]);
-  return data;
+  qsa('input[type="file"]', form).forEach((input) => {
+    if (input.name) delete data[input.name];
+  });
+  return cleanFirestoreData(data);
+}
+
+function cleanFirestoreData(value) {
+  if (Array.isArray(value)) {
+    return value.map(cleanFirestoreData).filter((item) => item !== undefined);
+  }
+  if (value && typeof value === "object") {
+    return Object.entries(value).reduce((cleaned, [key, item]) => {
+      if (!key) return cleaned;
+      const cleanValue = cleanFirestoreData(item);
+      if (cleanValue !== undefined) cleaned[key] = cleanValue;
+      return cleaned;
+    }, {});
+  }
+  return value === undefined ? undefined : value;
 }
 
 function fillForm(form, data) {
@@ -217,8 +236,10 @@ function renderForms() {
   fillForm(qs('[data-form="site"]'), {
     ...state.site,
     navItems: JSON.stringify(normalizeNavItems(state.site), null, 2),
+    quickLinks: JSON.stringify(normalizeQuickLinks(state.site), null, 2),
   });
   renderNavEditor(qs('[data-form="site"]'), normalizeNavItems(state.site));
+  renderQuickLinkEditor(qs('[data-form="site"]'), normalizeQuickLinks(state.site));
   fillForm(qs('[data-form="home"]'), state.home);
   fillForm(qs('[data-form="pages"]'), state.pages);
   fillForm(qs('[data-form="home"]'), {
@@ -431,6 +452,7 @@ function parseHomePayload(data) {
 
 function parseSitePayload(form, data) {
   const navItems = readNavItems(form);
+  const quickLinks = readQuickLinks(form, data);
   const legacy = {};
   navItems.forEach((item) => {
     if (item.id === "home") legacy.navHome = item.label;
@@ -445,6 +467,7 @@ function parseSitePayload(form, data) {
     ...data,
     ...legacy,
     navItems,
+    quickLinks,
   };
 }
 
@@ -581,7 +604,7 @@ function splitLines(value) {
 }
 
 async function saveSiteContent(id, data) {
-  await api.setDoc("siteContent", id, data);
+  await api.setDoc("siteContent", id, cleanFirestoreData(data));
   api.clearCache?.();
   setStatus("已儲存，前台會自動同步。");
   await loadAll();
@@ -689,6 +712,111 @@ function readNavItems(form) {
 function syncNavStore(form) {
   const store = qs('textarea[name="navItems"]', form);
   if (store) store.value = JSON.stringify(readNavItems(form), null, 2);
+}
+
+function normalizeQuickLinks(site = defaults.site) {
+  const rows = Array.isArray(site.quickLinks) && site.quickLinks.length
+    ? site.quickLinks
+    : [
+        { id: "line", label: "LINE", type: "line", value: site.line || "", href: "", sort: 1, status: site.line ? "published" : "hidden" },
+        { id: "phone", label: "TEL", type: "phone", value: site.phone || "", href: "", sort: 2, status: site.phone ? "published" : "hidden" },
+        { id: "facebook", label: "FB", type: "facebook", value: site.facebook || "", href: "", sort: 3, status: site.facebook ? "published" : "hidden" },
+        { id: "email", label: "MAIL", type: "email", value: site.email || "", href: "", sort: 4, status: site.email ? "published" : "hidden" },
+      ];
+  return rows
+    .map((item, index) => ({
+      id: slugify(item.id || item.type || item.label || `quick-${index + 1}`),
+      label: item.label || quickTypeLabel(item.type) || "LINK",
+      type: item.type || "custom",
+      value: item.value || "",
+      href: item.href || "",
+      sort: Number(item.sort || index + 1),
+      status: item.status === "hidden" ? "hidden" : "published",
+    }))
+    .sort((a, b) => (a.sort || 0) - (b.sort || 0));
+}
+
+function quickTypeLabel(type) {
+  return { line: "LINE", phone: "TEL", facebook: "FB", email: "MAIL", custom: "LINK" }[type] || "LINK";
+}
+
+function newQuickLink() {
+  return { id: `quick-${Date.now().toString(36)}`, label: "LINK", type: "custom", value: "", href: "https://", sort: 99, status: "published" };
+}
+
+function renderQuickLinkEditor(form, items = []) {
+  if (!form) return;
+  const editor = qs("[data-quick-link-editor]", form);
+  if (!editor) return;
+  const rows = Array.isArray(items) && items.length ? items : normalizeQuickLinks(defaults.site);
+  editor.innerHTML = rows
+    .map(
+      (item, index) => `
+        <div class="inquiry-field-row" data-quick-link="${index}">
+          <div class="article-block-head">
+            <strong>${index + 1}. ${safe(item.label || item.type || "快捷按鈕")}</strong>
+            <div class="actions">
+              <button class="btn ghost" type="button" data-quick-link-move="${index}" data-dir="-1">上移</button>
+              <button class="btn ghost" type="button" data-quick-link-move="${index}" data-dir="1">下移</button>
+              <button class="btn danger" type="button" data-quick-link-remove="${index}">刪除</button>
+            </div>
+          </div>
+          <div class="grid-2">
+            <label>按鈕文字<input data-quick-link-prop="label" value="${safe(item.label)}" placeholder="例如 LINE" /></label>
+            <label>類型
+              <select data-quick-link-prop="type">
+                ${["line", "phone", "facebook", "email", "custom"].map((type) => `<option value="${type}" ${item.type === type ? "selected" : ""}>${quickTypeLabel(type)}</option>`).join("")}
+              </select>
+            </label>
+          </div>
+          <div class="grid-2">
+            <label>內容 / 帳號<input data-quick-link-prop="value" value="${safe(item.value)}" placeholder="可留空自動使用網站基本資料" /></label>
+            <label>自訂連結<input data-quick-link-prop="href" value="${safe(item.href)}" placeholder="可留空自動產生" /></label>
+          </div>
+          <div class="grid-2">
+            <label>排序<input data-quick-link-prop="sort" type="number" value="${Number(item.sort || index + 1)}" /></label>
+            <label>顯示狀態<select data-quick-link-prop="status"><option value="published" ${item.status !== "hidden" ? "selected" : ""}>顯示</option><option value="hidden" ${item.status === "hidden" ? "selected" : ""}>隱藏</option></select></label>
+          </div>
+        </div>
+      `,
+    )
+    .join("");
+  syncQuickLinkStore(form);
+}
+
+function readQuickLinks(form, siteData = {}) {
+  if (!form) return normalizeQuickLinks(defaults.site);
+  return qsa("[data-quick-link]", form)
+    .map((row, index) => {
+      const item = {};
+      qsa("[data-quick-link-prop]", row).forEach((input) => {
+        const key = input.dataset.quickLinkProp;
+        if (key === "sort") item[key] = Number(input.value || index + 1);
+        else item[key] = input.value;
+      });
+      const type = item.type || "custom";
+      return {
+        id: slugify(item.id || type || item.label || `quick-${index + 1}`),
+        label: item.label || quickTypeLabel(type),
+        type,
+        value: item.value || siteData[type] || "",
+        href: item.href || "",
+        sort: item.sort || index + 1,
+        status: item.status || "published",
+      };
+    })
+    .sort((a, b) => (a.sort || 0) - (b.sort || 0));
+}
+
+function syncQuickLinkStore(form) {
+  const store = qs('textarea[name="quickLinks"]', form);
+  const siteData = {
+    line: form.elements.line?.value || "",
+    phone: form.elements.phone?.value || "",
+    facebook: form.elements.facebook?.value || "",
+    email: form.elements.email?.value || "",
+  };
+  if (store) store.value = JSON.stringify(readQuickLinks(form, siteData), null, 2);
 }
 
 function newInquiryField() {
@@ -897,7 +1025,35 @@ function setupEvents() {
     const addNavItem = event.target.closest("[data-add-nav-item]");
     const removeNavItem = event.target.closest("[data-nav-item-remove]");
     const moveNavItem = event.target.closest("[data-nav-item-move]");
+    const addQuickLink = event.target.closest("[data-add-quick-link]");
+    const removeQuickLink = event.target.closest("[data-quick-link-remove]");
+    const moveQuickLink = event.target.closest("[data-quick-link-move]");
     try {
+      if (addQuickLink) {
+        const form = addQuickLink.closest("form");
+        const items = readQuickLinks(form, formToObject(form));
+        items.push(newQuickLink());
+        renderQuickLinkEditor(form, items);
+        return;
+      }
+      if (removeQuickLink) {
+        const form = removeQuickLink.closest("form");
+        const index = Number(removeQuickLink.dataset.quickLinkRemove);
+        const items = readQuickLinks(form, formToObject(form)).filter((_, itemIndex) => itemIndex !== index);
+        renderQuickLinkEditor(form, items);
+        return;
+      }
+      if (moveQuickLink) {
+        const form = moveQuickLink.closest("form");
+        const index = Number(moveQuickLink.dataset.quickLinkMove);
+        const nextIndex = index + Number(moveQuickLink.dataset.dir);
+        const items = readQuickLinks(form, formToObject(form));
+        if (nextIndex < 0 || nextIndex >= items.length) return;
+        [items[index], items[nextIndex]] = [items[nextIndex], items[index]];
+        items.forEach((item, itemIndex) => item.sort = itemIndex + 1);
+        renderQuickLinkEditor(form, items);
+        return;
+      }
       if (addNavItem) {
         const form = addNavItem.closest("form");
         const items = readNavItems(form);
@@ -1028,6 +1184,8 @@ function setupEvents() {
     if (inquiryField) syncInquiryFieldStore(inquiryField.closest("form"));
     const navItem = event.target.closest("[data-nav-item-prop]");
     if (navItem) syncNavStore(navItem.closest("form"));
+    const quickLink = event.target.closest("[data-quick-link-prop]");
+    if (quickLink) syncQuickLinkStore(quickLink.closest("form"));
   });
 
   document.addEventListener("change", async (event) => {
@@ -1036,6 +1194,8 @@ function setupEvents() {
     if (field) syncArticleStore(field.closest("form"));
     const navItem = event.target.closest("[data-nav-item-prop]");
     if (navItem) syncNavStore(navItem.closest("form"));
+    const quickLink = event.target.closest("[data-quick-link-prop]");
+    if (quickLink) syncQuickLinkStore(quickLink.closest("form"));
     const inquiryField = event.target.closest("[data-inquiry-field-prop]");
     if (inquiryField) syncInquiryFieldStore(inquiryField.closest("form"));
     if (!upload || !upload.files || !upload.files[0]) return;

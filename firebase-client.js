@@ -102,9 +102,10 @@
   async function setDoc(collection, id, data) {
     const db = getDb();
     if (!db) throw new Error("Firestore 尚未可用");
+    const cleanData = cleanFirestoreData(data);
     await db.collection(collection).doc(id).set(
       {
-        ...data,
+        ...cleanData,
         updatedAt: window.firebase.firestore.FieldValue.serverTimestamp(),
       },
       { merge: true },
@@ -112,11 +113,27 @@
     clearCache();
   }
 
+  function cleanFirestoreData(value) {
+    if (Array.isArray(value)) {
+      return value.map(cleanFirestoreData).filter((item) => item !== undefined);
+    }
+    if (value && typeof value === "object") {
+      return Object.entries(value).reduce((cleaned, [key, item]) => {
+        if (!key) return cleaned;
+        const cleanValue = cleanFirestoreData(item);
+        if (cleanValue !== undefined) cleaned[key] = cleanValue;
+        return cleaned;
+      }, {});
+    }
+    return value === undefined ? undefined : value;
+  }
+
   async function addDoc(collection, data) {
     const db = getDb();
     if (!db) throw new Error("Firestore 尚未可用");
+    const cleanData = cleanFirestoreData(data);
     const ref = await db.collection(collection).add({
-      ...data,
+      ...cleanData,
       createdAt: window.firebase.firestore.FieldValue.serverTimestamp(),
       updatedAt: window.firebase.firestore.FieldValue.serverTimestamp(),
     });

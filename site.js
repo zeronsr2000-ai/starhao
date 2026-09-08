@@ -313,14 +313,22 @@ function contactHref(type, value) {
 
 function renderQuickContact(site) {
   let root = $("[data-quick-contact]");
-  const links = [
-    { type: "line", label: "LINE", value: site.line },
-    { type: "phone", label: "TEL", value: site.phone },
-    { type: "facebook", label: "FB", value: site.facebook },
-    { type: "email", label: "MAIL", value: site.email },
-  ]
-    .map((item) => ({ ...item, href: contactHref(item.type, item.value) }))
-    .filter((item) => hasContactValue(item.value) && item.href);
+  const source = Array.isArray(site.quickLinks) && site.quickLinks.length
+    ? site.quickLinks
+    : [
+        { type: "line", label: "LINE", value: site.line, status: site.line ? "published" : "hidden", sort: 1 },
+        { type: "phone", label: "TEL", value: site.phone, status: site.phone ? "published" : "hidden", sort: 2 },
+        { type: "facebook", label: "FB", value: site.facebook, status: site.facebook ? "published" : "hidden", sort: 3 },
+        { type: "email", label: "MAIL", value: site.email, status: site.email ? "published" : "hidden", sort: 4 },
+      ];
+  const links = source
+    .filter((item) => item.status !== "hidden")
+    .sort((a, b) => (Number(a.sort) || 0) - (Number(b.sort) || 0))
+    .map((item) => {
+      const value = item.value || site[item.type] || "";
+      return { ...item, value, href: item.href || contactHref(item.type, value) };
+    })
+    .filter((item) => item.href);
 
   if (!links.length) {
     if (root) root.remove();
@@ -333,7 +341,7 @@ function renderQuickContact(site) {
     root.setAttribute("aria-label", "快速聯絡");
     document.body.appendChild(root);
   }
-  root.innerHTML = links.map((item) => `<a class="quick-contact-link quick-${item.type}" href="${moneySafe(item.href)}" aria-label="${moneySafe(item.label)}">${moneySafe(item.label)}</a>`).join("");
+  root.innerHTML = links.map((item) => `<a class="quick-contact-link quick-${moneySafe(item.type || "custom")}" href="${moneySafe(item.href)}" aria-label="${moneySafe(item.label || "快捷聯絡")}">${moneySafe(item.label || "LINK")}</a>`).join("");
 }
 
 function normalizeInquiryFields(inquiryForm = {}) {

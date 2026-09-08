@@ -1030,6 +1030,10 @@ p {
   background: #4b9aa5;
 }
 
+.quick-custom {
+  background: #2f3238;
+}
+
 .timeline {
   display: grid;
   grid-template-columns: repeat(4, minmax(210px, 1fr));
