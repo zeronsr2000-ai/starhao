@@ -835,11 +835,12 @@ function splitTextLines(value) {
 
 function serviceDetailText(service) {
   if (service.detailBody) return service.detailBody;
-  return [
-    service.summary ? `服務說明：${service.summary}` : "",
-    service.target ? `適合對象：${stripLabelPrefix(service.target, "適合對象")}` : "",
-    service.deliverables ? `製作項目：${service.deliverables}` : "",
-  ].filter(Boolean).join("\n");
+  return "";
+}
+
+function serviceDetailBlocks(service) {
+  if (Array.isArray(service.detailBlocks) && service.detailBlocks.length) return service.detailBlocks;
+  return splitTextLines(serviceDetailText(service)).map((text) => ({ type: "paragraph", text }));
 }
 
 function renderServiceMediaList(service) {
@@ -894,7 +895,7 @@ function renderServiceDetail(services, extendedServices) {
     return;
   }
   setServiceSeo(service, type);
-  const articleLines = splitTextLines(serviceDetailText(service));
+  const articleBlocks = serviceDetailBlocks(service);
   const media = renderServiceMediaList(service);
   root.innerHTML = `
     <header class="service-detail-head">
@@ -916,7 +917,7 @@ function renderServiceDetail(services, extendedServices) {
     <section class="service-seo-article">
       <p class="eyebrow">Service Notes</p>
       <h2>${moneySafe(service.detailTitle || service.title)}介紹</h2>
-      ${(articleLines.length ? articleLines : splitTextLines(service.deliverables || service.summary)).map((line) => `<p>${moneySafe(line)}</p>`).join("")}
+      ${articleBlocks.length ? renderArticleBlocks(articleBlocks, { title: service.title }) : `<p class="empty-note">這個服務的詳細介紹尚未設定，請到後台服務內容編輯。</p>`}
     </section>
     <div class="service-detail-actions"><a class="btn primary" href="quote.html">詢問這項服務</a><a class="btn ghost" href="services.html">回服務項目</a></div>
   `;

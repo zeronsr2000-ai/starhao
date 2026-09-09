@@ -452,6 +452,39 @@ p {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.article-editor-mode {
+  display: inline-flex;
+  gap: 8px;
+  width: fit-content;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.article-editor-mode .btn {
+  min-height: 36px;
+  padding: 8px 14px;
+}
+
+.article-editor-mode .btn.active {
+  border-color: transparent;
+  color: #050506;
+  background: var(--lime);
+}
+
+.service-detail-editor {
+  display: grid;
+  gap: 14px;
+}
+
+[data-service-code] {
+  min-height: 320px;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
 .article-block-editor {
   display: grid;
   gap: 12px;

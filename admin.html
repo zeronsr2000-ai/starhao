@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex" />
     <title>後台管理｜星澔文創</title>
-    <link rel="stylesheet" href="admin.css?v=20260908-3" />
+    <link rel="stylesheet" href="admin.css?v=20260909-3" />
   </head>
   <body class="admin-body">
     <div class="grain" aria-hidden="true"></div>
@@ -335,7 +335,29 @@
               <h3>詳細頁內容</h3>
               <label>詳細頁主標題<input name="detailTitle" /></label>
               <label>詳細頁開場說明<textarea name="detailIntro"></textarea></label>
-              <label>SEO 介紹文章（可換行，會顯示在展示影片與按鈕中間）<textarea name="detailBody"></textarea></label>
+              <textarea class="hidden" name="detailBody"></textarea>
+              <div class="service-detail-editor" data-service-detail-editor>
+                <div class="article-editor-mode">
+                  <button class="btn ghost active" type="button" data-service-editor-mode="edit">編輯模式</button>
+                  <button class="btn ghost" type="button" data-service-editor-mode="code">程式碼模式</button>
+                </div>
+                <textarea class="hidden" name="detailBlocks"></textarea>
+                <div data-service-edit-pane>
+                  <p class="field-hint">這裡會顯示在 SERVICE NOTES 區塊，不會再自動組合「服務說明 / 適合對象」。</p>
+                  <div class="article-editor-actions">
+                    <button class="btn ghost" type="button" data-add-service-block="paragraph">新增段落</button>
+                    <button class="btn ghost" type="button" data-add-service-block="heading">新增小標</button>
+                    <button class="btn ghost" type="button" data-add-service-block="image">新增圖片</button>
+                    <button class="btn ghost" type="button" data-add-service-block="video">新增影片</button>
+                    <button class="btn ghost" type="button" data-add-service-block="list">新增清單</button>
+                    <button class="btn ghost" type="button" data-add-service-block="quote">新增引用</button>
+                  </div>
+                  <div class="article-editor" data-service-article-editor></div>
+                </div>
+                <div class="hidden" data-service-code-pane>
+                  <label>文章程式碼 JSON<textarea data-service-code rows="14"></textarea></label>
+                </div>
+              </div>
               <label>展示影片連結（每行一個，支援 YouTube／IG／FB）<textarea name="detailVideoUrls"></textarea></label>
               <label>展示圖片網址（每行一個）<textarea name="detailImageUrls"></textarea></label>
               <label>或上傳展示圖片<input name="detailImageFile" type="file" accept="image/*" data-upload-field="detailImageUrls" /></label>
@@ -365,7 +387,29 @@
               <h3>詳細頁內容</h3>
               <label>詳細頁主標題<input name="detailTitle" /></label>
               <label>詳細頁開場說明<textarea name="detailIntro"></textarea></label>
-              <label>SEO 介紹文章（可換行，會顯示在展示影片與按鈕中間）<textarea name="detailBody"></textarea></label>
+              <textarea class="hidden" name="detailBody"></textarea>
+              <div class="service-detail-editor" data-service-detail-editor>
+                <div class="article-editor-mode">
+                  <button class="btn ghost active" type="button" data-service-editor-mode="edit">編輯模式</button>
+                  <button class="btn ghost" type="button" data-service-editor-mode="code">程式碼模式</button>
+                </div>
+                <textarea class="hidden" name="detailBlocks"></textarea>
+                <div data-service-edit-pane>
+                  <p class="field-hint">這裡會顯示在 SERVICE NOTES 區塊，不會再自動組合「服務說明 / 適合對象」。</p>
+                  <div class="article-editor-actions">
+                    <button class="btn ghost" type="button" data-add-service-block="paragraph">新增段落</button>
+                    <button class="btn ghost" type="button" data-add-service-block="heading">新增小標</button>
+                    <button class="btn ghost" type="button" data-add-service-block="image">新增圖片</button>
+                    <button class="btn ghost" type="button" data-add-service-block="video">新增影片</button>
+                    <button class="btn ghost" type="button" data-add-service-block="list">新增清單</button>
+                    <button class="btn ghost" type="button" data-add-service-block="quote">新增引用</button>
+                  </div>
+                  <div class="article-editor" data-service-article-editor></div>
+                </div>
+                <div class="hidden" data-service-code-pane>
+                  <label>文章程式碼 JSON<textarea data-service-code rows="14"></textarea></label>
+                </div>
+              </div>
               <label>展示影片連結（每行一個，支援 YouTube／IG／FB）<textarea name="detailVideoUrls"></textarea></label>
               <label>展示圖片網址（每行一個）<textarea name="detailImageUrls"></textarea></label>
               <label>或上傳展示圖片<input name="detailImageFile" type="file" accept="image/*" data-upload-field="detailImageUrls" /></label>
@@ -467,8 +511,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-storage-compat.js"></script>
     <script src="firebase-config.js"></script>
-    <script src="data.js?v=20260909-2"></script>
+    <script src="data.js?v=20260909-3"></script>
     <script src="firebase-client.js?v=20260908-1"></script>
-    <script src="admin.js?v=20260909-2"></script>
+    <script src="admin.js?v=20260909-3"></script>
   </body>
 </html>

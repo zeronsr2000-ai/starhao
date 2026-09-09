@@ -112,10 +112,10 @@ function collectionDefaults(collection) {
     return { id: "", slug: "", title: "", category: "最新消息", publishedAt: new Date().toISOString().slice(0, 10), coverUrl: "", coverAlt: "", excerpt: "", seoTitle: "", seoDescription: "", blocks: [{ type: "paragraph", text: "" }], sort: state.articles.length + 1, status: "published" };
   }
   if (collection === "services") {
-    return { id: "", slug: "", title: "", summary: "", target: "", deliverables: "", detailTitle: "", detailIntro: "", detailBody: "", detailVideoUrls: "", detailImageUrls: "", detailImageAlt: "", seoTitle: "", seoDescription: "", sort: state.services.length + 1, status: "published" };
+    return { id: "", slug: "", title: "", summary: "", target: "", deliverables: "", detailTitle: "", detailIntro: "", detailBody: "", detailBlocks: [{ type: "paragraph", text: "" }], detailVideoUrls: "", detailImageUrls: "", detailImageAlt: "", seoTitle: "", seoDescription: "", sort: state.services.length + 1, status: "published" };
   }
   if (collection === "extendedServices") {
-    return { id: "", slug: "", title: "", summary: "", target: "", deliverables: "", detailTitle: "", detailIntro: "", detailBody: "", detailVideoUrls: "", detailImageUrls: "", detailImageAlt: "", seoTitle: "", seoDescription: "", sort: state.extendedServices.length + 1, status: "published" };
+    return { id: "", slug: "", title: "", summary: "", target: "", deliverables: "", detailTitle: "", detailIntro: "", detailBody: "", detailBlocks: [{ type: "paragraph", text: "" }], detailVideoUrls: "", detailImageUrls: "", detailImageAlt: "", seoTitle: "", seoDescription: "", sort: state.extendedServices.length + 1, status: "published" };
   }
   if (collection === "partners") {
     return { id: "", title: "", imageUrl: "", alt: "", sort: state.partners.length + 1, status: "published" };
@@ -259,6 +259,8 @@ function renderForms() {
     showreelWorkId: state.workSettings.showreelWorkId || state.home.showreelWorkId || "",
   });
   renderArticleEditor(qs('[data-collection-form="articles"]'), parseArticleBlocks(collectionDefaults("articles").blocks));
+  renderServiceEditor(qs('[data-collection-form="services"]'), collectionDefaults("services"));
+  renderServiceEditor(qs('[data-collection-form="extendedServices"]'), collectionDefaults("extendedServices"));
 }
 
 function rowActions(collection, id) {
@@ -511,12 +513,15 @@ function normalizeArticlePayload(data, form) {
   };
 }
 
-function normalizeServicePayload(data) {
+function normalizeServicePayload(data, form) {
+  const detailBlocks = form?.dataset.serviceEditorMode === "code" ? serviceBlocksFromCode(form) : readServiceBlocks(form);
+  if (detailBlocks === null) throw new Error("詳細頁文章程式碼 JSON 格式不正確");
   return {
     ...data,
     slug: slugify(data.slug || data.title || data.id),
     detailTitle: data.detailTitle || data.title || "",
     detailIntro: data.detailIntro || data.summary || "",
+    detailBlocks: detailBlocks || [],
   };
 }
 
@@ -600,6 +605,71 @@ function syncArticleStore(form) {
   if (!form) return;
   const store = qs('textarea[name="blocks"]', form);
   if (store) store.value = JSON.stringify(readArticleBlocks(form), null, 2);
+}
+
+function serviceBlocksFromItem(item = {}) {
+  if (Array.isArray(item.detailBlocks) && item.detailBlocks.length) return item.detailBlocks;
+  if (item.detailBody) return splitLines(item.detailBody).map((text) => ({ type: "paragraph", text }));
+  return [{ type: "paragraph", text: "" }];
+}
+
+function renderServiceEditor(form, item = {}) {
+  if (!form) return;
+  renderServiceBlockEditor(form, serviceBlocksFromItem(item));
+  setServiceEditorMode(form, "edit");
+}
+
+function renderServiceBlockEditor(form, blocks = []) {
+  const editor = qs("[data-service-article-editor]", form);
+  if (!editor) return;
+  const rows = blocks.length ? blocks : [{ type: "paragraph", text: "" }];
+  editor.innerHTML = rows.map((block, index) => articleBlockTemplate(block, index).replaceAll("data-article-", "data-service-").replaceAll("data-block-field", "data-service-block-field")).join("");
+  syncServiceStores(form);
+}
+
+function readServiceBlocks(form) {
+  if (!form) return [];
+  return qsa("[data-service-block]", form)
+    .map((row) => {
+      const block = { type: row.dataset.type || "paragraph" };
+      qsa("[data-service-block-field]", row).forEach((field) => {
+        block[field.dataset.serviceBlockField] = field.value;
+      });
+      return block;
+    })
+    .filter((block) => block.type === "image" || block.type === "video" ? block.url : block.text || block.url);
+}
+
+function syncServiceStores(form) {
+  if (!form) return;
+  const blocks = readServiceBlocks(form);
+  const store = qs('textarea[name="detailBlocks"]', form);
+  const code = qs("[data-service-code]", form);
+  const value = JSON.stringify(blocks, null, 2);
+  if (store) store.value = value;
+  if (code && !code.matches(":focus")) code.value = value;
+}
+
+function serviceBlocksFromCode(form) {
+  const code = qs("[data-service-code]", form);
+  try {
+    const parsed = JSON.parse(code?.value || "[]");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    setStatus("程式碼 JSON 格式不正確，請修正後再切回編輯模式或儲存。");
+    return null;
+  }
+}
+
+function setServiceEditorMode(form, mode) {
+  const blocks = mode === "edit" ? serviceBlocksFromCode(form) : readServiceBlocks(form);
+  if (blocks === null) return;
+  if (mode === "edit") renderServiceBlockEditor(form, blocks);
+  else syncServiceStores(form);
+  form.dataset.serviceEditorMode = mode;
+  qs("[data-service-edit-pane]", form)?.classList.toggle("hidden", mode !== "edit");
+  qs("[data-service-code-pane]", form)?.classList.toggle("hidden", mode !== "code");
+  qsa("[data-service-editor-mode]", form).forEach((button) => button.classList.toggle("active", button.dataset.serviceEditorMode === mode));
 }
 
 function normalizeLegacyTeam(value) {
@@ -1121,7 +1191,7 @@ async function saveCollection(collection, data, form) {
   if (collection === "works") data = normalizeWorkPayload(data);
   if (collection === "workCategories") data = normalizeCategoryPayload(data);
   if (collection === "articles") data = normalizeArticlePayload(data, form);
-  if (collection === "services" || collection === "extendedServices") data = normalizeServicePayload(data);
+  if (collection === "services" || collection === "extendedServices") data = normalizeServicePayload(data, form);
   await api.setDoc(collection, id, data);
   api.clearCache?.();
   setStatus("已儲存，前台會自動同步。");
@@ -1199,6 +1269,7 @@ function setupEvents() {
         await saveCollection(form.dataset.collectionForm, data, form);
         fillForm(form, collectionDefaults(form.dataset.collectionForm));
         if (form.dataset.collectionForm === "articles") renderArticleEditor(form, collectionDefaults("articles").blocks);
+        if (form.dataset.collectionForm === "services" || form.dataset.collectionForm === "extendedServices") renderServiceEditor(form, collectionDefaults(form.dataset.collectionForm));
       } catch (error) {
         setStatus(`儲存失敗：${errorMessage(error)}`);
       } finally {
@@ -1211,6 +1282,7 @@ function setupEvents() {
     button.addEventListener("click", () => {
       fillForm(qs(`[data-collection-form="${button.dataset.new}"]`), collectionDefaults(button.dataset.new));
       if (button.dataset.new === "articles") renderArticleEditor(qs('[data-collection-form="articles"]'), collectionDefaults("articles").blocks);
+      if (button.dataset.new === "services" || button.dataset.new === "extendedServices") renderServiceEditor(qs(`[data-collection-form="${button.dataset.new}"]`), collectionDefaults(button.dataset.new));
       syncCoverModeFields();
     });
   });
@@ -1228,6 +1300,10 @@ function setupEvents() {
     const addArticleBlock = event.target.closest("[data-add-article-block]");
     const removeArticleBlock = event.target.closest("[data-article-remove]");
     const moveArticleBlock = event.target.closest("[data-article-move]");
+    const addServiceBlock = event.target.closest("[data-add-service-block]");
+    const removeServiceBlock = event.target.closest("[data-service-remove]");
+    const moveServiceBlock = event.target.closest("[data-service-move]");
+    const serviceMode = event.target.closest("[data-service-editor-mode]");
     const addInquiryField = event.target.closest("[data-add-inquiry-field]");
     const removeInquiryField = event.target.closest("[data-inquiry-field-remove]");
     const moveInquiryField = event.target.closest("[data-inquiry-field-move]");
@@ -1244,6 +1320,34 @@ function setupEvents() {
     const removeAboutBlock = event.target.closest("[data-about-article-remove]");
     const moveAboutBlock = event.target.closest("[data-about-article-move]");
     try {
+      if (serviceMode) {
+        setServiceEditorMode(serviceMode.closest("form"), serviceMode.dataset.serviceEditorMode);
+        return;
+      }
+      if (addServiceBlock) {
+        const form = addServiceBlock.closest("form");
+        const blocks = readServiceBlocks(form);
+        blocks.push(newArticleBlock(addServiceBlock.dataset.addServiceBlock));
+        renderServiceBlockEditor(form, blocks);
+        return;
+      }
+      if (removeServiceBlock) {
+        const form = removeServiceBlock.closest("form");
+        const index = Number(removeServiceBlock.dataset.serviceRemove);
+        const blocks = readServiceBlocks(form).filter((_, itemIndex) => itemIndex !== index);
+        renderServiceBlockEditor(form, blocks);
+        return;
+      }
+      if (moveServiceBlock) {
+        const form = moveServiceBlock.closest("form");
+        const index = Number(moveServiceBlock.dataset.serviceMove);
+        const nextIndex = index + Number(moveServiceBlock.dataset.dir);
+        const blocks = readServiceBlocks(form);
+        if (nextIndex < 0 || nextIndex >= blocks.length) return;
+        [blocks[index], blocks[nextIndex]] = [blocks[nextIndex], blocks[index]];
+        renderServiceBlockEditor(form, blocks);
+        return;
+      }
       if (addAboutRow) {
         const form = addAboutRow.closest("form");
         const collection = addAboutRow.dataset.aboutAdd === "showcase" ? "showcase" : `${addAboutRow.dataset.aboutAdd}s`;
@@ -1416,6 +1520,7 @@ function setupEvents() {
         const form = qs(`[data-collection-form="${edit.dataset.edit}"]`);
         fillForm(form, row);
         if (edit.dataset.edit === "articles") renderArticleEditor(form, parseArticleBlocks(row.blocks));
+        if (edit.dataset.edit === "services" || edit.dataset.edit === "extendedServices") renderServiceEditor(form, row);
         syncCoverModeFields();
         setStatus("已載入資料，可以編輯後儲存。");
       }
@@ -1447,6 +1552,14 @@ function setupEvents() {
   document.addEventListener("input", (event) => {
     const field = event.target.closest("[data-block-field]");
     if (field) syncArticleStore(field.closest("form"));
+    const serviceField = event.target.closest("[data-service-block-field]");
+    if (serviceField) syncServiceStores(serviceField.closest("form"));
+    const serviceCode = event.target.closest("[data-service-code]");
+    if (serviceCode) {
+      const form = serviceCode.closest("form");
+      const store = qs('textarea[name="detailBlocks"]', form);
+      if (store) store.value = serviceCode.value;
+    }
     const aboutField = event.target.closest("[data-about-field], [data-about-block-field]");
     if (aboutField) syncAboutStores(aboutField.closest("form"));
     const inquiryField = event.target.closest("[data-inquiry-field-prop]");
@@ -1459,12 +1572,15 @@ function setupEvents() {
 
   document.addEventListener("change", async (event) => {
     const upload = event.target.closest("[data-article-image-upload]");
+    const serviceUpload = event.target.closest("[data-service-image-upload]");
     const aboutImageUpload = event.target.closest("[data-about-image-upload]");
     const aboutShowcaseUpload = event.target.closest("[data-about-showcase-upload]");
     const aboutArticleUpload = event.target.closest("[data-about-article-image-upload]");
     const quickIconUpload = event.target.closest("[data-quick-link-icon-upload]");
     const field = event.target.closest("[data-block-field]");
     if (field) syncArticleStore(field.closest("form"));
+    const serviceField = event.target.closest("[data-service-block-field]");
+    if (serviceField) syncServiceStores(serviceField.closest("form"));
     const aboutField = event.target.closest("[data-about-field], [data-about-block-field]");
     if (aboutField) syncAboutStores(aboutField.closest("form"));
     const navItem = event.target.closest("[data-nav-item-prop]");
@@ -1492,6 +1608,21 @@ function setupEvents() {
         setStatus("ICON 已上傳完成，記得按儲存網站設定。");
       } catch (error) {
         setStatus(`ICON 上傳失敗：${errorMessage(error)}`);
+      }
+      return;
+    }
+    if (serviceUpload && serviceUpload.files && serviceUpload.files[0]) {
+      const form = serviceUpload.closest("form");
+      const row = serviceUpload.closest("[data-service-block]");
+      try {
+        setStatus(`正在上傳服務文章圖片 ${serviceUpload.files[0].name}...`);
+        const url = await api.uploadFile(serviceUpload.files[0], "service-articles");
+        const input = qs('[data-service-block-field="url"]', row);
+        if (input) input.value = url;
+        syncServiceStores(form);
+        setStatus("服務文章圖片已處理完成，記得按儲存服務。");
+      } catch (error) {
+        setStatus(`服務文章圖片上傳失敗：${errorMessage(error)}`);
       }
       return;
     }
