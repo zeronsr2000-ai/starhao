@@ -221,6 +221,10 @@ textarea {
   align-items: center;
 }
 
+.nav-dropdown-toggle {
+  display: none;
+}
+
 .nav-dropdown {
   position: absolute;
   top: calc(100% + 14px);
@@ -314,6 +318,8 @@ footer {
 
 .hero {
   width: 100%;
+  max-width: 100%;
+  overflow: hidden;
   min-height: 100vh;
   display: grid;
   grid-template-columns: 1fr minmax(330px, 520px);
@@ -393,6 +399,7 @@ p {
 
 .hero-copy,
 .lead {
+  min-width: 0;
   max-width: 720px;
   margin: 26px 0 0;
   color: rgba(255, 255, 255, 0.72);
@@ -409,6 +416,7 @@ p {
 
 .showreel {
   position: relative;
+  max-width: 100%;
   min-height: 620px;
   overflow: hidden;
   border: 1px solid var(--line);
@@ -1798,10 +1806,49 @@ footer p {
 
   .nav.is-open .nav-item {
     display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
+
+  .nav.is-open .nav-item > a {
+    min-width: 0;
+  }
+
+  .nav.is-open .nav-dropdown-toggle {
+    position: relative;
+    display: inline-grid;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border: 0;
+    background: transparent;
+    color: var(--lime);
+    cursor: pointer;
+  }
+
+  .nav.is-open .nav-dropdown-toggle::before,
+  .nav.is-open .nav-dropdown-toggle::after {
+    position: absolute;
+    width: 14px;
+    height: 2px;
+    border-radius: 999px;
+    background: currentColor;
+    content: "";
+    transition: transform 0.2s ease;
+  }
+
+  .nav.is-open .nav-dropdown-toggle::after {
+    transform: rotate(90deg);
+  }
+
+  .nav.is-open .is-submenu-open .nav-dropdown-toggle::after {
+    transform: rotate(0deg);
   }
 
   .nav.is-open .nav-dropdown {
     position: static;
+    grid-column: 1 / -1;
+    display: none;
     min-width: 0;
     padding: 0 0 4px 12px;
     border: 0;
@@ -1810,6 +1857,10 @@ footer p {
     opacity: 1;
     pointer-events: auto;
     transform: none;
+  }
+
+  .nav.is-open .is-submenu-open .nav-dropdown {
+    display: grid;
   }
 
   .nav.is-open .nav-dropdown a {
@@ -1961,6 +2012,7 @@ footer p {
   .hero {
     min-height: auto;
     padding: 104px 14px 66px;
+    overflow-x: clip;
   }
 
   .page-hero {
@@ -1972,6 +2024,8 @@ footer p {
     max-width: 100%;
     font-size: clamp(30px, 9vw, 42px);
     line-height: 1.04;
+    overflow-wrap: anywhere;
+    word-break: normal;
   }
 
   h2,
@@ -1985,6 +2039,13 @@ footer p {
   .hero-copy {
     font-size: 16px;
     line-height: 1.75;
+    overflow-wrap: anywhere;
+  }
+
+  .eyebrow {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: normal;
   }
 
   .actions,

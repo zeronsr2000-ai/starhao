@@ -237,8 +237,9 @@ function renderNav(site) {
     const active = page === key || (page === "article" && key === "news") || (page === "service" && key === "services");
     const useServiceDropdown = item.serviceDropdown || key === "services" || String(href).split("?")[0] === "services.html";
     if (!useServiceDropdown) return `<a class="${active ? "active" : ""}" href="${moneySafe(href)}">${moneySafe(label)}</a>`;
+    const submenuId = `nav-dropdown-${moneySafe(key)}`;
     const submenu = navServiceItems.length
-      ? `<div class="nav-dropdown" role="menu">${navServiceItems.map((item) => `<a href="${serviceHref(item.service, item.type)}" role="menuitem">${moneySafe(item.service.title)}</a>`).join("")}</div>`
+      ? `<button class="nav-dropdown-toggle" type="button" aria-label="展開${moneySafe(label)}子選單" aria-expanded="false" aria-controls="${submenuId}" data-nav-submenu-toggle></button><div class="nav-dropdown" id="${submenuId}" role="menu">${navServiceItems.map((item) => `<a href="${serviceHref(item.service, item.type)}" role="menuitem">${moneySafe(item.service.title)}</a>`).join("")}</div>`
       : "";
     return `<div class="nav-item has-dropdown"><a class="${active ? "active" : ""}" href="${moneySafe(href)}">${moneySafe(label)}</a>${submenu}</div>`;
   }).join("");
@@ -1151,6 +1152,22 @@ function setupNav() {
   menu.addEventListener("click", () => {
     const isOpen = nav.classList.toggle("is-open");
     menu.setAttribute("aria-expanded", String(isOpen));
+    if (!isOpen) {
+      qsa(".has-dropdown.is-submenu-open", nav).forEach((item) => item.classList.remove("is-submenu-open"));
+      qsa("[data-nav-submenu-toggle]", nav).forEach((button) => button.setAttribute("aria-expanded", "false"));
+    }
+  });
+  nav.addEventListener("click", (event) => {
+    const toggle = event.target.closest("[data-nav-submenu-toggle]");
+    const parentLink = event.target.closest(".has-dropdown > a");
+    const target = toggle || parentLink;
+    if (!target || !nav.classList.contains("is-open") || !window.matchMedia("(max-width: 980px)").matches) return;
+    const item = target.closest(".has-dropdown");
+    const button = $("[data-nav-submenu-toggle]", item);
+    if (!item || !button) return;
+    event.preventDefault();
+    const isOpen = item.classList.toggle("is-submenu-open");
+    button.setAttribute("aria-expanded", String(isOpen));
   });
 }
 
