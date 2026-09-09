@@ -718,10 +718,10 @@ function normalizeQuickLinks(site = defaults.site) {
   const rows = Array.isArray(site.quickLinks) && site.quickLinks.length
     ? site.quickLinks
     : [
-        { id: "line", label: "LINE", type: "line", value: site.line || "", href: "", iconUrl: "", sort: 1, status: site.line ? "published" : "hidden" },
-        { id: "phone", label: "TEL", type: "phone", value: site.phone || "", href: "", iconUrl: "", sort: 2, status: site.phone ? "published" : "hidden" },
-        { id: "facebook", label: "FB", type: "facebook", value: site.facebook || "", href: "", iconUrl: "", sort: 3, status: site.facebook ? "published" : "hidden" },
-        { id: "email", label: "MAIL", type: "email", value: site.email || "", href: "", iconUrl: "", sort: 4, status: site.email ? "published" : "hidden" },
+        { id: "line", label: "LINE", type: "line", value: site.line || "", href: "", iconUrl: "", backgroundColor: "", sort: 1, status: site.line ? "published" : "hidden" },
+        { id: "phone", label: "TEL", type: "phone", value: site.phone || "", href: "", iconUrl: "", backgroundColor: "", sort: 2, status: site.phone ? "published" : "hidden" },
+        { id: "facebook", label: "FB", type: "facebook", value: site.facebook || "", href: "", iconUrl: "", backgroundColor: "", sort: 3, status: site.facebook ? "published" : "hidden" },
+        { id: "email", label: "MAIL", type: "email", value: site.email || "", href: "", iconUrl: "", backgroundColor: "", sort: 4, status: site.email ? "published" : "hidden" },
       ];
   return rows
     .map((item, index) => ({
@@ -731,6 +731,7 @@ function normalizeQuickLinks(site = defaults.site) {
       value: item.value || "",
       href: item.href || "",
       iconUrl: item.iconUrl || "",
+      backgroundColor: item.backgroundColor || "",
       sort: Number(item.sort || index + 1),
       status: item.status === "hidden" ? "hidden" : "published",
     }))
@@ -741,8 +742,13 @@ function quickTypeLabel(type) {
   return { line: "LINE", phone: "TEL", facebook: "FB", email: "MAIL", custom: "LINK" }[type] || "LINK";
 }
 
+function safeColorValue(value) {
+  const color = String(value || "").trim();
+  return /^#[0-9a-f]{6}$/i.test(color) ? color : "#06c755";
+}
+
 function newQuickLink() {
-  return { id: `quick-${Date.now().toString(36)}`, label: "LINK", type: "custom", value: "", href: "https://", iconUrl: "", sort: 99, status: "published" };
+  return { id: `quick-${Date.now().toString(36)}`, label: "LINK", type: "custom", value: "", href: "https://", iconUrl: "", backgroundColor: "", sort: 99, status: "published" };
 }
 
 function renderQuickLinkEditor(form, items = []) {
@@ -773,6 +779,10 @@ function renderQuickLinkEditor(form, items = []) {
           <div class="grid-2">
             <label>內容 / 帳號<input data-quick-link-prop="value" value="${safe(item.value)}" placeholder="可留空自動使用網站基本資料" /></label>
             <label>自訂連結<input data-quick-link-prop="href" value="${safe(item.href)}" placeholder="可留空自動產生" /></label>
+          </div>
+          <div class="grid-2">
+            <label>背景顏色色碼<input data-quick-link-prop="backgroundColor" value="${safe(item.backgroundColor)}" placeholder="例如 #06C755，不填則使用預設色" /></label>
+            <label>背景顏色選擇<input data-quick-link-color type="color" value="${safeColorValue(item.backgroundColor)}" /></label>
           </div>
           <label>ICON 圖片網址<input data-quick-link-prop="iconUrl" value="${safe(item.iconUrl)}" placeholder="可貼圖片網址，或使用下方上傳" /></label>
           <label>或上傳 ICON 圖片<input type="file" accept="image/png,image/svg+xml,image/webp,image/jpeg" data-quick-link-icon-upload="${index}" /></label>
@@ -807,6 +817,7 @@ function readQuickLinks(form, siteData = {}) {
         value: item.value || siteData[type] || "",
         href: item.href || "",
         iconUrl: item.iconUrl || "",
+        backgroundColor: item.backgroundColor || "",
         sort: item.sort || index + 1,
         status: item.status || "published",
       };
@@ -1203,6 +1214,13 @@ function setupEvents() {
     if (navItem) syncNavStore(navItem.closest("form"));
     const quickLink = event.target.closest("[data-quick-link-prop]");
     if (quickLink) syncQuickLinkStore(quickLink.closest("form"));
+    const quickColor = event.target.closest("[data-quick-link-color]");
+    if (quickColor) {
+      const row = quickColor.closest("[data-quick-link]");
+      const colorInput = qs('[data-quick-link-prop="backgroundColor"]', row);
+      if (colorInput) colorInput.value = quickColor.value;
+      syncQuickLinkStore(quickColor.closest("form"));
+    }
     const inquiryField = event.target.closest("[data-inquiry-field-prop]");
     if (inquiryField) syncInquiryFieldStore(inquiryField.closest("form"));
     if (quickIconUpload && quickIconUpload.files && quickIconUpload.files[0]) {
