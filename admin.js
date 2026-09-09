@@ -251,9 +251,9 @@ function renderForms() {
   renderInquiryFieldEditor(qs('[data-form="inquiryForm"]'), state.inquiryForm.fields || defaults.inquiryForm.fields);
   fillForm(qs('[data-form="about"]'), {
     ...state.about,
-    team: JSON.stringify(state.about.team || [], null, 2),
-    clients: JSON.stringify(state.about.clients || [], null, 2),
+    mediaMarqueeDuration: state.about.mediaMarqueeDuration || 34,
   });
+  renderAboutEditors(qs('[data-form="about"]'), state.about);
   renderWorkControls();
   fillForm(qs('[data-form="workSettings"]'), {
     showreelWorkId: state.workSettings.showreelWorkId || state.home.showreelWorkId || "",
@@ -425,10 +425,16 @@ function switchTab(tabName) {
 }
 
 function parseAboutPayload(data) {
+  const form = qs('[data-form="about"]');
   return {
     ...data,
-    team: JSON.parse(data.team || "[]"),
-    clients: JSON.parse(data.clients || "[]"),
+    mediaMarqueeDuration: clampNumber(data.mediaMarqueeDuration, 34, 8, 180),
+    pointImages: readAboutImages(form),
+    pointVideos: readAboutVideos(form),
+    teamArticle: readAboutArticleBlocks(form),
+    showcaseItems: readAboutShowcase(form),
+    team: normalizeLegacyTeam(data.team),
+    clients: normalizeLegacyClients(data.clients),
   };
 }
 
@@ -594,6 +600,192 @@ function syncArticleStore(form) {
   if (!form) return;
   const store = qs('textarea[name="blocks"]', form);
   if (store) store.value = JSON.stringify(readArticleBlocks(form), null, 2);
+}
+
+function normalizeLegacyTeam(value) {
+  if (Array.isArray(value)) return value;
+  try {
+    const parsed = JSON.parse(value || "[]");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    return Array.isArray(state.about.team) ? state.about.team : [];
+  }
+}
+
+function normalizeLegacyClients(value) {
+  if (Array.isArray(value)) return value;
+  try {
+    const parsed = JSON.parse(value || "[]");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    return Array.isArray(state.about.clients) ? state.about.clients : [];
+  }
+}
+
+function aboutRows(value, fallback = []) {
+  return Array.isArray(value) && value.length ? value : fallback;
+}
+
+function legacyTeamArticle(about = {}) {
+  if (Array.isArray(about.teamArticle) && about.teamArticle.length) return about.teamArticle;
+  return (about.team || []).flatMap((member) => [
+    { type: "heading", text: member.name || "" },
+    { type: "paragraph", text: member.role || "" },
+  ]).filter((block) => block.text);
+}
+
+function legacyShowcaseItems(about = {}) {
+  if (Array.isArray(about.showcaseItems) && about.showcaseItems.length) return about.showcaseItems;
+  return (about.clients || []).map((title, index) => ({
+    title,
+    summary: "",
+    url: "",
+    imageUrl: "",
+    videoUrl: "",
+    orientation: "landscape",
+    sort: index + 1,
+    status: "published",
+  }));
+}
+
+function renderAboutEditors(form, about = {}) {
+  if (!form) return;
+  renderAboutImages(form, aboutRows(about.pointImages));
+  renderAboutVideos(form, aboutRows(about.pointVideos));
+  renderAboutArticleEditor(form, legacyTeamArticle(about));
+  renderAboutShowcase(form, legacyShowcaseItems(about));
+}
+
+function renderAboutImages(form, rows = []) {
+  const editor = qs("[data-about-images]", form);
+  if (!editor) return;
+  editor.innerHTML = rows.map((item, index) => `
+    <div class="article-block-editor" data-about-image="${index}">
+      ${aboutRowHead(index, "照片")}
+      <label>圖片網址<input data-about-field="imageUrl" value="${safe(item.imageUrl || item.url)}" /></label>
+      <label>或上傳圖片<input type="file" accept="image/*" data-about-image-upload="${index}" /></label>
+      <div class="grid-2"><label>圖片 ALT<input data-about-field="alt" value="${safe(item.alt)}" /></label><label>排序<input data-about-field="sort" type="number" value="${Number(item.sort || index + 1)}" /></label></div>
+      <label>顯示狀態<select data-about-field="status"><option value="published" ${item.status !== "hidden" ? "selected" : ""}>顯示</option><option value="hidden" ${item.status === "hidden" ? "selected" : ""}>隱藏</option></select></label>
+    </div>
+  `).join("");
+  syncAboutStores(form);
+}
+
+function renderAboutVideos(form, rows = []) {
+  const editor = qs("[data-about-videos]", form);
+  if (!editor) return;
+  editor.innerHTML = rows.map((item, index) => `
+    <div class="article-block-editor" data-about-video="${index}">
+      ${aboutRowHead(index, "影片")}
+      <label>YouTube／IG／FB 連結<input data-about-field="url" value="${safe(item.url || item.videoUrl)}" /></label>
+      <div class="grid-2"><label>影片說明<input data-about-field="caption" value="${safe(item.caption)}" /></label><label>影片方向<select data-about-field="orientation"><option value="landscape" ${item.orientation !== "portrait" ? "selected" : ""}>橫式</option><option value="portrait" ${item.orientation === "portrait" ? "selected" : ""}>直式</option></select></label></div>
+    </div>
+  `).join("");
+  syncAboutStores(form);
+}
+
+function renderAboutArticleEditor(form, blocks = []) {
+  const editor = qs("[data-about-article-editor]", form);
+  if (!editor) return;
+  const rows = blocks.length ? blocks : [newArticleBlock("paragraph")];
+  editor.innerHTML = rows.map((block, index) => articleBlockTemplate(block, index).replaceAll("data-article-", "data-about-article-").replaceAll("data-block-field", "data-about-block-field")).join("");
+  syncAboutStores(form);
+}
+
+function renderAboutShowcase(form, rows = []) {
+  const editor = qs("[data-about-showcase]", form);
+  if (!editor) return;
+  editor.innerHTML = rows.map((item, index) => `
+    <div class="article-block-editor" data-about-showcase-item="${index}">
+      ${aboutRowHead(index, "展示項目")}
+      <div class="grid-2"><label>標題<input data-about-field="title" value="${safe(item.title)}" /></label><label>分類 / 標籤<input data-about-field="category" value="${safe(item.category)}" /></label></div>
+      <label>說明<textarea data-about-field="summary">${safe(item.summary)}</textarea></label>
+      <label>作品 / 外部連結<input data-about-field="url" value="${safe(item.url || item.videoUrl)}" /></label>
+      <label>封面圖片網址<input data-about-field="imageUrl" value="${safe(item.imageUrl || item.coverUrl)}" /></label>
+      <label>或上傳封面圖片<input type="file" accept="image/*" data-about-showcase-upload="${index}" /></label>
+      <div class="grid-2"><label>影片方向<select data-about-field="orientation"><option value="landscape" ${item.orientation !== "portrait" ? "selected" : ""}>橫式</option><option value="portrait" ${item.orientation === "portrait" ? "selected" : ""}>直式</option></select></label><label>排序<input data-about-field="sort" type="number" value="${Number(item.sort || index + 1)}" /></label></div>
+      <label>顯示狀態<select data-about-field="status"><option value="published" ${item.status !== "hidden" ? "selected" : ""}>顯示</option><option value="hidden" ${item.status === "hidden" ? "selected" : ""}>隱藏</option></select></label>
+    </div>
+  `).join("");
+  syncAboutStores(form);
+}
+
+function aboutRowHead(index, label) {
+  return `<div class="article-block-head"><strong>${index + 1}. ${label}</strong><div class="actions"><button class="btn ghost" type="button" data-about-move="${index}" data-dir="-1">上移</button><button class="btn ghost" type="button" data-about-move="${index}" data-dir="1">下移</button><button class="btn danger" type="button" data-about-remove="${index}">刪除</button></div></div>`;
+}
+
+function readAboutRows(form, selector) {
+  return qsa(selector, form).map((row, index) => {
+    const item = { sort: index + 1, status: "published" };
+    qsa("[data-about-field]", row).forEach((field) => {
+      item[field.dataset.aboutField] = field.value;
+    });
+    return item;
+  });
+}
+
+function readAboutImages(form) {
+  return readAboutRows(form, "[data-about-image]").filter((item) => item.imageUrl);
+}
+
+function readAboutVideos(form) {
+  return readAboutRows(form, "[data-about-video]").filter((item) => item.url);
+}
+
+function readAboutShowcase(form) {
+  return readAboutRows(form, "[data-about-showcase-item]").filter((item) => item.title || item.url || item.imageUrl || item.summary);
+}
+
+function readAboutArticleBlocks(form) {
+  return qsa("[data-about-article-block]", form)
+    .map((row) => {
+      const block = { type: row.dataset.type || "paragraph" };
+      qsa("[data-about-block-field]", row).forEach((field) => {
+        block[field.dataset.aboutBlockField] = field.value;
+      });
+      return block;
+    })
+    .filter((block) => block.type === "image" || block.type === "video" ? block.url : block.text || block.url);
+}
+
+function newAboutRow(type) {
+  if (type === "video") return { url: "", caption: "", orientation: "landscape" };
+  if (type === "showcase") return { title: "新增展示項目", category: "", summary: "", url: "", imageUrl: "", orientation: "landscape", sort: 99, status: "published" };
+  return { imageUrl: "", alt: "", sort: 99, status: "published" };
+}
+
+function syncAboutStores(form) {
+  if (!form) return;
+  const stores = {
+    pointImages: readAboutImages(form),
+    pointVideos: readAboutVideos(form),
+    teamArticle: readAboutArticleBlocks(form),
+    showcaseItems: readAboutShowcase(form),
+  };
+  Object.entries(stores).forEach(([name, value]) => {
+    const store = qs(`textarea[name="${name}"]`, form);
+    if (store) store.value = JSON.stringify(value, null, 2);
+  });
+}
+
+function aboutCollectionFromElement(element) {
+  if (element.closest("[data-about-images], [data-about-image]")) return "images";
+  if (element.closest("[data-about-videos], [data-about-video]")) return "videos";
+  if (element.closest("[data-about-showcase], [data-about-showcase-item]")) return "showcase";
+  return "";
+}
+
+function renderAboutCollection(form, collection, rows) {
+  if (collection === "images") renderAboutImages(form, rows);
+  if (collection === "videos") renderAboutVideos(form, rows);
+  if (collection === "showcase") renderAboutShowcase(form, rows);
+}
+
+function readAboutCollection(form, collection) {
+  if (collection === "images") return readAboutImages(form);
+  if (collection === "videos") return readAboutVideos(form);
+  if (collection === "showcase") return readAboutShowcase(form);
+  return [];
 }
 
 function splitLines(value) {
@@ -1045,7 +1237,65 @@ function setupEvents() {
     const addQuickLink = event.target.closest("[data-add-quick-link]");
     const removeQuickLink = event.target.closest("[data-quick-link-remove]");
     const moveQuickLink = event.target.closest("[data-quick-link-move]");
+    const addAboutRow = event.target.closest("[data-about-add]");
+    const removeAboutRow = event.target.closest("[data-about-remove]");
+    const moveAboutRow = event.target.closest("[data-about-move]");
+    const addAboutBlock = event.target.closest("[data-about-add-block]");
+    const removeAboutBlock = event.target.closest("[data-about-article-remove]");
+    const moveAboutBlock = event.target.closest("[data-about-article-move]");
     try {
+      if (addAboutRow) {
+        const form = addAboutRow.closest("form");
+        const collection = addAboutRow.dataset.aboutAdd === "showcase" ? "showcase" : `${addAboutRow.dataset.aboutAdd}s`;
+        const rows = readAboutCollection(form, collection);
+        rows.push(newAboutRow(addAboutRow.dataset.aboutAdd));
+        renderAboutCollection(form, collection, rows);
+        return;
+      }
+      if (removeAboutRow) {
+        const form = removeAboutRow.closest("form");
+        const collection = aboutCollectionFromElement(removeAboutRow);
+        const index = Number(removeAboutRow.dataset.aboutRemove);
+        const rows = readAboutCollection(form, collection).filter((_, itemIndex) => itemIndex !== index);
+        renderAboutCollection(form, collection, rows);
+        return;
+      }
+      if (moveAboutRow) {
+        const form = moveAboutRow.closest("form");
+        const collection = aboutCollectionFromElement(moveAboutRow);
+        const index = Number(moveAboutRow.dataset.aboutMove);
+        const nextIndex = index + Number(moveAboutRow.dataset.dir);
+        const rows = readAboutCollection(form, collection);
+        if (nextIndex < 0 || nextIndex >= rows.length) return;
+        [rows[index], rows[nextIndex]] = [rows[nextIndex], rows[index]];
+        rows.forEach((item, itemIndex) => item.sort = itemIndex + 1);
+        renderAboutCollection(form, collection, rows);
+        return;
+      }
+      if (addAboutBlock) {
+        const form = addAboutBlock.closest("form");
+        const blocks = readAboutArticleBlocks(form);
+        blocks.push(newArticleBlock(addAboutBlock.dataset.aboutAddBlock));
+        renderAboutArticleEditor(form, blocks);
+        return;
+      }
+      if (removeAboutBlock) {
+        const form = removeAboutBlock.closest("form");
+        const index = Number(removeAboutBlock.dataset.aboutArticleRemove);
+        const blocks = readAboutArticleBlocks(form).filter((_, itemIndex) => itemIndex !== index);
+        renderAboutArticleEditor(form, blocks);
+        return;
+      }
+      if (moveAboutBlock) {
+        const form = moveAboutBlock.closest("form");
+        const index = Number(moveAboutBlock.dataset.aboutArticleMove);
+        const nextIndex = index + Number(moveAboutBlock.dataset.dir);
+        const blocks = readAboutArticleBlocks(form);
+        if (nextIndex < 0 || nextIndex >= blocks.length) return;
+        [blocks[index], blocks[nextIndex]] = [blocks[nextIndex], blocks[index]];
+        renderAboutArticleEditor(form, blocks);
+        return;
+      }
       if (addQuickLink) {
         const form = addQuickLink.closest("form");
         const items = readQuickLinks(form, formToObject(form));
@@ -1197,6 +1447,8 @@ function setupEvents() {
   document.addEventListener("input", (event) => {
     const field = event.target.closest("[data-block-field]");
     if (field) syncArticleStore(field.closest("form"));
+    const aboutField = event.target.closest("[data-about-field], [data-about-block-field]");
+    if (aboutField) syncAboutStores(aboutField.closest("form"));
     const inquiryField = event.target.closest("[data-inquiry-field-prop]");
     if (inquiryField) syncInquiryFieldStore(inquiryField.closest("form"));
     const navItem = event.target.closest("[data-nav-item-prop]");
@@ -1207,9 +1459,14 @@ function setupEvents() {
 
   document.addEventListener("change", async (event) => {
     const upload = event.target.closest("[data-article-image-upload]");
+    const aboutImageUpload = event.target.closest("[data-about-image-upload]");
+    const aboutShowcaseUpload = event.target.closest("[data-about-showcase-upload]");
+    const aboutArticleUpload = event.target.closest("[data-about-article-image-upload]");
     const quickIconUpload = event.target.closest("[data-quick-link-icon-upload]");
     const field = event.target.closest("[data-block-field]");
     if (field) syncArticleStore(field.closest("form"));
+    const aboutField = event.target.closest("[data-about-field], [data-about-block-field]");
+    if (aboutField) syncAboutStores(aboutField.closest("form"));
     const navItem = event.target.closest("[data-nav-item-prop]");
     if (navItem) syncNavStore(navItem.closest("form"));
     const quickLink = event.target.closest("[data-quick-link-prop]");
@@ -1235,6 +1492,51 @@ function setupEvents() {
         setStatus("ICON 已上傳完成，記得按儲存網站設定。");
       } catch (error) {
         setStatus(`ICON 上傳失敗：${errorMessage(error)}`);
+      }
+      return;
+    }
+    if (aboutImageUpload && aboutImageUpload.files && aboutImageUpload.files[0]) {
+      const form = aboutImageUpload.closest("form");
+      const row = aboutImageUpload.closest("[data-about-image]");
+      try {
+        setStatus(`正在上傳照片 ${aboutImageUpload.files[0].name}...`);
+        const url = await api.uploadFile(aboutImageUpload.files[0], "about");
+        const input = qs('[data-about-field="imageUrl"]', row);
+        if (input) input.value = url;
+        syncAboutStores(form);
+        setStatus("照片已上傳完成，記得按儲存關於我們。");
+      } catch (error) {
+        setStatus(`照片上傳失敗：${errorMessage(error)}`);
+      }
+      return;
+    }
+    if (aboutShowcaseUpload && aboutShowcaseUpload.files && aboutShowcaseUpload.files[0]) {
+      const form = aboutShowcaseUpload.closest("form");
+      const row = aboutShowcaseUpload.closest("[data-about-showcase-item]");
+      try {
+        setStatus(`正在上傳封面 ${aboutShowcaseUpload.files[0].name}...`);
+        const url = await api.uploadFile(aboutShowcaseUpload.files[0], "about-showcase");
+        const input = qs('[data-about-field="imageUrl"]', row);
+        if (input) input.value = url;
+        syncAboutStores(form);
+        setStatus("展示封面已上傳完成，記得按儲存關於我們。");
+      } catch (error) {
+        setStatus(`封面上傳失敗：${errorMessage(error)}`);
+      }
+      return;
+    }
+    if (aboutArticleUpload && aboutArticleUpload.files && aboutArticleUpload.files[0]) {
+      const form = aboutArticleUpload.closest("form");
+      const row = aboutArticleUpload.closest("[data-about-article-block]");
+      try {
+        setStatus(`正在上傳文章圖片 ${aboutArticleUpload.files[0].name}...`);
+        const url = await api.uploadFile(aboutArticleUpload.files[0], "about-article");
+        const input = qs('[data-about-block-field="url"]', row);
+        if (input) input.value = url;
+        syncAboutStores(form);
+        setStatus("文章圖片已處理完成，記得按儲存關於我們。");
+      } catch (error) {
+        setStatus(`文章圖片上傳失敗：${errorMessage(error)}`);
       }
       return;
     }

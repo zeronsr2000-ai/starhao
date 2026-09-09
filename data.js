@@ -228,6 +228,18 @@ window.STARHORIZON_DEFAULTS = {
     philosophy:
       "每一支影片都應該先回答三件事：誰要看、看完要理解什麼、下一步要做什麼。從這個基礎出發，我們規劃腳本、拍攝節奏、剪輯版本與社群延伸素材。",
     serviceArea: "台灣全區，可依專案需求安排外縣市拍攝。",
+    mediaMarqueeDuration: 34,
+    pointImages: [],
+    pointVideos: [],
+    teamArticle: [
+      { type: "heading", text: "製作企劃" },
+      { type: "paragraph", text: "需求訪談、腳本架構與拍攝規劃，先把溝通目的整理清楚，再安排適合的影像形式。" },
+      { type: "heading", text: "影像團隊" },
+      { type: "paragraph", text: "攝影、燈光、收音與現場執行，依專案規模彈性組合拍攝人員。" },
+      { type: "heading", text: "後製團隊" },
+      { type: "paragraph", text: "剪輯、調色、字幕、音訊與社群版本輸出，讓內容能在不同平台被有效使用。" },
+    ],
+    showcaseItems: [],
     team: [
       {
         name: "製作企劃",

@@ -398,11 +398,10 @@
           <p class="eyebrow">About</p>
           <h2>關於我們管理</h2>
           <form class="form" data-form="about">
-            <label>主標題<textarea name="title"></textarea></label>
-            <label>公司介紹<textarea name="body"></textarea></label>
-            <label>製作觀點<textarea name="philosophy"></textarea></label>
-            <label>團隊資料 JSON<textarea name="team"></textarea></label>
-            <label>合作品牌 / 服務領域 JSON<textarea name="clients"></textarea></label>
+            <div class="field-group"><h3>01｜頁首保留區</h3><label>主標題<textarea name="title"></textarea></label><label>公司介紹<textarea name="body"></textarea></label></div>
+            <div class="field-group"><h3>02｜製作觀點</h3><label>製作觀點文字<textarea name="philosophy"></textarea></label><label>照片跑馬燈一輪秒數<input name="mediaMarqueeDuration" type="number" min="8" max="180" step="1" /></label><p class="field-hint">數字越大速度越慢；照片可不限張數，會像首頁合作夥伴 Logo 一樣連續跑動。</p><textarea class="hidden" name="pointImages"></textarea><div class="about-editor" data-about-images></div><button class="btn ghost" type="button" data-about-add="image">新增照片</button><textarea class="hidden" name="pointVideos"></textarea><div class="about-editor" data-about-videos></div><button class="btn ghost" type="button" data-about-add="video">新增影片連結</button></div>
+            <div class="field-group"><h3>03｜團隊內容文章</h3><p class="field-hint">用文章段落管理團隊介紹，可加入小標題、段落、圖片、影片或清單。</p><textarea class="hidden" name="teamArticle"></textarea><div class="article-editor" data-about-article-editor></div><div class="actions"><button class="btn ghost" type="button" data-about-add-block="heading">小標題</button><button class="btn ghost" type="button" data-about-add-block="paragraph">段落</button><button class="btn ghost" type="button" data-about-add-block="image">圖片</button><button class="btn ghost" type="button" data-about-add-block="video">影片</button><button class="btn ghost" type="button" data-about-add-block="list">清單</button></div></div>
+            <div class="field-group"><h3>04｜動態作品展示</h3><label>區塊說明<textarea name="serviceArea"></textarea></label><p class="field-hint">可嵌入作品、YouTube、IG、FB 或任意外部連結；前台會用作品展示頁的卡片風格呈現。</p><textarea class="hidden" name="showcaseItems"></textarea><div class="about-editor" data-about-showcase></div><button class="btn ghost" type="button" data-about-add="showcase">新增展示項目</button></div>
             <button class="btn primary" type="submit">儲存關於我們</button>
           </form>
         </section>
@@ -468,8 +467,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-storage-compat.js"></script>
     <script src="firebase-config.js"></script>
-    <script src="data.js?v=20260908-7"></script>
+    <script src="data.js?v=20260909-2"></script>
     <script src="firebase-client.js?v=20260908-1"></script>
-    <script src="admin.js?v=20260908-7"></script>
+    <script src="admin.js?v=20260909-2"></script>
   </body>
 </html>
