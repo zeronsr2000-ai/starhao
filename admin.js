@@ -609,6 +609,10 @@ function syncArticleStore(form) {
 
 function serviceBlocksFromItem(item = {}) {
   if (Array.isArray(item.detailBlocks) && item.detailBlocks.length) return item.detailBlocks;
+  if (typeof item.detailBlocks === "string") {
+    const parsed = parseArticleBlocks(item.detailBlocks);
+    if (parsed.length) return parsed;
+  }
   if (item.detailBody) return splitLines(item.detailBody).map((text) => ({ type: "paragraph", text }));
   return [{ type: "paragraph", text: "" }];
 }

@@ -840,6 +840,10 @@ function serviceDetailText(service) {
 
 function serviceDetailBlocks(service) {
   if (Array.isArray(service.detailBlocks) && service.detailBlocks.length) return service.detailBlocks;
+  if (typeof service.detailBlocks === "string") {
+    const parsed = parseArticleBlocks(service.detailBlocks);
+    if (parsed.length) return parsed;
+  }
   return splitTextLines(serviceDetailText(service)).map((text) => ({ type: "paragraph", text }));
 }
 
