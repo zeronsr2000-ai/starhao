@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex" />
     <title>後台管理｜星澔文創</title>
-    <link rel="stylesheet" href="admin.css?v=20260910-1" />
+    <link rel="stylesheet" href="admin.css?v=20260910-2" />
   </head>
   <body class="admin-body">
     <div class="grain" aria-hidden="true"></div>
@@ -335,7 +335,6 @@
               <h3>詳細頁內容</h3>
               <label>詳細頁主標題<input name="detailTitle" /></label>
               <label>詳細頁開場說明<textarea name="detailIntro"></textarea></label>
-              <textarea class="hidden" name="detailBody"></textarea>
               <div class="service-detail-editor" data-service-detail-editor>
                 <div class="article-editor-mode">
                   <button class="btn ghost active" type="button" data-service-editor-mode="edit">編輯模式</button>
@@ -344,12 +343,7 @@
                 <textarea class="hidden" name="detailBlocks"></textarea>
                 <div data-service-edit-pane>
                   <p class="field-hint">這裡會顯示在 SERVICE NOTES 區塊，不會再自動組合「服務說明 / 適合對象」。</p>
-                  <div class="service-text-toolbar" aria-label="文字編輯工具">
-                    <button class="btn ghost" type="button" data-service-command="bold"><strong>B</strong></button>
-                    <button class="btn ghost" type="button" data-service-command="italic"><em>I</em></button>
-                    <button class="btn ghost" type="button" data-service-command="insertUnorderedList">清單</button>
-                  </div>
-                  <div class="service-rich-text" data-service-rich-text contenteditable="true" role="textbox" aria-label="服務詳細文章內容"></div>
+                  <textarea class="service-textarea" name="detailBody" data-service-textarea rows="14" placeholder="請輸入服務詳細介紹內容"></textarea>
                 </div>
                 <div class="hidden" data-service-code-pane>
                   <label>文章程式碼 JSON<textarea data-service-code rows="14"></textarea></label>
@@ -384,7 +378,6 @@
               <h3>詳細頁內容</h3>
               <label>詳細頁主標題<input name="detailTitle" /></label>
               <label>詳細頁開場說明<textarea name="detailIntro"></textarea></label>
-              <textarea class="hidden" name="detailBody"></textarea>
               <div class="service-detail-editor" data-service-detail-editor>
                 <div class="article-editor-mode">
                   <button class="btn ghost active" type="button" data-service-editor-mode="edit">編輯模式</button>
@@ -393,12 +386,7 @@
                 <textarea class="hidden" name="detailBlocks"></textarea>
                 <div data-service-edit-pane>
                   <p class="field-hint">這裡會顯示在 SERVICE NOTES 區塊，不會再自動組合「服務說明 / 適合對象」。</p>
-                  <div class="service-text-toolbar" aria-label="文字編輯工具">
-                    <button class="btn ghost" type="button" data-service-command="bold"><strong>B</strong></button>
-                    <button class="btn ghost" type="button" data-service-command="italic"><em>I</em></button>
-                    <button class="btn ghost" type="button" data-service-command="insertUnorderedList">清單</button>
-                  </div>
-                  <div class="service-rich-text" data-service-rich-text contenteditable="true" role="textbox" aria-label="服務詳細文章內容"></div>
+                  <textarea class="service-textarea" name="detailBody" data-service-textarea rows="14" placeholder="請輸入服務詳細介紹內容"></textarea>
                 </div>
                 <div class="hidden" data-service-code-pane>
                   <label>文章程式碼 JSON<textarea data-service-code rows="14"></textarea></label>
@@ -507,6 +495,6 @@
     <script src="firebase-config.js"></script>
     <script src="data.js?v=20260909-3"></script>
     <script src="firebase-client.js?v=20260908-1"></script>
-    <script src="admin.js?v=20260910-1"></script>
+    <script src="admin.js?v=20260910-2"></script>
   </body>
 </html>

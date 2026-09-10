@@ -484,7 +484,7 @@ p {
   flex-wrap: wrap;
 }
 
-.service-rich-text {
+.service-textarea {
   min-height: 320px;
   padding: 18px;
   border: 1px solid var(--line);
@@ -497,7 +497,7 @@ p {
   white-space: pre-wrap;
 }
 
-.service-rich-text:focus {
+.service-textarea:focus {
   border-color: var(--lime);
   box-shadow: 0 0 0 2px rgba(216, 255, 54, 0.12);
 }

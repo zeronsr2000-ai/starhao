@@ -521,6 +521,7 @@ function normalizeServicePayload(data, form) {
     slug: slugify(data.slug || data.title || data.id),
     detailTitle: data.detailTitle || data.title || "",
     detailIntro: data.detailIntro || data.summary || "",
+    detailBody: detailBlocks.map((block) => String(block.text || "")).filter(Boolean).join("\n\n"),
     detailBlocks: detailBlocks || [],
   };
 }
@@ -624,9 +625,9 @@ function renderServiceEditor(form, item = {}) {
 }
 
 function renderServiceBlockEditor(form, blocks = []) {
-  const editor = qs("[data-service-rich-text]", form);
+  const editor = qs("[data-service-textarea]", form);
   if (!editor) return;
-  editor.innerHTML = blocks.map((block) => safe(block.text || "").replace(/\n/g, "<br />")).filter(Boolean).join("<br /><br />");
+  editor.value = blocks.map((block) => String(block.text || "")).filter(Boolean).join("\n\n");
   syncServiceStores(form);
 }
 
@@ -653,9 +654,9 @@ function serviceBlockTemplate(block, index) {
 
 function readServiceBlocks(form) {
   if (!form) return [];
-  const richText = qs("[data-service-rich-text]", form);
-  if (richText) {
-    const text = richText.innerText.trim();
+  const textArea = qs("[data-service-textarea]", form);
+  if (textArea) {
+    const text = textArea.value.trim();
     return text ? [{ type: "paragraph", text }] : [];
   }
   return qsa("[data-service-block]", form)
@@ -1599,8 +1600,8 @@ function setupEvents() {
     if (field) syncArticleStore(field.closest("form"));
     const serviceField = event.target.closest("[data-service-block-field]");
     if (serviceField) syncServiceStores(serviceField.closest("form"));
-    const serviceRichText = event.target.closest("[data-service-rich-text]");
-    if (serviceRichText) syncServiceStores(serviceRichText.closest("form"));
+    const serviceTextArea = event.target.closest("[data-service-textarea]");
+    if (serviceTextArea) syncServiceStores(serviceTextArea.closest("form"));
     const serviceCode = event.target.closest("[data-service-code]");
     if (serviceCode) {
       const form = serviceCode.closest("form");
