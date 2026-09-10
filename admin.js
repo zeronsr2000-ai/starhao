@@ -623,8 +623,29 @@ function renderServiceBlockEditor(form, blocks = []) {
   const editor = qs("[data-service-article-editor]", form);
   if (!editor) return;
   const rows = blocks.length ? blocks : [{ type: "paragraph", text: "" }];
-  editor.innerHTML = rows.map((block, index) => articleBlockTemplate(block, index).replaceAll("data-article-", "data-service-").replaceAll("data-block-field", "data-service-block-field")).join("");
+  editor.innerHTML = rows.map((block, index) => serviceBlockTemplate(block, index)).join("");
   syncServiceStores(form);
+}
+
+function serviceBlockTemplate(block, index) {
+  const type = block.type || "paragraph";
+  const common = `
+    <div class="article-block-head">
+      <strong>${index + 1}. ${safe(articleBlockLabel(type))}</strong>
+      <div class="actions">
+        <button class="btn ghost" type="button" data-service-move="${index}" data-dir="-1">上移</button>
+        <button class="btn ghost" type="button" data-service-move="${index}" data-dir="1">下移</button>
+        <button class="btn danger" type="button" data-service-remove="${index}">刪除</button>
+      </div>
+    </div>`;
+  if (type === "image") {
+    return `<div class="article-block-editor" data-service-block="${index}" data-type="image">${common}<label>圖片網址<input data-service-block-field="url" value="${safe(block.url)}" /></label><label>或上傳圖片<input type="file" accept="image/*" data-service-image-upload data-target="${index}" /></label><div class="grid-2"><label>圖片 ALT<input data-service-block-field="alt" value="${safe(block.alt)}" /></label><label>圖片說明<input data-service-block-field="caption" value="${safe(block.caption)}" /></label></div></div>`;
+  }
+  if (type === "video") {
+    return `<div class="article-block-editor" data-service-block="${index}" data-type="video">${common}<label>YouTube／IG／FB 連結<input data-service-block-field="url" value="${safe(block.url)}" /></label><div class="grid-2"><label>影片說明<input data-service-block-field="caption" value="${safe(block.caption)}" /></label><label>影片方向<select data-service-block-field="orientation"><option value="landscape" ${block.orientation !== "portrait" ? "selected" : ""}>橫式</option><option value="portrait" ${block.orientation === "portrait" ? "selected" : ""}>直式</option></select></label></div></div>`;
+  }
+  const multiline = type === "paragraph" || type === "quote" || type === "list";
+  return `<div class="article-block-editor" data-service-block="${index}" data-type="${safe(type)}">${common}<label>${type === "list" ? "清單內容（每行一項）" : "內容"}${multiline ? `<textarea data-service-block-field="text">${safe(block.text)}</textarea>` : `<input data-service-block-field="text" value="${safe(block.text)}" />`}</label></div>`;
 }
 
 function readServiceBlocks(form) {
@@ -662,6 +683,8 @@ function serviceBlocksFromCode(form) {
 }
 
 function setServiceEditorMode(form, mode) {
+  if (!form) return;
+  if (form.dataset.serviceEditorMode === mode) return;
   const blocks = mode === "edit" ? serviceBlocksFromCode(form) : readServiceBlocks(form);
   if (blocks === null) return;
   if (mode === "edit") renderServiceBlockEditor(form, blocks);
@@ -1321,10 +1344,12 @@ function setupEvents() {
     const moveAboutBlock = event.target.closest("[data-about-article-move]");
     try {
       if (serviceMode) {
+        event.preventDefault();
         setServiceEditorMode(serviceMode.closest("form"), serviceMode.dataset.serviceEditorMode);
         return;
       }
       if (addServiceBlock) {
+        event.preventDefault();
         const form = addServiceBlock.closest("form");
         const blocks = readServiceBlocks(form);
         blocks.push(newArticleBlock(addServiceBlock.dataset.addServiceBlock));
@@ -1332,6 +1357,7 @@ function setupEvents() {
         return;
       }
       if (removeServiceBlock) {
+        event.preventDefault();
         const form = removeServiceBlock.closest("form");
         const index = Number(removeServiceBlock.dataset.serviceRemove);
         const blocks = readServiceBlocks(form).filter((_, itemIndex) => itemIndex !== index);
@@ -1339,6 +1365,7 @@ function setupEvents() {
         return;
       }
       if (moveServiceBlock) {
+        event.preventDefault();
         const form = moveServiceBlock.closest("form");
         const index = Number(moveServiceBlock.dataset.serviceMove);
         const nextIndex = index + Number(moveServiceBlock.dataset.dir);
