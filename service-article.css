@@ -1,0 +1,15 @@
+.service-article-content.sun-editor-editable {
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.8;
+  padding: 0;
+  overflow-wrap: anywhere;
+}
+.service-article-content img { max-width: 100%; height: auto; }
+.service-article-content table { max-width: 100%; }
+.service-article-content p { color: inherit; }
+.service-article-content a { color: var(--lime); text-decoration: underline; }
+.service-detail-editor .sun-editor { min-width: 0; max-width: 100%; }
+.service-detail-editor .sun-editor-editable { font-size: 16px; }
