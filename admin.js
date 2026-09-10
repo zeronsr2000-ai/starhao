@@ -1295,7 +1295,10 @@ function setupEvents() {
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       setFormBusy(form, true);
+      const isServiceForm = form.dataset.collectionForm === "services" || form.dataset.collectionForm === "extendedServices";
       try {
+        if (isServiceForm) syncServiceStores(form);
+        setStatus("正在儲存服務內容...");
         const data = await uploadFormFiles(form, formToObject(form));
         await saveCollection(form.dataset.collectionForm, data, form);
         fillForm(form, collectionDefaults(form.dataset.collectionForm));
