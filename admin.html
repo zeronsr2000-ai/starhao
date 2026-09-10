@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex" />
     <title>後台管理｜星澔文創</title>
-    <link rel="stylesheet" href="admin.css?v=20260909-3" />
+    <link rel="stylesheet" href="admin.css?v=20260910-1" />
   </head>
   <body class="admin-body">
     <div class="grain" aria-hidden="true"></div>
@@ -344,15 +344,12 @@
                 <textarea class="hidden" name="detailBlocks"></textarea>
                 <div data-service-edit-pane>
                   <p class="field-hint">這裡會顯示在 SERVICE NOTES 區塊，不會再自動組合「服務說明 / 適合對象」。</p>
-                  <div class="article-editor-actions">
-                    <button class="btn ghost" type="button" data-add-service-block="paragraph">新增段落</button>
-                    <button class="btn ghost" type="button" data-add-service-block="heading">新增小標</button>
-                    <button class="btn ghost" type="button" data-add-service-block="image">新增圖片</button>
-                    <button class="btn ghost" type="button" data-add-service-block="video">新增影片</button>
-                    <button class="btn ghost" type="button" data-add-service-block="list">新增清單</button>
-                    <button class="btn ghost" type="button" data-add-service-block="quote">新增引用</button>
+                  <div class="service-text-toolbar" aria-label="文字編輯工具">
+                    <button class="btn ghost" type="button" data-service-command="bold"><strong>B</strong></button>
+                    <button class="btn ghost" type="button" data-service-command="italic"><em>I</em></button>
+                    <button class="btn ghost" type="button" data-service-command="insertUnorderedList">清單</button>
                   </div>
-                  <div class="article-editor" data-service-article-editor></div>
+                  <div class="service-rich-text" data-service-rich-text contenteditable="true" role="textbox" aria-label="服務詳細文章內容"></div>
                 </div>
                 <div class="hidden" data-service-code-pane>
                   <label>文章程式碼 JSON<textarea data-service-code rows="14"></textarea></label>
@@ -396,15 +393,12 @@
                 <textarea class="hidden" name="detailBlocks"></textarea>
                 <div data-service-edit-pane>
                   <p class="field-hint">這裡會顯示在 SERVICE NOTES 區塊，不會再自動組合「服務說明 / 適合對象」。</p>
-                  <div class="article-editor-actions">
-                    <button class="btn ghost" type="button" data-add-service-block="paragraph">新增段落</button>
-                    <button class="btn ghost" type="button" data-add-service-block="heading">新增小標</button>
-                    <button class="btn ghost" type="button" data-add-service-block="image">新增圖片</button>
-                    <button class="btn ghost" type="button" data-add-service-block="video">新增影片</button>
-                    <button class="btn ghost" type="button" data-add-service-block="list">新增清單</button>
-                    <button class="btn ghost" type="button" data-add-service-block="quote">新增引用</button>
+                  <div class="service-text-toolbar" aria-label="文字編輯工具">
+                    <button class="btn ghost" type="button" data-service-command="bold"><strong>B</strong></button>
+                    <button class="btn ghost" type="button" data-service-command="italic"><em>I</em></button>
+                    <button class="btn ghost" type="button" data-service-command="insertUnorderedList">清單</button>
                   </div>
-                  <div class="article-editor" data-service-article-editor></div>
+                  <div class="service-rich-text" data-service-rich-text contenteditable="true" role="textbox" aria-label="服務詳細文章內容"></div>
                 </div>
                 <div class="hidden" data-service-code-pane>
                   <label>文章程式碼 JSON<textarea data-service-code rows="14"></textarea></label>
@@ -513,6 +507,6 @@
     <script src="firebase-config.js"></script>
     <script src="data.js?v=20260909-3"></script>
     <script src="firebase-client.js?v=20260908-1"></script>
-    <script src="admin.js?v=20260909-4"></script>
+    <script src="admin.js?v=20260910-1"></script>
   </body>
 </html>

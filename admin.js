@@ -624,10 +624,9 @@ function renderServiceEditor(form, item = {}) {
 }
 
 function renderServiceBlockEditor(form, blocks = []) {
-  const editor = qs("[data-service-article-editor]", form);
+  const editor = qs("[data-service-rich-text]", form);
   if (!editor) return;
-  const rows = blocks.length ? blocks : [{ type: "paragraph", text: "" }];
-  editor.innerHTML = rows.map((block, index) => serviceBlockTemplate(block, index)).join("");
+  editor.innerHTML = blocks.map((block) => safe(block.text || "").replace(/\n/g, "<br />")).filter(Boolean).join("<br /><br />");
   syncServiceStores(form);
 }
 
@@ -654,6 +653,11 @@ function serviceBlockTemplate(block, index) {
 
 function readServiceBlocks(form) {
   if (!form) return [];
+  const richText = qs("[data-service-rich-text]", form);
+  if (richText) {
+    const text = richText.innerText.trim();
+    return text ? [{ type: "paragraph", text }] : [];
+  }
   return qsa("[data-service-block]", form)
     .map((row) => {
       const block = { type: row.dataset.type || "paragraph" };
@@ -1331,6 +1335,7 @@ function setupEvents() {
     const removeServiceBlock = event.target.closest("[data-service-remove]");
     const moveServiceBlock = event.target.closest("[data-service-move]");
     const serviceMode = event.target.closest("[data-service-editor-mode]");
+    const serviceCommand = event.target.closest("[data-service-command]");
     const addInquiryField = event.target.closest("[data-add-inquiry-field]");
     const removeInquiryField = event.target.closest("[data-inquiry-field-remove]");
     const moveInquiryField = event.target.closest("[data-inquiry-field-move]");
@@ -1347,6 +1352,12 @@ function setupEvents() {
     const removeAboutBlock = event.target.closest("[data-about-article-remove]");
     const moveAboutBlock = event.target.closest("[data-about-article-move]");
     try {
+      if (serviceCommand) {
+        event.preventDefault();
+        document.execCommand(serviceCommand.dataset.serviceCommand, false);
+        serviceCommand.closest("form")?.querySelector("[data-service-rich-text]")?.focus();
+        return;
+      }
       if (serviceMode) {
         event.preventDefault();
         setServiceEditorMode(serviceMode.closest("form"), serviceMode.dataset.serviceEditorMode);
@@ -1585,6 +1596,8 @@ function setupEvents() {
     if (field) syncArticleStore(field.closest("form"));
     const serviceField = event.target.closest("[data-service-block-field]");
     if (serviceField) syncServiceStores(serviceField.closest("form"));
+    const serviceRichText = event.target.closest("[data-service-rich-text]");
+    if (serviceRichText) syncServiceStores(serviceRichText.closest("form"));
     const serviceCode = event.target.closest("[data-service-code]");
     if (serviceCode) {
       const form = serviceCode.closest("form");
