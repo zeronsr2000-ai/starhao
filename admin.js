@@ -514,6 +514,14 @@ function normalizeArticlePayload(data, form) {
 }
 
 function normalizeServicePayload(data, form) {
+  if (form._serviceEditor) {
+    const detailHtml = window.ServiceArticle.read(form);
+    const plain = document.createElement("div");
+    plain.innerHTML = detailHtml;
+    return { ...data, slug: slugify(data.slug || data.title || data.id), detailHtml,
+      detailBody: plain.textContent, detailBlocks: [],
+      detailTitle: data.detailTitle || data.title || "", detailIntro: data.detailIntro || data.summary || "" };
+  }
   const detailBlocks = form?.dataset.serviceEditorMode === "code" ? serviceBlocksFromCode(form) : readServiceBlocks(form);
   if (detailBlocks === null) throw new Error("詳細頁文章程式碼 JSON 格式不正確");
   return {
@@ -620,8 +628,7 @@ function serviceBlocksFromItem(item = {}) {
 
 function renderServiceEditor(form, item = {}) {
   if (!form) return;
-  renderServiceBlockEditor(form, serviceBlocksFromItem(item));
-  setServiceEditorMode(form, "edit");
+  window.ServiceArticle.edit(form, item);
 }
 
 function renderServiceBlockEditor(form, blocks = []) {
@@ -672,6 +679,7 @@ function readServiceBlocks(form) {
 
 function syncServiceStores(form) {
   if (!form) return;
+  if (form._serviceEditor) return;
   const blocks = readServiceBlocks(form);
   const store = qs('textarea[name="detailBlocks"]', form);
   const code = qs("[data-service-code]", form);
@@ -1338,7 +1346,7 @@ function setupEvents() {
     const addServiceBlock = event.target.closest("[data-add-service-block]");
     const removeServiceBlock = event.target.closest("[data-service-remove]");
     const moveServiceBlock = event.target.closest("[data-service-move]");
-    const serviceMode = event.target.closest("[data-service-editor-mode]");
+    const serviceMode = event.target.closest("button[data-service-editor-mode]");
     const serviceCommand = event.target.closest("[data-service-command]");
     const addInquiryField = event.target.closest("[data-add-inquiry-field]");
     const removeInquiryField = event.target.closest("[data-inquiry-field-remove]");

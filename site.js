@@ -921,7 +921,7 @@ function renderServiceDetail(services, extendedServices) {
     <section class="service-seo-article">
       <p class="eyebrow">Service Notes</p>
       <h2>${moneySafe(service.detailTitle || service.title)}介紹</h2>
-      ${articleBlocks.length ? renderArticleBlocks(articleBlocks, { title: service.title }) : `<p class="empty-note">這個服務的詳細介紹尚未設定，請到後台服務內容編輯。</p>`}
+      ${typeof service.detailHtml === 'string' ? `<div class="sun-editor-editable service-article-content">${window.ServiceArticle.clean(service.detailHtml)}</div>` : articleBlocks.length ? renderArticleBlocks(articleBlocks, { title: service.title }) : `<p class="empty-note">這個服務的詳細介紹尚未設定，請到後台服務內容編輯。</p>`}
     </section>
     <div class="service-detail-actions"><a class="btn primary" href="quote.html">詢問這項服務</a><a class="btn ghost" href="services.html">回服務項目</a></div>
   `;
