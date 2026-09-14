@@ -512,11 +512,12 @@ function getInstagramPath(url) {
   return match ? `${match[1]}/${match[2]}` : "";
 }
 
-function getFacebookEmbedUrl(url) {
+function getFacebookEmbedUrl(url, dimensions) {
   const value = String(url || "").trim();
   if (!value.includes("facebook.com") && !value.includes("fb.watch")) return "";
   const plugin = /\/videos\/|\/reel\/|watch\/?\?v=/.test(value) ? "video" : "post";
-  return `https://www.facebook.com/plugins/${plugin}.php?href=${encodeURIComponent(value)}&show_text=false&width=900`;
+  const size = dimensions ? `width=${dimensions.width}&height=${dimensions.height}` : "width=900";
+  return `https://www.facebook.com/plugins/${plugin}.php?href=${encodeURIComponent(value)}&show_text=false&${size}`;
 }
 
 function platformLabel(url) {
@@ -598,7 +599,9 @@ function renderEmbed(url, work = {}, compact = false) {
   if (youtubeId) {
     return `<div class="embed${shape}${compactClass}"><iframe title="YouTube 作品影片" src="https://www.youtube.com/embed/${moneySafe(youtubeId)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>`;
   }
-  const facebookEmbedUrl = getFacebookEmbedUrl(value);
+  // Facebook needs both dimensions to contain portrait video inside a landscape gallery frame.
+  const facebookSize = work.fitFacebookToFrame ? { width: 560, height: 315 } : undefined;
+  const facebookEmbedUrl = getFacebookEmbedUrl(value, facebookSize);
   if (facebookEmbedUrl) {
     return `<div class="embed${shape}${compactClass}"><iframe title="Facebook 作品影片" src="${facebookEmbedUrl}" scrolling="no" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowfullscreen></iframe></div>`;
   }
@@ -850,7 +853,7 @@ function serviceDetailBlocks(service) {
 function renderServiceMediaList(service) {
   const videos = splitTextLines(service.detailVideoUrls || service.videoUrls || service.videoUrl);
   const images = splitTextLines(service.detailImageUrls || service.imageUrls || service.imageUrl);
-  const videoHtml = videos.map((url) => `<div class="service-detail-media-item">${renderEmbed(url, { orientation: "landscape" }, true)}</div>`).join("");
+  const videoHtml = videos.map((url) => `<div class="service-detail-media-item">${renderEmbed(url, { orientation: "landscape", fitFacebookToFrame: true }, true)}</div>`).join("");
   const imageHtml = images.map((url, index) => `<figure class="service-detail-media-item"><img src="${moneySafe(url)}" alt="${moneySafe(service.detailImageAlt || service.title || "服務展示圖片")} ${index + 1}" loading="lazy" /></figure>`).join("");
   return videoHtml + imageHtml;
 }
