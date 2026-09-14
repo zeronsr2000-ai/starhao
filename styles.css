@@ -1290,9 +1290,9 @@ p {
 }
 
 [data-featured-works].featured-work-grid {
-  align-items: start;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-auto-flow: dense;
+  align-items: stretch;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-flow: row;
 }
 
 .featured-work-card,
@@ -1324,8 +1324,8 @@ p {
 }
 
 [data-featured-works] .featured-work-card.is-large {
-  grid-column: span 2;
-  grid-row: span 2;
+  grid-column: span 1;
+  grid-row: auto;
 }
 
 .featured-work-card a,
