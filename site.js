@@ -499,7 +499,7 @@ function validateInquirySecurity(form, inquiryForm) {
 }
 
 function getYoutubeId(url) {
-  const patterns = [/youtu\.be\/([^?&/]+)/, /youtube\.com\/watch\?v=([^?&]+)/, /youtube\.com\/shorts\/([^?&/]+)/, /youtube\.com\/embed\/([^?&/]+)/];
+  const patterns = [/youtu\.be\/([^?&/]+)/, /youtube\.com\/watch\?v=([^?&]+)/, /youtube\.com\/(?:shorts|live|embed)\/([^?&/]+)/];
   for (const pattern of patterns) {
     const match = String(url || "").match(pattern);
     if (match) return match[1];
@@ -850,10 +850,34 @@ function serviceDetailBlocks(service) {
   return splitTextLines(serviceDetailText(service)).map((text) => ({ type: "paragraph", text }));
 }
 
-function renderServiceMediaList(service) {
+function serviceMediaKey(value) {
+  const youtubeId = getYoutubeId(value);
+  if (youtubeId) return `youtube:${youtubeId}`;
+  try {
+    const url = new URL(value);
+    url.hash = "";
+    url.hostname = url.hostname.replace(/^(www|m)\./, "");
+    url.pathname = url.pathname.replace(/\/$/, "");
+    for (const key of [...url.searchParams.keys()]) {
+      if (/^(utm_|si$|feature$|mibextid$|rdid$|share_url$|fbclid$|hl$)/.test(key)) url.searchParams.delete(key);
+    }
+    url.searchParams.sort();
+    return url.toString();
+  } catch {
+    return String(value || "").trim();
+  }
+}
+
+function renderServiceMediaList(service, works = []) {
   const videos = splitTextLines(service.detailVideoUrls || service.videoUrls || service.videoUrl);
   const images = splitTextLines(service.detailImageUrls || service.imageUrls || service.imageUrl);
-  const videoHtml = videos.map((url) => `<div class="service-detail-media-item">${renderEmbed(url, { orientation: "landscape", fitFacebookToFrame: true }, true)}</div>`).join("");
+  const videoHtml = videos.map((url) => {
+    const work = works.find((item) => item.coverUrl && serviceMediaKey(item.videoUrl) === serviceMediaKey(url));
+    const content = work
+      ? `<a class="service-video-cover" href="${moneySafe(url)}" target="_blank" rel="noreferrer" aria-label="${moneySafe(`觀看${work.title || "作品"}`)}">${renderWorkCover(work)}</a>`
+      : renderEmbed(url, { orientation: "landscape", fitFacebookToFrame: true }, true);
+    return `<div class="service-detail-media-item">${content}</div>`;
+  }).join("");
   const imageHtml = images.map((url, index) => `<figure class="service-detail-media-item"><img src="${moneySafe(url)}" alt="${moneySafe(service.detailImageAlt || service.title || "服務展示圖片")} ${index + 1}" loading="lazy" /></figure>`).join("");
   return videoHtml + imageHtml;
 }
@@ -889,7 +913,7 @@ function setServiceSeo(service, type) {
   });
 }
 
-function renderServiceDetail(services, extendedServices) {
+function renderServiceDetail(services, extendedServices, works = []) {
   const root = $("[data-service-detail]");
   if (!root) return;
   const params = new URLSearchParams(window.location.search);
@@ -903,7 +927,7 @@ function renderServiceDetail(services, extendedServices) {
   }
   setServiceSeo(service, type);
   const articleBlocks = serviceDetailBlocks(service);
-  const media = renderServiceMediaList(service);
+  const media = renderServiceMediaList(service, published(works));
   root.innerHTML = `
     <header class="service-detail-head">
       <p class="eyebrow">${type === "extendedServices" ? "Extended Services" : "Services"}</p>
@@ -1374,9 +1398,9 @@ async function initPage() {
   }
 
   if (page === "service") {
-    const [, serviceRows] = await Promise.all([sitePromise, serviceCollectionsPromise]);
+    const [, serviceRows, works] = await Promise.all([sitePromise, serviceCollectionsPromise, api.getCollection("works", defaults.works)]);
     const [services, extendedServices] = serviceRows;
-    renderServiceDetail(services, extendedServices);
+    renderServiceDetail(services, extendedServices, works);
     return;
   }
 
@@ -1427,7 +1451,7 @@ function renderDefaultsForPage(page) {
     renderServiceList(defaults.services);
     renderServices("[data-extended-service-list]", defaults.extendedServices, "extendedServices");
   } else if (page === "service") {
-    renderServiceDetail(defaults.services, defaults.extendedServices);
+    renderServiceDetail(defaults.services, defaults.extendedServices, defaults.works);
   } else if (page === "serviceArea") {
     renderPages(defaults.pages);
     renderServiceAreaPage(defaults.pages, defaults.about, defaults.site);
@@ -1476,7 +1500,7 @@ function renderCachedForPage(page) {
     renderServiceList(api.getCachedCollection("services", defaults.services));
     renderServices("[data-extended-service-list]", published(api.getCachedCollection("extendedServices", defaults.extendedServices)), "extendedServices");
   } else if (page === "service") {
-    renderServiceDetail(api.getCachedCollection("services", defaults.services), api.getCachedCollection("extendedServices", defaults.extendedServices));
+    renderServiceDetail(api.getCachedCollection("services", defaults.services), api.getCachedCollection("extendedServices", defaults.extendedServices), api.getCachedCollection("works", defaults.works));
   } else if (page === "serviceArea") {
     renderServiceAreaPage(pages, api.getCachedDoc("siteContent", "about", defaults.about), site);
   } else if (page === "process") {
