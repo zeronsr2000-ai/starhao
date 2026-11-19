@@ -1,0 +1,59 @@
+name: Daily SEO article
+
+on:
+  schedule:
+    - cron: '17 1 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: daily-seo-article
+  cancel-in-progress: false
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for an article awaiting review
+        id: queue
+        run: |
+          pending="$(gh api --paginate 'repos/${{ github.repository }}/pulls?state=open&per_page=100' --jq '.[] | select(.head.repo.full_name == .base.repo.full_name and (.head.ref | startswith("bot/daily-seo-article-"))) | .number' )"
+          if [ -n "$pending" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Generate article and SEO files
+        if: steps.queue.outputs.ready == 'true'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          NEWS_MODEL: ${{ vars.NEWS_MODEL }}
+        run: |
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "::error::Configure the OPENAI_API_KEY repository secret."
+            exit 1
+          fi
+          python3 scripts/news_bot.py
+      - name: Open a pull request for review
+        if: steps.queue.outputs.ready == 'true'
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            exit 0
+          fi
+          branch="bot/daily-seo-article-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git switch -c "$branch"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- news.html sitemap.xml article-*.html
+          git commit -m 'Prepare daily SEO article'
+          git push -u origin "$branch"
+          gh pr create --base "${{ github.event.repository.default_branch }}" --head "$branch" \
+            --title "每日 SEO 文章 $(TZ=Asia/Taipei date +%F)" \
+            --body '請確認內容、品牌語氣與服務連結，再合併發布。'
