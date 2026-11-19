@@ -1,0 +1,29 @@
+/* Shared by article pages, the writing surface and the reader preview. */
+:is(.article-content, #body, #reader > div),
+:is(.article-head, #reader) {
+  font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", Arial, sans-serif;
+}
+
+:is(.article-content, #body, #reader > div) {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+:is(.article-content, #body, #reader > div) :where(p, li, blockquote) {
+  line-height: inherit;
+}
+
+:is(.article-content, #body, #reader > div) h2 {
+  font-size: 24px;
+  line-height: 1.4;
+}
+
+:is(.article-head, #reader) > h1 {
+  font-size: 32px;
+  line-height: 1.25;
+}
+
+:is(.article-head, #reader) > p:not(.eyebrow) {
+  font-size: 16px;
+  line-height: 1.6;
+}

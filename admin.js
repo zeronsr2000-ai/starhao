@@ -421,7 +421,7 @@ function render() {
 function switchTab(tabName) {
   if (tabName === "articles" && window.firebase.auth().currentUser) {
     const frame = qs("[data-news-editor]");
-    if (!frame.hasAttribute("src")) frame.src = "news-editor.html?v=1";
+    if (!frame.hasAttribute("src")) frame.src = "news-editor.html?v=2";
   }
   qsa("[data-panel]").forEach((panel) => panel.classList.toggle("hidden", panel.dataset.panel !== tabName));
   qsa("[data-tab]").forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === tabName));
