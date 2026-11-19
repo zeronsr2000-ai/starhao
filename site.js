@@ -1129,6 +1129,7 @@ function renderNewsList(articles) {
   const root = $("[data-news-list]");
   if (!root) return;
   const rows = sortedArticles(articles);
+  root.closest(".news-list-section").style.setProperty("--article-count", Math.max(1, rows.length));
   if (!rows.length) {
     root.innerHTML = `<p class="empty-note">目前尚未發布最新消息。</p>`;
     return;
