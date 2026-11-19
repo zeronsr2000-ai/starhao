@@ -1734,10 +1734,10 @@ dd {
   --columns: 5;
   --column-gap: 20px;
   --visible-columns: min(var(--article-count, 1), var(--columns));
-  width: min(calc(100% - 112px), calc(var(--visible-columns) * (284px + var(--column-gap)) - var(--column-gap)));
 }
 
 .news-grid {
+  max-width: min(calc(100vw - 76px), calc(var(--visible-columns) * (284px + var(--column-gap)) - var(--column-gap)));
   display: grid;
   grid-template-columns: repeat(var(--visible-columns), minmax(0, 1fr));
   gap: 32px var(--column-gap);
