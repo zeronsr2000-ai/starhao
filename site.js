@@ -1107,10 +1107,10 @@ function articleHref(article) {
 }
 
 function sortedArticles(articles) {
-  return published(articles).sort((a, b) => {
+  return published(window.starhorizonArticleRows(articles)).sort((a, b) => {
     const dateA = String(a.publishedAt || "");
     const dateB = String(b.publishedAt || "");
-    if (dateA !== dateB) return dateB.localeCompare(dateA);
+    if (dateA !== dateB) return dateA.localeCompare(dateB);
     return (a.sort || 0) - (b.sort || 0);
   });
 }
@@ -1178,8 +1178,7 @@ function setArticleSeo(article) {
   const site = api.getCachedDoc?.("siteContent", "site", defaults.site) || defaults.site;
   const title = article.seoTitle || `${article.title || "最新消息"}｜星澔文創`;
   const description = article.seoDescription || article.excerpt || "";
-  const slug = article.staticPath || `${articleSlug(article)}.html`;
-  const url = absoluteUrl(slug, site);
+  const url = absoluteUrl(articleHref(article), site);
   const image = article.coverUrl ? absoluteUrl(article.coverUrl, site) : absoluteUrl("og.png", site);
   setPageSeo(site, { title, description, url, image, type: "article" });
   ensureJsonLd("article-json-ld", {
@@ -1216,9 +1215,9 @@ function setArticleSeo(article) {
 function renderArticle(articles) {
   const root = $("[data-article]");
   if (!root) return;
-  const id = new URLSearchParams(window.location.search).get("id") || "";
+  const id = root.dataset.article || new URLSearchParams(window.location.search).get("id");
   const rows = sortedArticles(articles);
-  const article = rows.find((item) => item.id === id || articleSlug(item) === id) || rows[0];
+  const article = id ? rows.find((item) => item.id === id || articleSlug(item) === id) : rows.at(-1);
   if (!article) {
     root.innerHTML = `<p class="empty-note">目前找不到這篇文章。</p>`;
     return;
@@ -1234,6 +1233,8 @@ function renderArticle(articles) {
     ${cover}
     <div class="article-content">${renderArticleBlocks(article.blocks, article)}</div>
   `;
+  const related = $("template[data-article-related]");
+  if (related) $(".article-content", root).append(related.content.cloneNode(true));
 }
 
 function setupNav() {

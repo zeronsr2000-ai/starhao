@@ -493,3 +493,88 @@ window.STARHORIZON_DEFAULTS = {
     },
   ],
 };
+
+// Repository articles remain editable through Firestore records with matching IDs.
+window.STARHORIZON_REPOSITORY_ARTICLES = [
+  {
+    "id": "2026-11-19-brand-film-preparation-checklist",
+    "slug": "2026-11-19-brand-film-preparation-checklist",
+    "staticPath": "article-2026-11-19-brand-film-preparation-checklist.html",
+    "title": "品牌影片拍攝前要準備什麼？企業拍攝前的 5 項清單",
+    "category": "影音製作指南",
+    "publishedAt": "2026-11-19",
+    "excerpt": "第一次規劃品牌影片？用這份拍攝前清單整理影片目標、交付版本、必拍素材、場地與審稿流程，並附上可直接套用的拍攝需求範例。",
+    "seoTitle": "品牌影片拍攝前要準備什麼？企業拍攝前的 5 項清單｜星澔文創",
+    "seoDescription": "第一次規劃品牌影片？用這份拍攝前清單整理影片目標、交付版本、必拍素材、場地與審稿流程，並附上可直接套用的拍攝需求範例。",
+    "blocks": [
+      {
+        "type": "heading",
+        "text": "1. 用一句話寫清楚影片目標"
+      },
+      {
+        "type": "paragraph",
+        "text": "先寫下「希望誰看完，了解什麼，接著做什麼」。例如，製造業品牌可把目標寫成：「讓第一次接觸我們的海外採購人員了解兩項核心製程，並願意預約線上會議。」這句話能幫你判斷哪些內容值得花時間拍，哪些可以放在簡報或官網補充。"
+      },
+      {
+        "type": "paragraph",
+        "text": "如果團隊同時想介紹公司歷史、招募人才、說明產品，先排出優先順序。每個目標對應的觀眾和畫面可能不同，及早取捨會讓影片主軸更清楚。"
+      },
+      {
+        "type": "heading",
+        "text": "2. 列出播放管道與交付版本"
+      },
+      {
+        "type": "paragraph",
+        "text": "列出影片會放在哪裡，例如官網、展場螢幕、業務簡報或 Instagram。再標註每個管道需要的畫面比例、長度和字幕語言。像是官網要橫式完整版，社群另需直式精華，展場如果經常靜音播放，就要讓資訊靠畫面和字幕也能看懂。"
+      },
+      {
+        "type": "paragraph",
+        "text": "如果要同時交付橫式和直式，請在開拍前告知製作團隊。人物位置、產品特寫和字幕留白可以在分鏡階段一起規劃。"
+      },
+      {
+        "type": "heading",
+        "text": "3. 把品牌賣點配上能拍到的畫面"
+      },
+      {
+        "type": "paragraph",
+        "text": "做一張三欄表，寫下「要傳達什麼」「用哪個畫面證明」「誰能安排」。例如，想說明品質管理，就列出可公開拍攝的檢測步驟、可出鏡的同事，以及適合拍攝的時段。先把最能支持主軸的畫面標為必拍。"
+      },
+      {
+        "type": "paragraph",
+        "text": "一併整理品牌識別、產品名稱、舊影片及照片，註明哪些素材可公開使用。如果畫面可能拍到客戶商標、員工或內部文件，先確認使用許可及可露出的範圍。"
+      },
+      {
+        "type": "heading",
+        "text": "4. 確認場地、人員與拍攝時段"
+      },
+      {
+        "type": "paragraph",
+        "text": "把拍攝地點、出鏡人員、現場聯絡人和可用時段放在同一份表。訪談場地可以在預定拍攝時段先聽聽空調、機台或走廊的聲音。若要拍產線、吊掛設備或訪客管制區，也要先確認進場與現場安全要求。"
+      },
+      {
+        "type": "paragraph",
+        "text": "遇到特定機台只能在短時間停機、受訪者行程很滿等限制，先告訴製作團隊，讓拍攝順序配合現場條件。"
+      },
+      {
+        "type": "heading",
+        "text": "5. 指定審稿窗口與交付日期"
+      },
+      {
+        "type": "paragraph",
+        "text": "安排一位同事彙整意見，並先確認誰可以拍板。腳本階段檢查訊息和用字，初剪階段確認敘事和畫面，定稿前再核對字幕、姓名職稱與品牌識別。回饋可附影片時間碼，並說明想解決的問題。"
+      },
+      {
+        "type": "paragraph",
+        "text": "可直接套用這個假設需求：「影片給首次接觸品牌的企業採購看，官網用橫式完整版，社群需要直式精華。必拍產品檢測和出貨流程，兩段都需要現場窗口確認。請在展覽前完成，由行銷窗口彙整審稿。」把內容換成你的實際需求，就能帶著這份簡報討論製作範圍。"
+      }
+    ],
+    "sort": 2,
+    "status": "published"
+  },
+];
+
+window.starhorizonArticleRows = function (articles) {
+  const rows = new Map(window.STARHORIZON_REPOSITORY_ARTICLES.map((article) => [article.id, article]));
+  articles.forEach((article) => rows.set(article.id, { ...rows.get(article.id), ...article }));
+  return [...rows.values()];
+};

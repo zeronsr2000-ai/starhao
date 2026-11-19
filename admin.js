@@ -152,7 +152,7 @@ async function loadAll() {
   state.workSettings = normalizeWorkSettings(workSettings);
   state.workCategories = workCategories;
   state.works = works;
-  state.articles = articles;
+  state.articles = window.starhorizonArticleRows(articles);
   state.services = services;
   state.extendedServices = extendedServices;
   state.partners = partners;
@@ -263,11 +263,16 @@ function renderForms() {
   renderServiceEditor(qs('[data-collection-form="extendedServices"]'), collectionDefaults("extendedServices"));
 }
 
+function isRepositoryArticle(collection, id) {
+  return collection === "articles" && window.STARHORIZON_REPOSITORY_ARTICLES.some((article) => article.id === id);
+}
+
 function rowActions(collection, id) {
+  const removeLabel = isRepositoryArticle(collection, id) ? "隱藏" : "刪除";
   return `
     <div class="actions">
       <button class="btn ghost" type="button" data-edit="${collection}" data-id="${safe(id)}">編輯</button>
-      <button class="btn danger" type="button" data-delete="${collection}" data-id="${safe(id)}">刪除</button>
+      <button class="btn danger" type="button" data-delete="${collection}" data-id="${safe(id)}">${removeLabel}</button>
     </div>
   `;
 }
@@ -295,7 +300,7 @@ function rowMeta(collection, item) {
     return parts.join("｜") || item.status || "";
   }
   if (collection === "articles") {
-    return `${item.category || "最新消息"}｜${item.publishedAt || "未設定日期"}｜${item.status === "draft" ? "草稿" : "已發布"}`;
+    return `${item.category || "最新消息"}｜${item.publishedAt || "未設定日期"}｜${({ draft: "草稿", hidden: "已隱藏" }[item.status] || "已發布")}`;
   }
   if (collection === "workCategories") {
     return `${item.showOnHome ? "首頁顯示" : "首頁隱藏"}｜${item.showOnWorks ? "作品頁顯示" : "作品頁隱藏"}｜${item.coverMode === "selected" ? "指定封面" : "隨機封面"}`;
@@ -1579,6 +1584,13 @@ function setupEvents() {
         setStatus("已載入資料，可以編輯後儲存。");
       }
       if (remove) {
+        if (isRepositoryArticle(remove.dataset.delete, remove.dataset.id)) {
+          if (!confirm("要從前台隱藏這篇文章？之後可在後台重新發布。")) return;
+          await api.setDoc("articles", remove.dataset.id, { status: "hidden" });
+          setStatus("已隱藏文章。");
+          await loadAll();
+          return;
+        }
         if (!confirm("確定要刪除這筆資料？")) return;
         const removingCategory = state.workCategories.find((item) => item.id === remove.dataset.id);
         if (remove.dataset.delete === "workCategories" && state.works.some((item) => item.categoryId === remove.dataset.id || item.category === removingCategory?.title)) {

@@ -93,3 +93,9 @@ firebase deploy --project starhao-8f494
 3. Hosting：已設定專案 `starhao-8f494`。
 
 第一次登入後台後，按「初始化預設內容」，將第一版內容寫入 Firestore。
+
+### 新增最新消息文章
+
+請使用 `admin.html` 的「最新消息 → 文章管理」新增及發布文章。資料儲存在 Firebase 專案 `starhao-8f494` 的 `articles` 集合，前台與後台皆讀取這個集合。
+
+若透過 Git 新增靜態文章，須在 `data.js` 的 `STARHORIZON_REPOSITORY_ARTICLES` 登記相同文章與固定 ID，並讓靜態頁的 `data-article` 指向該 ID。後台儲存時會寫入同 ID 的 Firestore 記錄，供前台優先使用。
