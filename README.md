@@ -93,3 +93,15 @@ firebase deploy --project starhao-8f494
 3. Hosting：已設定專案 `starhao-8f494`。
 
 第一次登入後台後，按「初始化預設內容」，將第一版內容寫入 Firestore。
+
+## 每日 SEO 文章助手
+
+GitHub Actions 每天台灣時間 09:17 排程產生一篇繁體中文影音製作教學，也可以在 Actions 手動執行。機器人會送出待審核的 Pull Request，內含獨立 HTML 文章、最新消息連結與 sitemap 更新。合併後由原本的 GitHub Pages 流程發布。若已有文章等待審核，排程會略過當次生成。公開儲存庫的審核 PR 可被其他人看見，請勿在草稿中放入未公開的客戶資料。
+
+啟用方式
+
+1. 到 Settings → Secrets and variables → Actions 新增 repository secret `OPENAI_API_KEY`，使用有 API 額度的金鑰。可另外設定 repository variable `NEWS_MODEL` 指定模型。
+2. 到 Settings → Actions → General 確認允許 GitHub Actions 建立 Pull Request。
+3. 合併功能後，在 Actions → Daily SEO article 手動執行一次，確認產生文章 PR，再檢查文案與服務連結。
+
+已有人工撰寫的文章時，可用 `python3 scripts/news_bot.py --draft 草稿.json` 產出相同格式。JSON 需要 `slug`、`title`、`description`、`service` 和 `sections`，每一節包含 `heading` 和 `paragraphs`（字串陣列）。支援的服務代號列在程式的 `SERVICES`。
