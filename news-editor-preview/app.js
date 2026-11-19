@@ -1,14 +1,10 @@
 'use strict';
 const $ = id => document.getElementById(id);
-const fields = ['title','date','category','summary','cover','seo','description'];
+const fields = ['title','date','category','summary','cover','seo','description','slug','coverAlt'].filter(id=>$(id));
 let db, articles, current, savedRange, dirty = false, reordered = false, dragged;
 const el = (tag, text) => Object.assign(document.createElement(tag), {textContent:text || ''});
-function clean(html) {
-  return DOMPurify.sanitize(html,{ALLOWED_TAGS:['p','div','br','span','font','strong','b','i','em','u','h2','h3','ul','ol','li','a','img','blockquote'],ALLOWED_ATTR:['href','src','alt','color','size','style','data-kind','data-url','class']});
-}
-function url(value) {
-  try { const u = new URL(value.trim()); return ['https:','http:'].includes(u.protocol) ? u : null; } catch {return null;}
-}
+const {clean,url,media}=window.StarhaoNewsContent;
+const store=window.StarhaoNewsStore;
 function show(id) {
   for(const s of ['list','edit','view']) $(s).hidden=s!==id;
   $('status').textContent='';window.scrollTo(0,0);
@@ -38,7 +34,11 @@ function list() {
     const meta=el('span',a.status+' · '+a.date);meta.className='meta';
     row.append(grip,name,meta,action('上移',()=>sortMove(i,i-1)),action('下移',()=>sortMove(i,i+1)),action('編輯',()=>openArticle(a)),action('刪除',async()=>{
       if(reordered){$('status').textContent='請先儲存排序。';return;}
-      if(confirm('刪除試用文章「'+a.title+'」？')){await persist(articles.filter(x=>x.id!==a.id));list();}
+      if(confirm('刪除文章「'+a.title+'」？')){
+        if(store){await store.remove(a);articles=articles.filter(x=>x.id!==a.id);}
+        else await persist(articles.filter(x=>x.id!==a.id));
+        list();notifyCount();
+      }
     }));$('rows').append(row);
   });
   if(!articles.length)$('rows').append(el('p','目前沒有文章。'));
@@ -48,17 +48,24 @@ function openArticle(a) {
   current=a || {id:crypto.randomUUID(),date:new Date().toLocaleDateString('sv-SE'),category:'最新消息',html:''};
   fields.forEach(f=>$(f).value=current[f]||'');$('body').innerHTML=clean(current.html);
   $('editHeading').textContent=a?'編輯文章':'新增文章';$('publish').textContent=a?.status==='已發布'?'更新文章':'發布文章';
-  dirty=false;savedRange=null;show('edit');
+  dirty=false;savedRange=null;show('edit');if(store)store.loadImages($('body'));
 }
 function collect() {
-  const a={...current,html:clean($('body').innerHTML)};
+  const copy=$('body').cloneNode(true);
+  if(store)copy.querySelectorAll('img[data-news-image]').forEach(img=>img.removeAttribute('src'));
+  const a={...current,html:clean(copy.innerHTML)};
   fields.forEach(f=>a[f]=$(f).value.trim());return a;
 }
 async function save(status) {
   const a=collect();if(!a.title){$('title').focus();$('status').textContent='請填寫文章標題。';return;}
   a.status=status;
   const next=articles.some(x=>x.id===a.id)?articles.map(x=>x.id===a.id?a:x):[...articles,a];
-  await persist(next);dirty=false;list();$('status').textContent='已儲存在此瀏覽器。';
+  $('edit').inert=true;
+  try {
+    if(store){await store.save(a,!articles.some(row=>row.id===a.id));articles=next;}
+    else await persist(next);
+  } finally { $('edit').inert=false; }
+  dirty=false;list();notifyCount();$('status').textContent=store?'已儲存文章。':'已儲存在此瀏覽器。';
 }
 document.addEventListener('selectionchange',()=>{
   const sel=getSelection();if(sel.rangeCount && $('body').contains(sel.anchorNode) && $('body').contains(sel.focusNode))savedRange=sel.getRangeAt(0).cloneRange();
@@ -82,22 +89,6 @@ function modal(title,html,submit) {
   $('dt').textContent=title;$('dc').innerHTML=html;$('error').textContent='';$('dialog').showModal();
   $('ok').onclick=async()=>{try{$('ok').disabled=true;const after=await submit();$('dialog').close();if(after)after();}catch(e){$('error').textContent=e.message;}finally{$('ok').disabled=false;}};
 }
-function media(source) {
-  const u=url(source);if(!u)return null;
-  const host=u.hostname.toLowerCase().replace(/^www\./,'');
-  if(['youtube.com','m.youtube.com','youtu.be','youtube-nocookie.com'].includes(host)){
-    const id=host==='youtu.be'?u.pathname.slice(1):u.searchParams.get('v')||u.pathname.match(/^\/(?:embed|shorts|live)\/([^/]+)/)?.[1];
-    if(/^[a-zA-Z0-9_-]{11}$/.test(id||''))return ['https://www.youtube-nocookie.com/embed/'+id,'YouTube',true];
-  }
-  if(host==='instagram.com' && /^\/(?:p|reel)\/[\w-]+\/?$/.test(u.pathname))return ['https://www.instagram.com'+u.pathname.replace(/\/$/,'')+'/embed/','Instagram'];
-  if(['threads.net','threads.com'].includes(host) && /^\/@[\w.]+\/post\/[\w-]+\/?$/.test(u.pathname))return ['https://www.threads.com'+u.pathname.replace(/\/$/,'')+'/embed','Threads'];
-  if(['facebook.com','m.facebook.com','fb.watch'].includes(host)){
-    const video=/\/videos\/|\/reel\/|\/watch/.test(u.pathname)||host==='fb.watch';
-    if(!video && !/\/posts\/|\/permalink\/|\/permalink\.php|\/photo|\/story\.php/.test(u.pathname))return null;
-    return ['https://www.facebook.com/plugins/'+(video?'video':'post')+'.php?href='+encodeURIComponent(u.href)+'&show_text=true','Facebook',video];
-  }
-  return null;
-}
 function socialURL(raw) {
   if(url(raw) && media(raw))return raw;
   const doc=new DOMParser().parseFromString(raw,'text/html');
@@ -110,32 +101,10 @@ function socialURL(raw) {
   throw Error('請貼上 Instagram、Facebook 或 Threads 公開單篇貼文的網址或官方嵌入碼。');
 }
 function renderPreview() {
-  const a=collect(),content=el('div');content.innerHTML=a.html;
-  const walker=document.createTreeWalker(content,NodeFilter.SHOW_TEXT);
-  const texts=[];while(walker.nextNode())texts.push(walker.currentNode);
-  for(const text of texts){
-    const pattern=/<img src="([^"]+)">|\[iframe\]([^[]+)\[\/iframe\]/g;
-    const parts=document.createDocumentFragment();let end=0;
-    for(const match of text.data.matchAll(pattern)){
-      parts.append(text.data.slice(end,match.index));
-      const token=el('span');token.dataset.kind=match[1]?'image':'video';token.dataset.url=match[1]||match[2];
-      parts.append(token);end=match.index+match[0].length;
-    }
-    if(end){parts.append(text.data.slice(end));text.replaceWith(parts);}
-  }
-  for(const node of content.querySelectorAll('[data-kind]')){
-    const raw=node.textContent;
-    let value=node.dataset.url || raw.match(/^\[iframe\]([\s\S]+)\[\/iframe\]$/)?.[1] || raw.match(/^<img src="([^"]+)">$/)?.[1];
-    const u=url(value||'');
-    if(!u){node.replaceWith(el('p','請回編輯區補上有效網址。'));continue;}
-    if(node.dataset.kind==='image'){const img=el('img');img.src=u.href;img.alt='文章圖片';node.replaceWith(img);continue;}
-    const box=el('div'),m=media(u.href);
-    if(m){const frame=el('iframe');frame.src=m[0];frame.title=m[1]+' 嵌入內容';frame.loading='lazy';frame.allowFullscreen=true;if(m[2])frame.style.aspectRatio='16/9';else frame.height='520';box.append(frame);}
-    const link=el('a','開啟原文內容');link.href=u.href;link.target='_blank';link.rel='noopener noreferrer';box.append(link);node.replaceWith(box);
-  }
+  const a=collect(),content=window.StarhaoNewsContent.render(a.html);
   $('reader').replaceChildren(el('small',a.category+' / '+a.date),el('h1',a.title||'未命名文章'),el('p',a.summary));
-  if(url(a.cover)){const img=el('img');img.src=a.cover;img.alt=a.title;$('reader').append(img);}
-  $('reader').append(content);show('view');
+  if(url(a.cover)||/^data:image\//.test(a.cover)){const img=el('img');img.src=a.cover;img.alt=a.title;$('reader').append(img);}
+  $('reader').append(content);if(store)store.loadImages(content);show('view');
 }
 $('photo').onclick=()=>{
   modal('插入圖片','<label>插入方式<select id="mode"><option value="url">嵌入圖片網址</option><option value="upload">上傳圖片</option></select></label><div id="upload" hidden><label>選取圖片<input multiple type="file" id="files" accept="image/jpeg,image/png,image/webp,image/gif"></label><small>JPG、PNG、WebP、GIF，每張最多 2 MB。</small></div>',async()=>{
@@ -143,6 +112,9 @@ $('photo').onclick=()=>{
     const files=[...$('files').files];if(!files.length)throw Error('請先選擇圖片。');
     const group=el('span');for(const f of files){
       if(!['image/jpeg','image/png','image/webp','image/gif'].includes(f.type)||f.size>2*1024*1024)throw Error(f.name+'：格式不符或大於 2 MB。');
+      if(store){
+        group.append(await store.upload(f));continue;
+      }
       const reader=new FileReader();const data=await new Promise((res,rej)=>{reader.onload=()=>res(reader.result);reader.onerror=()=>rej(Error('無法讀取圖片'));reader.readAsDataURL(f);});
       const img=el('img');img.src=data;img.alt=f.name;await img.decode();group.append(img);
     }return ()=>insert(group);
@@ -168,11 +140,27 @@ $('edit').oninput=()=>dirty=true;
 $('new').onclick=()=>openArticle();
 $('back').onclick=()=>{if(!dirty||confirm('離開並捨棄未儲存的修改？')){dirty=false;list();}};
 $('draft').onclick=()=>save('草稿');$('publish').onclick=()=>save('已發布');
-$('order').onclick=async()=>{await persist(articles);reordered=false;list();$('status').textContent='已儲存展示順序。';};
+$('order').onclick=async()=>{if(store)await store.sort(articles);else await persist(articles);reordered=false;list();$('status').textContent='已儲存展示順序。';};
 $('preview').onclick=renderPreview;$('resume').onclick=()=>show('edit');
 window.onbeforeunload=e=>{if(dirty||reordered)e.preventDefault();};
-window.onunhandledrejection=()=>{$('status').textContent='無法完成儲存或載入。請確認瀏覽器可使用本機儲存空間，再試一次。';};
+function notifyCount(){if(store)store.count(articles.length);}
+window.onunhandledrejection=event=>{$('status').textContent=event.reason?.message || '操作失敗，請稍後再試。';};
 (async()=>{
+ if(store){
+   $('list').inert=true;
+   articles=await store.load();list();notifyCount();$('list').inert=false;
+   $('refresh').onclick=async()=>{
+     if(reordered && !confirm('重新載入並捨棄未儲存的排序？'))return;
+     const fresh=await store.load();articles=fresh;reordered=false;list();notifyCount();
+   };
+   $('hide').onclick=()=>save('已下架');
+   $('coverFile').onchange=async e=>{
+     const file=e.target.files[0];if(!file)return;
+     if(!['image/jpeg','image/png','image/webp','image/gif'].includes(file.type)||file.size>2097152)throw Error('封面圖片限 JPG、PNG、WebP、GIF，最大 2 MB。');
+     $('cover').value=await store.coverUpload(file);dirty=true;
+   };
+   return;
+ }
  const req=indexedDB.open('starhao-news-editor-trial',1);
  req.onupgradeneeded=()=>req.result.createObjectStore('trial');
  db=await new Promise((res,rej)=>{req.onsuccess=()=>res(req.result);req.onerror=()=>rej(req.error);});

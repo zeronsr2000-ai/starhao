@@ -578,3 +578,11 @@ window.starhorizonArticleRows = function (articles) {
   articles.forEach((article) => rows.set(article.id, { ...rows.get(article.id), ...article }));
   return [...rows.values()];
 };
+
+window.compareNewsOrder = function (a, b) {
+  const rank = row => Number.isFinite(row.newsOrder) ? row.newsOrder : Infinity;
+  if (rank(a) !== rank(b)) return rank(a) - rank(b);
+  if ((a.appendedAt || 0) !== (b.appendedAt || 0)) return (a.appendedAt || 0) - (b.appendedAt || 0);
+  return String(a.publishedAt || "").localeCompare(String(b.publishedAt || ""))
+    || (a.sort || 0) - (b.sort || 0) || String(a.id).localeCompare(String(b.id));
+};

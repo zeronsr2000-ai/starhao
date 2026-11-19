@@ -1107,12 +1107,7 @@ function articleHref(article) {
 }
 
 function sortedArticles(articles) {
-  return published(window.starhorizonArticleRows(articles)).sort((a, b) => {
-    const dateA = String(a.publishedAt || "");
-    const dateB = String(b.publishedAt || "");
-    if (dateA !== dateB) return dateA.localeCompare(dateB);
-    return (a.sort || 0) - (b.sort || 0);
-  });
+  return published(window.starhorizonArticleRows(articles)).filter(row => !row.articleDeleted).sort(window.compareNewsOrder);
 }
 
 function parseArticleBlocks(value) {
@@ -1232,8 +1227,14 @@ function renderArticle(articles) {
       <p>${moneySafe(article.excerpt || "")}</p>
     </header>
     ${cover}
-    <div class="article-content">${renderArticleBlocks(article.blocks, article)}</div>
+    <div class="article-content">${typeof article.articleHtml === "string" ? "" : renderArticleBlocks(article.blocks, article)}</div>
   `;
+  if (typeof article.articleHtml === "string") {
+    const content = window.StarhaoNewsContent.render(article.articleHtml);
+    const body = $(".article-content", root);
+    body.append(...content.childNodes);
+    window.StarhaoNewsContent.loadImages(body, api.getDb?.());
+  }
   const related = $("template[data-article-related]");
   if (related) $(".article-content", root).append(related.content.cloneNode(true));
 }

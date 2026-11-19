@@ -283,46 +283,7 @@
         </section>
 
         <section class="panel hidden" data-panel="articles">
-          <p class="eyebrow">News / SEO Articles</p>
-          <h2>最新消息文章</h2>
-          <p class="panel-note">文章會顯示在最新消息頁，每篇都有固定連結、SEO 標題與描述。圖片可直接上傳，影片請貼 YouTube／IG／FB 連結。</p>
-          <form class="form" data-collection-form="articles">
-            <input name="id" type="hidden" />
-            <div class="grid-2">
-              <label>文章標題<input name="title" required /></label>
-              <label>網址代號 Slug<input name="slug" placeholder="例如 video-production-seo-guide" /></label>
-            </div>
-            <div class="grid-2">
-              <label>文章分類<input name="category" placeholder="例如 SEO 觀點" /></label>
-              <label>發布日期<input name="publishedAt" type="date" /></label>
-            </div>
-            <label>文章摘要<textarea name="excerpt"></textarea></label>
-            <label>封面圖片網址<input name="coverUrl" /></label>
-            <label>或上傳封面圖片<input name="coverFile" type="file" accept="image/*" data-upload-field="coverUrl" /></label>
-            <label>封面圖片 ALT 文字<input name="coverAlt" /></label>
-            <div class="field-group">
-              <h3>SEO 設定</h3>
-              <label>SEO Title<input name="seoTitle" placeholder="建議 25 到 35 個中文字內" /></label>
-              <label>Meta Description<textarea name="seoDescription" placeholder="建議 70 到 90 個中文字，清楚寫出文章主題與服務關聯"></textarea></label>
-            </div>
-            <div class="field-group">
-              <h3>文章內容</h3>
-              <p class="field-hint">用區塊新增內容，不需要碰程式碼。影片區塊支援 YouTube、Instagram、Facebook 連結嵌入。</p>
-              <textarea class="hidden" name="blocks"></textarea>
-              <div class="article-editor-actions">
-                <button class="btn ghost" type="button" data-add-article-block="paragraph">新增段落</button>
-                <button class="btn ghost" type="button" data-add-article-block="heading">新增小標</button>
-                <button class="btn ghost" type="button" data-add-article-block="image">新增圖片</button>
-                <button class="btn ghost" type="button" data-add-article-block="video">新增影片</button>
-                <button class="btn ghost" type="button" data-add-article-block="list">新增清單</button>
-                <button class="btn ghost" type="button" data-add-article-block="quote">新增引用</button>
-              </div>
-              <div class="article-editor" data-article-editor></div>
-            </div>
-            <div class="grid-2"><label>排序<input name="sort" type="number" /></label><label>上架狀態<select name="status"><option value="published">發布</option><option value="draft">草稿</option><option value="hidden">下架</option></select></label></div>
-            <div class="actions"><button class="btn primary" type="submit">儲存文章</button><button class="btn ghost" data-new="articles" type="button">新增文章</button></div>
-          </form>
-          <div class="table-list" data-list="articles"></div>
+          <iframe title="最新消息文章管理" data-news-editor style="width:100%;height:80vh;min-height:480px;border:0"></iframe>
         </section>
 
         <section class="panel hidden" data-panel="extendedServices">
@@ -495,11 +456,11 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-storage-compat.js"></script>
     <script src="firebase-config.js"></script>
-    <script src="data.js?v=20261119-2"></script>
+    <script src="data.js?v=20261119-5"></script>
     <script src="firebase-client.js?v=20260908-1"></script>
     <script src="suneditor.min.js"></script>
     <script src="purify.min.js"></script>
     <script src="service-article.js?v=20260910-3"></script>
-    <script src="admin.js?v=20261119-2"></script>
+    <script src="admin.js?v=20261119-5"></script>
   </body>
 </html>

@@ -152,7 +152,7 @@ async function loadAll() {
   state.workSettings = normalizeWorkSettings(workSettings);
   state.workCategories = workCategories;
   state.works = works;
-  state.articles = window.starhorizonArticleRows(articles);
+  state.articles = window.starhorizonArticleRows(articles).filter(row => !row.articleDeleted);
   state.services = services;
   state.extendedServices = extendedServices;
   state.partners = partners;
@@ -258,7 +258,6 @@ function renderForms() {
   fillForm(qs('[data-form="workSettings"]'), {
     showreelWorkId: state.workSettings.showreelWorkId || state.home.showreelWorkId || "",
   });
-  renderArticleEditor(qs('[data-collection-form="articles"]'), parseArticleBlocks(collectionDefaults("articles").blocks));
   renderServiceEditor(qs('[data-collection-form="services"]'), collectionDefaults("services"));
   renderServiceEditor(qs('[data-collection-form="extendedServices"]'), collectionDefaults("extendedServices"));
 }
@@ -411,7 +410,6 @@ function render() {
   renderForms();
   renderCollection("workCategories", state.workCategories);
   renderCollection("works", state.works);
-  renderCollection("articles", state.articles);
   renderCollection("services", state.services);
   renderCollection("extendedServices", state.extendedServices);
   renderCollection("partners", state.partners);
@@ -421,6 +419,10 @@ function render() {
 }
 
 function switchTab(tabName) {
+  if (tabName === "articles" && window.firebase.auth().currentUser) {
+    const frame = qs("[data-news-editor]");
+    if (!frame.hasAttribute("src")) frame.src = "news-editor.html?v=1";
+  }
   qsa("[data-panel]").forEach((panel) => panel.classList.toggle("hidden", panel.dataset.panel !== tabName));
   qsa("[data-tab]").forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === tabName));
   const activeTab = qs(`[data-tab="${tabName}"]`);
@@ -1806,6 +1808,7 @@ function setupAuth() {
     tabs.classList.toggle("hidden", !user);
     logout.classList.toggle("hidden", !user);
     qsa("[data-panel]").forEach((panel) => panel.classList.toggle("hidden", !user || panel.dataset.panel !== "dashboard"));
+    if (!user) qs("[data-news-editor]").removeAttribute("src");
     if (user) {
       setupEvents();
       await loadAll();
