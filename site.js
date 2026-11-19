@@ -802,8 +802,8 @@ function serviceSlug(service) {
 }
 
 function serviceHref(service, type = "services") {
-  const slug = serviceSlug(service);
-  return `service.html?type=${encodeURIComponent(type)}&id=${encodeURIComponent(slug)}`;
+  const id = type === "extendedServices" && service.id ? service.id : serviceSlug(service);
+  return `service.html?type=${encodeURIComponent(type)}&id=${encodeURIComponent(id)}`;
 }
 
 function stripLabelPrefix(value, label) {
@@ -886,7 +886,7 @@ function setServiceSeo(service, type) {
   const site = api.getCachedDoc?.("siteContent", "site", defaults.site) || defaults.site;
   const title = service.seoTitle || `${service.title || "服務項目"}｜星澔文創`;
   const description = service.seoDescription || service.detailIntro || service.summary || service.target || service.detailBody || "";
-  const url = absoluteUrl(`service.html?type=${encodeURIComponent(type)}&id=${encodeURIComponent(serviceSlug(service))}`, site);
+  const url = absoluteUrl(serviceHref(service, type), site);
   setPageSeo(site, { title, description, url });
   ensureJsonLd("service-detail-json-ld", {
     "@context": "https://schema.org",
@@ -920,7 +920,7 @@ function renderServiceDetail(services, extendedServices, works = []) {
   const type = params.get("type") === "extendedServices" ? "extendedServices" : "services";
   const rows = published(type === "extendedServices" ? extendedServices : services);
   const id = params.get("id") || "";
-  const service = rows.find((item) => item.id === id || serviceSlug(item) === id) || rows[0];
+  const service = rows.find((item) => item.id === id) || rows.find((item) => serviceSlug(item) === id) || rows[0];
   if (!service) {
     root.innerHTML = `<p class="empty-note">目前找不到這個服務項目。</p>`;
     return;
