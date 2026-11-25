@@ -1051,11 +1051,6 @@ function quickTypeLabel(type) {
   return { line: "LINE", phone: "TEL", facebook: "FB", email: "MAIL", custom: "LINK" }[type] || "LINK";
 }
 
-function safeColorValue(value) {
-  const color = String(value || "").trim();
-  return /^#[0-9a-f]{6}$/i.test(color) ? color : "#06c755";
-}
-
 function newQuickLink() {
   return { id: `quick-${Date.now().toString(36)}`, label: "LINK", type: "custom", value: "", href: "https://", iconUrl: "", backgroundColor: "", sort: 99, status: "published" };
 }
@@ -1090,8 +1085,8 @@ function renderQuickLinkEditor(form, items = []) {
             <label>自訂連結<input data-quick-link-prop="href" value="${safe(item.href)}" placeholder="可留空自動產生" /></label>
           </div>
           <div class="grid-2">
-            <label>背景顏色色碼<input data-quick-link-prop="backgroundColor" value="${safe(item.backgroundColor)}" placeholder="例如 #06C755，不填則使用預設色" /></label>
-            <label>背景顏色選擇<input data-quick-link-color type="color" value="${safeColorValue(item.backgroundColor)}" /></label>
+            <label>背景顏色色碼<input data-quick-link-prop="backgroundColor" value="${safe(item.backgroundColor)}" pattern="#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})" title="請輸入 # 加上 3 或 6 位色碼，或留白使用預設色" placeholder="例如 #06C755，不填則使用預設色" /></label>
+            <label>背景顏色選擇<input data-quick-link-color type="color" value="${window.quickContactColor(item.type, item.backgroundColor)}" /></label>
           </div>
           <label>ICON 圖片網址<input data-quick-link-prop="iconUrl" value="${safe(item.iconUrl)}" placeholder="可貼圖片網址，或使用下方上傳" /></label>
           <label>或上傳 ICON 圖片<input type="file" accept="image/png,image/svg+xml,image/webp,image/jpeg" data-quick-link-icon-upload="${index}" /></label>
@@ -1132,6 +1127,18 @@ function readQuickLinks(form, siteData = {}) {
       };
     })
     .sort((a, b) => (a.sort || 0) - (b.sort || 0));
+}
+
+function syncQuickLinkChange(input) {
+  const row = input.closest("[data-quick-link]");
+  const picker = qs("[data-quick-link-color]", row);
+  const code = qs('[data-quick-link-prop="backgroundColor"]', row);
+  if (input === picker) code.value = picker.value;
+  else if (input === code || input.dataset.quickLinkProp === "type") {
+    const type = qs('[data-quick-link-prop="type"]', row).value;
+    picker.value = window.quickContactColor(type, code.value);
+  }
+  syncQuickLinkStore(row.closest("form"));
 }
 
 function syncQuickLinkStore(form) {
@@ -1636,8 +1643,8 @@ function setupEvents() {
     if (inquiryField) syncInquiryFieldStore(inquiryField.closest("form"));
     const navItem = event.target.closest("[data-nav-item-prop]");
     if (navItem) syncNavStore(navItem.closest("form"));
-    const quickLink = event.target.closest("[data-quick-link-prop]");
-    if (quickLink) syncQuickLinkStore(quickLink.closest("form"));
+    const quickLink = event.target.closest("[data-quick-link-prop], [data-quick-link-color]");
+    if (quickLink) syncQuickLinkChange(quickLink);
   });
 
   document.addEventListener("change", async (event) => {
@@ -1655,15 +1662,8 @@ function setupEvents() {
     if (aboutField) syncAboutStores(aboutField.closest("form"));
     const navItem = event.target.closest("[data-nav-item-prop]");
     if (navItem) syncNavStore(navItem.closest("form"));
-    const quickLink = event.target.closest("[data-quick-link-prop]");
-    if (quickLink) syncQuickLinkStore(quickLink.closest("form"));
-    const quickColor = event.target.closest("[data-quick-link-color]");
-    if (quickColor) {
-      const row = quickColor.closest("[data-quick-link]");
-      const colorInput = qs('[data-quick-link-prop="backgroundColor"]', row);
-      if (colorInput) colorInput.value = quickColor.value;
-      syncQuickLinkStore(quickColor.closest("form"));
-    }
+    const quickLink = event.target.closest("[data-quick-link-prop], [data-quick-link-color]");
+    if (quickLink) syncQuickLinkChange(quickLink);
     const inquiryField = event.target.closest("[data-inquiry-field-prop]");
     if (inquiryField) syncInquiryFieldStore(inquiryField.closest("form"));
     if (quickIconUpload && quickIconUpload.files && quickIconUpload.files[0]) {

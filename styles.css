@@ -1125,26 +1125,6 @@ body[data-page="home"] .section:not(.home-inquiry) {
   object-fit: contain;
 }
 
-.quick-line {
-  background: #06c755;
-}
-
-.quick-phone {
-  background: #24b262;
-}
-
-.quick-facebook {
-  background: #1877f2;
-}
-
-.quick-email {
-  background: #4b9aa5;
-}
-
-.quick-custom {
-  background: #2f3238;
-}
-
 .timeline {
   display: grid;
   grid-template-columns: repeat(4, minmax(210px, 1fr));

@@ -313,11 +313,6 @@ function contactHref(type, value) {
   return clean;
 }
 
-function safeHexColor(value) {
-  const color = String(value || "").trim();
-  return /^#[0-9a-f]{3}([0-9a-f]{3})?$/i.test(color) ? color : "";
-}
-
 function renderQuickContact(site) {
   let root = $("[data-quick-contact]");
   const source = Array.isArray(site.quickLinks) && site.quickLinks.length
@@ -354,8 +349,8 @@ function renderQuickContact(site) {
       const icon = item.iconUrl
         ? `<img class="quick-contact-icon" src="${moneySafe(item.iconUrl)}" alt="" loading="lazy" />`
         : moneySafe(item.label || "LINK");
-      const style = safeHexColor(item.backgroundColor) ? ` style="background:${safeHexColor(item.backgroundColor)}"` : "";
-      return `<a class="quick-contact-link quick-${moneySafe(item.type || "custom")}" href="${moneySafe(item.href)}" aria-label="${label}"${style}>${icon}</a>`;
+      const color = window.quickContactColor(item.type, item.backgroundColor);
+      return `<a class="quick-contact-link quick-${moneySafe(item.type || "custom")}" href="${moneySafe(item.href)}" aria-label="${label}" style="background-color:${color}">${icon}</a>`;
     })
     .join("");
 }

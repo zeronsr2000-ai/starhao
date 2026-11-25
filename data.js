@@ -586,3 +586,18 @@ window.compareNewsOrder = function (a, b) {
   return String(a.publishedAt || "").localeCompare(String(b.publishedAt || ""))
     || (a.sort || 0) - (b.sort || 0) || String(a.id).localeCompare(String(b.id));
 };
+
+window.quickContactColor = function (type, value) {
+  const color = String(value || "").trim();
+  if (/^#[0-9a-f]{6}$/i.test(color)) return color;
+  if (/^#[0-9a-f]{3}$/i.test(color)) {
+    return "#" + [...color.slice(1)].map(digit => digit + digit).join("");
+  }
+  switch (type) {
+    case "email":
+    case "line": return "#06c755";
+    case "phone": return "#24b262";
+    case "facebook": return "#1877f2";
+    default: return "#2f3238";
+  }
+};
