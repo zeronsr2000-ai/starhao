@@ -1197,13 +1197,17 @@ p {
 }
 
 .section.home-inquiry {
-  padding-block: clamp(54px, 7vw, 96px);
+  padding-block: clamp(16px, 2vw, 28px);
 }
 
 .home-inquiry .quote-card {
-  padding: clamp(20px, 3.75vw, 52px);
+  padding: clamp(16px, 2vw, 24px) clamp(20px, 3.75vw, 52px);
   gap: clamp(18px, 2.5vw, 32px);
   align-items: center;
+}
+
+.home-inquiry [data-cta-body] {
+  margin-bottom: 0;
 }
 
 .home-inquiry [data-cta-text] {
