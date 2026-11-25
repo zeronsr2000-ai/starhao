@@ -414,28 +414,29 @@ p {
   margin-top: 38px;
 }
 
+body[data-page="home"] .hero {
+  min-height: 0;
+  padding-top: 132px;
+  padding-bottom: 32px;
+}
+
+body[data-page="home"] .section:not(.home-inquiry) {
+  padding-block: 32px;
+}
+
 .showreel {
   position: relative;
   max-width: 100%;
-  min-height: 620px;
+  align-self: center;
+  padding: 10px;
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 42px;
+  border-radius: 22px;
   background:
     radial-gradient(circle at 35% 20%, rgba(223, 255, 79, 0.28), transparent 30%),
     radial-gradient(circle at 72% 72%, rgba(138, 180, 255, 0.36), transparent 34%),
     linear-gradient(145deg, #232326, #08080a);
   box-shadow: 0 40px 110px rgba(0, 0, 0, 0.45);
-}
-
-.showreel::before {
-  position: absolute;
-  z-index: 1;
-  inset: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 30px;
-  content: "";
-  pointer-events: none;
 }
 
 .showreel::after,
@@ -451,17 +452,14 @@ p {
 }
 
 .showreel-media {
-  position: absolute;
+  position: relative;
   z-index: 2;
-  top: 48%;
-  left: 50%;
-  width: min(78%, 620px);
+  width: 100%;
   aspect-ratio: 16 / 9;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 18px;
+  border-radius: 13px;
   background: rgba(0, 0, 0, 0.32);
-  transform: translate(-50%, -50%);
 }
 
 .showreel-media iframe,
@@ -489,7 +487,6 @@ p {
   display: none;
 }
 
-.reel-tag,
 .thumb span {
   position: absolute;
   z-index: 4;
@@ -497,14 +494,6 @@ p {
   font-size: 12px;
   font-weight: 900;
   letter-spacing: 0.16em;
-}
-
-.reel-tag {
-  top: 36px;
-  left: 36px;
-  padding: 10px 14px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.38);
 }
 
 .play {
@@ -526,37 +515,14 @@ p {
 }
 
 .reel-bottom {
-  position: absolute;
+  position: relative;
   z-index: 4;
-  right: 36px;
-  bottom: 36px;
-  left: 36px;
+  padding: 8px 6px 0;
   display: flex;
   justify-content: space-between;
   gap: 18px;
   color: rgba(255, 255, 255, 0.78);
-  font-size: 13px;
-}
-
-.ticker {
-  position: relative;
-  z-index: 2;
-  overflow: hidden;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  white-space: nowrap;
-  background: rgba(255, 255, 255, 0.035);
-}
-
-.ticker-track {
-  display: inline-flex;
-  gap: 34px;
-  padding: 18px 0;
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 13px;
-  font-weight: 900;
-  letter-spacing: 0.16em;
-  animation: marquee 26s linear infinite;
+  font-size: 12px;
 }
 
 @keyframes marquee {
@@ -2104,13 +2070,14 @@ footer p {
     padding-bottom: 54px;
   }
 
-  .showreel {
-    min-height: 430px;
+  body[data-page="home"] .hero {
+    padding-top: 100px;
+    padding-bottom: 18px;
+    gap: 24px;
   }
 
-  .showreel-media {
-    top: 49%;
-    width: min(82%, 560px);
+  body[data-page="home"] .section:not(.home-inquiry) {
+    padding-block: 20px;
   }
 
   .work-grid,
@@ -2359,26 +2326,6 @@ footer p {
     padding-top: 108px;
   }
 
-  .showreel {
-    min-height: 390px;
-  }
-
-  .showreel-media {
-    top: 50%;
-    width: calc(100% - 56px);
-  }
-
-  .reel-tag {
-    top: 28px;
-    left: 28px;
-  }
-
-  .reel-bottom {
-    right: 28px;
-    bottom: 28px;
-    left: 28px;
-  }
-
   .service,
   .service:nth-child(2n),
   .service:nth-child(3n) {
@@ -2469,7 +2416,6 @@ footer p {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ticker-track,
   .partner-track {
     animation-play-state: paused;
   }

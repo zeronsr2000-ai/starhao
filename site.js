@@ -620,10 +620,8 @@ function renderHome(home, works, services, extendedServices, process, partners, 
   attr("[data-primary-cta]", "href", home.primaryCtaLink);
   text("[data-secondary-cta]", home.secondaryCtaText);
   attr("[data-secondary-cta]", "href", home.secondaryCtaLink);
-  text("[data-showreel-label]", home.showreelLabel);
   renderShowreel(home.showreelUrl, findWork(works, workSettings.showreelWorkId || home.showreelWorkId));
   renderSimpleList("[data-showreel-bottom]", home.showreelBottom);
-  renderTicker(home.tickerItems);
   text("[data-partners-eyebrow]", home.partnersEyebrow);
   lines("[data-partners-title]", home.partnersTitle);
   text("[data-partners-description]", home.partnersDescription);
@@ -654,12 +652,6 @@ function renderHome(home, works, services, extendedServices, process, partners, 
 function renderSimpleList(selector, items) {
   const root = $(selector);
   if (root) root.innerHTML = (items || []).map((item) => `<span>${moneySafe(item)}</span>`).join("");
-}
-
-function renderTicker(items) {
-  const values = [...(items || []), ...(items || [])];
-  const root = $("[data-ticker-track]");
-  if (root) root.innerHTML = values.map((item) => `<span>${moneySafe(item)}</span>`).join("");
 }
 
 function renderShowreel(url, work) {
