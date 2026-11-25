@@ -939,6 +939,16 @@ body[data-page="home"] .section:not(.home-inquiry) {
   margin: 0 0 12px;
 }
 
+.featured-works-more {
+  display: block;
+  width: fit-content;
+  margin: 16px 0 0 auto;
+  color: var(--lime);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
 .service-more {
   display: inline-flex;
   margin-top: 18px;
