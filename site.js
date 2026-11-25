@@ -641,7 +641,7 @@ function renderHome(home, works, services, extendedServices, process, partners, 
   lines("[data-process-title]", home.processTitle);
   text("[data-process-description]", home.processDescription);
   text("[data-cta-eyebrow]", home.ctaEyebrow);
-  lines("[data-cta-title]", home.ctaTitle);
+  lines("[data-cta-title]", home.ctaHeading ?? defaults.home.ctaHeading);
   text("[data-cta-body]", home.ctaBody);
   text("[data-cta-text]", home.ctaText);
   attr("[data-cta-text]", "href", home.ctaLink);

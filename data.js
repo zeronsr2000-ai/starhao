@@ -113,7 +113,7 @@ window.STARHORIZON_DEFAULTS = {
     processTitle: "合作流程",
     processDescription: "降低客戶不確定感，清楚知道每個階段要準備什麼。",
     ctaEyebrow: "Start A Project",
-    ctaTitle: "想把品牌故事拍成更有質感的影片嗎？",
+    ctaHeading: "幫你的品牌拍成更有質感的影片！",
     ctaBody: "告訴我們你想製作的內容、用途與時程，我們會協助你整理適合的影片形式與製作方案。",
     ctaText: "填寫詢價表單",
     ctaLink: "quote.html",
