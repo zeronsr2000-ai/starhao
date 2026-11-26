@@ -130,7 +130,7 @@ window.STARHORIZON_DEFAULTS = {
     servicesLead: "每個服務都對應不同的商業情境：建立品牌、傳遞專業、經營社群、紀錄活動或整理既有素材。",
     serviceAreaEyebrow: "Service Area",
     serviceAreaTitle: "台灣全區影像製作服務。",
-    serviceAreaLead: "以台中為核心，可依專案需求安排北中南與外縣市拍攝；服務地區內容可由後台關於我們欄位更新。",
+    serviceAreaLead: "以台中為核心，可依專案需求安排北中南與外縣市拍攝。",
     processEyebrow: "Workflow",
     processTitle: "每個階段都清楚，拍攝才不會變成猜測。",
     processLead: "從需求確認到完成交付，我們把腳本、拍攝、後製與修改節點拆清楚，降低溝通成本。",

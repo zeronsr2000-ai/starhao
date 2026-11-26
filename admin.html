@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex" />
     <title>後台管理｜星澔文創</title>
     <link rel="stylesheet" href="suneditor.min.css" />
-    <link rel="stylesheet" href="admin.css?v=20260910-3" />
+    <link rel="stylesheet" href="admin.css?v=20261126-2" />
     <link rel="stylesheet" href="service-article.css?v=20260910-3" />
   </head>
   <body class="admin-body">
@@ -62,6 +62,7 @@
             <button class="admin-tab" data-tab="extendedServices" type="button">網站與 SEO</button>
             <button class="admin-tab" data-tab="process" type="button">流程管理</button>
             <button class="admin-tab" data-tab="about" type="button">關於我們</button>
+            <button class="admin-tab" data-tab="serviceArea" type="button">服務地區</button>
           </div>
         </div>
         <div class="admin-menu-group" data-admin-group="inquiries">
@@ -384,30 +385,42 @@
         </section>
 
         <section class="panel hidden" data-panel="about">
-          <p class="eyebrow">About</p>
-          <h2>關於我們管理</h2>
-          <form class="form" data-form="about">
-            <div class="field-group">
-              <h3>頁首</h3>
-              <label>主標題<textarea name="title"></textarea></label>
-              <label>副標題<textarea name="body"></textarea></label>
-            </div>
+          <h2>關於我們</h2>
+          <form class="form" data-form="about" data-about-editor>
             <div class="field-group">
               <h3>介紹海報</h3>
-              <label>上傳或更換海報（PNG、JPG、WebP，最多 10 MB）<input type="file" accept="image/png,image/jpeg,image/webp" data-upload-field="posterUrl" /></label>
-              <label>或使用圖片網址<input name="posterUrl" /></label>
-              <label>圖片替代文字<input name="posterAlt" /></label>
+              <img class="poster-preview" data-poster-preview alt="海報預覽" hidden />
+              <div class="actions">
+                <button type="button" class="btn ghost" data-pick-poster>選擇海報</button>
+                <button type="button" class="btn ghost" data-clear-poster hidden>移除海報</button>
+              </div>
+              <input type="file" hidden accept="image/png,image/jpeg,image/webp" data-upload-field="posterUrl" />
+              <input type="hidden" name="posterUrl" />
+              <p class="field-hint">可選 PNG、JPG 或 WebP，最大 10 MB。</p>
             </div>
-            <div class="field-group">
-              <h3>海報下方文案</h3>
-              <label>公司介紹<textarea name="story" rows="17" aria-describedby="about-story-help"></textarea></label>
-              <p class="field-hint" id="about-story-help">按 Enter 換行，空一行分段。用 ** 包住要加粗的文字，例如「**只要您有夢想，我們就有故事**」。</p>
+            <label>海報下方文案<textarea name="story" rows="16" aria-describedby="about-story-help"></textarea></label>
+            <p class="field-hint" id="about-story-help">空一行分段。要加粗的文字可寫成 **只要您有夢想，我們就有故事**。</p>
+            <details class="about-options">
+              <summary>頁首與圖片設定</summary>
+              <div>
+                <label>頁首主標題<textarea name="title"></textarea></label>
+                <label>頁首副標題<textarea name="body"></textarea></label>
+                <label>使用圖片網址<input data-poster-link placeholder="貼上圖片網址" /></label>
+                <label>圖片替代文字<input name="posterAlt" /></label>
+              </div>
+            </details>
+            <div class="actions">
+              <button class="btn primary" type="submit">儲存關於我們</button>
+              <a href="about.html" target="_blank" rel="noopener">查看官網頁面</a>
             </div>
-            <div class="field-group">
-              <h3>服務地區頁</h3>
-              <label>服務地區說明<textarea name="serviceArea"></textarea></label>
-            </div>
-            <button class="btn primary" type="submit">儲存關於我們</button>
+          </form>
+        </section>
+
+        <section class="panel hidden" data-panel="serviceArea">
+          <h2>服務地區</h2>
+          <form class="form" data-form="about">
+            <label>服務地區說明<textarea name="serviceArea"></textarea></label>
+            <div class="actions"><button class="btn primary" type="submit">儲存服務地區</button></div>
           </form>
         </section>
 
@@ -477,6 +490,6 @@
     <script src="suneditor.min.js"></script>
     <script src="purify.min.js"></script>
     <script src="service-article.js?v=20260910-3"></script>
-    <script src="admin.js?v=20261126-1"></script>
+    <script src="admin.js?v=20261126-2"></script>
   </body>
 </html>

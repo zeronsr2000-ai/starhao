@@ -751,3 +751,33 @@ p {
     height: 120px;
   }
 }
+
+[data-about-editor] [hidden] {
+  display: none;
+}
+
+.poster-preview {
+  display: block;
+  max-width: 100%;
+  max-height: 14rem;
+  object-fit: contain;
+}
+
+.about-options {
+  border-block: 1px solid var(--line);
+  padding-block: 12px;
+}
+
+.about-options summary {
+  cursor: pointer;
+}
+
+.about-options > div {
+  display: grid;
+  gap: 12px;
+  padding-top: 14px;
+}
+
+[data-about-editor] .field-hint {
+  margin: 0;
+}

@@ -249,7 +249,11 @@ function renderForms() {
   });
   fillForm(qs('[data-form="inquiryForm"]'), state.inquiryForm);
   renderInquiryFieldEditor(qs('[data-form="inquiryForm"]'), state.inquiryForm.fields || defaults.inquiryForm.fields);
-  fillForm(qs('[data-form="about"]'), { ...defaults.about, ...state.about });
+  const about = { ...defaults.about, ...state.about };
+  qsa('[data-form="about"]').forEach(form => fillForm(form, about));
+  const editor = qs("[data-about-editor]");
+  qs("[data-poster-link]", editor).value = (about.posterUrl || "").startsWith("data:") ? "" : about.posterUrl || "";
+  updatePosterPreview(editor);
   renderWorkControls();
   fillForm(qs('[data-form="workSettings"]'), {
     showreelWorkId: state.workSettings.showreelWorkId || state.home.showreelWorkId || "",
@@ -1259,9 +1263,44 @@ function syncCoverModeFields() {
   });
 }
 
+function updatePosterPreview(form) {
+  const preview = qs("[data-poster-preview]", form);
+  if (preview.src.startsWith("blob:")) URL.revokeObjectURL(preview.src);
+  const file = qs('[data-upload-field="posterUrl"]', form).files[0];
+  const src = file ? URL.createObjectURL(file) : form.elements.posterUrl.value;
+  if (src) preview.src = src;
+  else preview.removeAttribute("src");
+  preview.hidden = !src;
+  qs("[data-clear-poster]", form).hidden = !src;
+  qs("[data-pick-poster]", form).textContent = src ? "更換海報" : "選擇海報";
+}
+
+function setupPosterEditor() {
+  const form = qs("[data-about-editor]");
+  const file = qs('[data-upload-field="posterUrl"]', form);
+  const link = qs("[data-poster-link]", form);
+  qs("[data-pick-poster]", form).addEventListener("click", () => file.click());
+  file.addEventListener("change", () => {
+    if (file.files.length) link.value = "";
+    updatePosterPreview(form);
+  });
+  link.addEventListener("input", () => {
+    file.value = "";
+    form.elements.posterUrl.value = link.value.trim();
+  });
+  link.addEventListener("change", () => updatePosterPreview(form));
+  qs("[data-clear-poster]", form).addEventListener("click", () => {
+    file.value = "";
+    link.value = "";
+    form.elements.posterUrl.value = "";
+    updatePosterPreview(form);
+  });
+}
+
 function setupEvents() {
   if (eventsReady) return;
   eventsReady = true;
+  setupPosterEditor();
   qsa("[data-admin-group-toggle]").forEach((button) => {
     button.addEventListener("click", () => {
       const group = button.closest("[data-admin-group]");
