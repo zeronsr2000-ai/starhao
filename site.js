@@ -997,86 +997,30 @@ function renderProcess(selector, process) {
 }
 
 function renderAbout(about) {
-  text("[data-about-title]", about.title);
-  text("[data-about-body]", about.body);
-  text("[data-about-philosophy]", about.philosophy);
-  text("[data-service-area]", about.serviceArea);
-  renderAboutMarquee(about.pointImages, about.mediaMarqueeDuration);
-  renderAboutVideos(about.pointVideos);
-  const team = $("[data-team]");
-  if (team) {
-    team.innerHTML = renderArticleBlocks(aboutTeamArticle(about), { title: "團隊分工" });
-  }
-  const clients = $("[data-clients]");
-  if (clients) {
-    clients.innerHTML = aboutShowcaseItems(about)
-      .map((item) => `
-        <article class="featured-work-card about-showcase-card">
-          <a href="${moneySafe(item.url || "#")}" ${item.url ? 'target="_blank" rel="noreferrer"' : ""}>
-            ${aboutShowcaseMedia(item)}
-            <div class="featured-work-info">
-              <p>${moneySafe(item.category || "Showcase")}</p>
-              <h3>${moneySafe(item.title || "展示項目")}</h3>
-              <small>${moneySafe(item.summary || "")}</small>
-            </div>
-          </a>
-        </article>
-      `)
-      .join("");
-  }
-}
+  const content = { ...defaults.about, ...about };
+  text("[data-about-title]", content.title);
+  text("[data-about-body]", content.body);
 
-function aboutTeamArticle(about = {}) {
-  if (Array.isArray(about.teamArticle) && about.teamArticle.length) return about.teamArticle;
-  return (about.team || []).flatMap((member) => [
-    { type: "heading", text: member.name || "" },
-    { type: "paragraph", text: member.role || "" },
-  ]);
-}
+  const poster = $("[data-about-poster]");
+  poster.alt = content.posterAlt || "";
+  poster.hidden = !content.posterUrl;
+  if (content.posterUrl) poster.setAttribute("src", content.posterUrl);
+  else poster.removeAttribute("src");
 
-function aboutShowcaseItems(about = {}) {
-  if (Array.isArray(about.showcaseItems) && about.showcaseItems.length) {
-    return published(about.showcaseItems).sort((a, b) => (Number(a.sort) || 0) - (Number(b.sort) || 0));
-  }
-  return (about.clients || []).map((title, index) => ({
-    title,
-    category: "Service",
-    summary: "",
-    url: "",
-    imageUrl: "",
-    sort: index + 1,
-    status: "published",
+  const paragraphs = String(content.story || "").trim().split(/\n\s*\n/).filter(Boolean);
+  $("[data-about-story]").replaceChildren(...paragraphs.map((paragraph) => {
+    const p = document.createElement("p");
+    for (const part of paragraph.split(/(\*\*[^*]+\*\*)/g)) {
+      if (part.startsWith("**") && part.endsWith("**") && part.length > 4) {
+        const strong = document.createElement("strong");
+        strong.textContent = part.slice(2, -2);
+        p.append(strong);
+      } else {
+        p.append(part);
+      }
+    }
+    return p;
   }));
-}
-
-function renderAboutMarquee(images, duration) {
-  const root = $("[data-about-media-track]");
-  if (!root) return;
-  const marquee = root.closest("[data-about-marquee]");
-  const rows = published(images || []).filter((item) => item.imageUrl || item.url);
-  if (!rows.length) {
-    marquee?.classList.add("is-empty");
-    root.innerHTML = "";
-    return;
-  }
-  marquee?.classList.remove("is-empty");
-  root.style.setProperty("--about-marquee-duration", `${normalizeMarqueeDuration(duration)}s`);
-  const repeatedRows = repeatForMarquee(rows);
-  const imageSet = repeatedRows.map((item) => `<figure class="about-marquee-photo"><img src="${moneySafe(item.imageUrl || item.url)}" alt="${moneySafe(item.alt || "製作觀點照片")}" loading="lazy" /></figure>`).join("");
-  root.innerHTML = `<div class="about-media-set">${imageSet}</div><div class="about-media-set" aria-hidden="true">${imageSet}</div>`;
-}
-
-function renderAboutVideos(videos) {
-  const root = $("[data-about-videos]");
-  if (!root) return;
-  const rows = published(videos || []).filter((item) => item.url || item.videoUrl);
-  root.innerHTML = rows.map((item) => `<div class="about-video-card">${renderEmbed(item.url || item.videoUrl, { orientation: item.orientation || "landscape" }, true)}${item.caption ? `<p>${moneySafe(item.caption)}</p>` : ""}</div>`).join("");
-}
-
-function aboutShowcaseMedia(item) {
-  const image = item.imageUrl || item.coverUrl || youtubeThumbnailUrl(item.url || item.videoUrl);
-  if (image) return `<img src="${moneySafe(image)}" alt="${moneySafe(item.title || "展示封面")}" loading="lazy" />`;
-  return `<div class="work-placeholder">${moneySafe(item.title || "Showcase")}</div>`;
 }
 
 function renderPages(pages) {

@@ -249,11 +249,7 @@ function renderForms() {
   });
   fillForm(qs('[data-form="inquiryForm"]'), state.inquiryForm);
   renderInquiryFieldEditor(qs('[data-form="inquiryForm"]'), state.inquiryForm.fields || defaults.inquiryForm.fields);
-  fillForm(qs('[data-form="about"]'), {
-    ...state.about,
-    mediaMarqueeDuration: state.about.mediaMarqueeDuration || 34,
-  });
-  renderAboutEditors(qs('[data-form="about"]'), state.about);
+  fillForm(qs('[data-form="about"]'), { ...defaults.about, ...state.about });
   renderWorkControls();
   fillForm(qs('[data-form="workSettings"]'), {
     showreelWorkId: state.workSettings.showreelWorkId || state.home.showreelWorkId || "",
@@ -431,20 +427,6 @@ function switchTab(tabName) {
     group.classList.add("is-open");
     qs("[data-admin-group-toggle]", group)?.setAttribute("aria-expanded", "true");
   }
-}
-
-function parseAboutPayload(data) {
-  const form = qs('[data-form="about"]');
-  return {
-    ...data,
-    mediaMarqueeDuration: clampNumber(data.mediaMarqueeDuration, 34, 8, 180),
-    pointImages: readAboutImages(form),
-    pointVideos: readAboutVideos(form),
-    teamArticle: readAboutArticleBlocks(form),
-    showcaseItems: readAboutShowcase(form),
-    team: normalizeLegacyTeam(data.team),
-    clients: normalizeLegacyClients(data.clients),
-  };
 }
 
 function parseOptionsPayload(data) {
@@ -1304,7 +1286,7 @@ function setupEvents() {
       try {
         const id = form.dataset.form;
         const data = await uploadFormFiles(form, formToObject(form));
-        const payload = id === "site" ? parseSitePayload(form, data) : id === "about" ? parseAboutPayload(data) : id === "inquiryForm" ? parseOptionsPayload(data) : id === "workSettings" ? parseWorkSettingsPayload(form, data) : id === "home" ? parseHomePayload(data) : data;
+        const payload = id === "site" ? parseSitePayload(form, data) : id === "inquiryForm" ? parseOptionsPayload(data) : id === "workSettings" ? parseWorkSettingsPayload(form, data) : id === "home" ? parseHomePayload(data) : data;
         await saveSiteContent(id, payload);
       } catch (error) {
         setStatus(`儲存失敗：${errorMessage(error)}`);

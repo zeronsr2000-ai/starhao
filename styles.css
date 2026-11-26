@@ -2410,3 +2410,28 @@ footer p {
     animation-play-state: paused;
   }
 }
+
+
+.section.about-story {
+  max-width: 42rem;
+  padding-block: 0 clamp(3rem, 7vw, 6rem);
+}
+
+.about-story img:not([hidden]) {
+  display: block;
+  width: min(100%, 34rem);
+  height: auto;
+  margin: 0 auto 2rem;
+}
+
+.about-story p {
+  margin: 0 0 1.25em;
+  font-size: clamp(1rem, 1.4vw, 1.2rem);
+  line-height: 1.85;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.about-story p:last-child {
+  margin-bottom: 0;
+}
